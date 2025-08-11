@@ -1,0 +1,17 @@
+*
+!.vscode
+!.vscode/**
+.vscode/launch.json
+.vscode/settings.json
+!doc
+!doc/**
+doc/ft_taskmaster\ 3.0.pdf
+!inc
+!inc/**
+!src
+!src/**
+!Makefile
+!.gitignore
+!README.md
+!LICENSE
+!TODO.md
