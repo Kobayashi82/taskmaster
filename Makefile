@@ -6,12 +6,11 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/20 14:09:44 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/20 14:11:35 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-all:
-taskmaster taskmasterctl
+all:taskmaster taskmasterctl
 
 taskmaster: daemon
 server: daemon
