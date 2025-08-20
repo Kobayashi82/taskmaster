@@ -12,8 +12,8 @@
 
 #pragma region "Includes"
 
-	#include "Config/Logging.hpp"
-	#include "Security/Authentication.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
+	#include "Taskmaster/Security/Authentication.hpp"
 
 	#include <cstring>															// std::strcmp()
 	#include <unistd.h>															// crypt()

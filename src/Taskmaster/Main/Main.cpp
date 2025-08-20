@@ -12,13 +12,13 @@
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Taskmaster/Config/Options.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
 
-	#include "Main/Daemon.hpp"
+	#include "Taskmaster/Main/Daemon.hpp"
 
-	#include "Network/Socket.hpp"
-	#include "Network/Epoll.hpp"
+	#include "Taskmaster/Network/Socket.hpp"
+	#include "Taskmaster/Network/Epoll.hpp"
 
 	#include <iostream>															// std::cerr()
 	#include <unistd.h>															// getuid()

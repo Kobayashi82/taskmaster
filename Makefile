@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/20 11:59:06 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/20 12:10:23 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,6 +70,8 @@ SRCS		= Main/Main.cpp Main/Daemon.cpp Main/Shell.cpp		\
 																\
 			  Network/Socket.cpp Network/Client.cpp				\
 			  Network/Epoll.cpp Network/Communication.cpp
+
+SRCS		:= $(addprefix Taskmaster/, $(SRCS))
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

@@ -6,24 +6,24 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 21:46:19 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/18 23:23:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/20 12:14:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Taskmaster/Config/Options.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
 
-	#include "Security/Authentication.hpp"
-	#include "Security/Encryption.hpp"
+	#include "Taskmaster/Security/Authentication.hpp"
+	#include "Taskmaster/Security/Encryption.hpp"
 
-	#include "Main/Shell.hpp"
+	#include "Taskmaster/Main/Shell.hpp"
 
-	#include "Network/Socket.hpp"
-	#include "Network/Client.hpp"
-	#include "Network/Epoll.hpp"
-	#include "Network/Communication.hpp"
+	#include "Taskmaster/Network/Socket.hpp"
+	#include "Taskmaster/Network/Client.hpp"
+	#include "Taskmaster/Network/Epoll.hpp"
+	#include "Taskmaster/Network/Communication.hpp"
 
 	#include <cstring>															// std::memset()
 	#include <unistd.h>															// read(), write()

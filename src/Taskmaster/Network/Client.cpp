@@ -12,16 +12,16 @@
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Taskmaster/Config/Options.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
 
-	#include "Security/Encryption.hpp"
+	#include "Taskmaster/Security/Encryption.hpp"
 
-	#include "Main/Shell.hpp"
+	#include "Taskmaster/Main/Shell.hpp"
 
-	#include "Network/Client.hpp"
-	#include "Network/Epoll.hpp"
-	#include "Network/Communication.hpp"
+	#include "Taskmaster/Network/Client.hpp"
+	#include "Taskmaster/Network/Epoll.hpp"
+	#include "Taskmaster/Network/Communication.hpp"
 
 	#include <unistd.h>															// For close()
 	#include <ctime>															// For time() and difftime()

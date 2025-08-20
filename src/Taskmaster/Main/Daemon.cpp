@@ -12,11 +12,11 @@
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
-	#include "Config/Signals.hpp"
+	#include "Taskmaster/Config/Options.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
+	#include "Taskmaster/Config/Signals.hpp"
 
-	#include "Network/Client.hpp"
+	#include "Taskmaster/Network/Client.hpp"
 
 	#include <iostream>															// std::cerr(), std::exit()
 	#include <fcntl.h>															// open()

@@ -12,13 +12,13 @@
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Taskmaster/Config/Options.hpp"
+	#include "Taskmaster/Config/Logging.hpp"
 
-	#include "Main/Shell.hpp"
+	#include "Taskmaster/Main/Shell.hpp"
 
-	#include "Network/Client.hpp"
-	#include "Network/Epoll.hpp"
+	#include "Taskmaster/Network/Client.hpp"
+	#include "Taskmaster/Network/Epoll.hpp"
 
 	#include <pwd.h>															// getpwnam()
 	#include <grp.h>															// initgroups()
