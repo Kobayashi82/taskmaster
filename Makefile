@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/11 20:45:03 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/20 11:59:06 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,7 +44,8 @@ NAME		= taskmaster
 # ─────────── #
 
 CC			= clang++
-CFLAGS		= -Wall -Wextra -Werror -std=c++98 -g -O2
+CFLAGS		= -Wall -Wextra -Werror -std=c++17
+CEFLAGS		= -lm -lcrypt
 
 # ───────────────── #
 # ── DIRECTORIES ── #
@@ -59,7 +60,16 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= main/main.cpp
+SRCS		= Main/Main.cpp Main/Daemon.cpp Main/Shell.cpp		\
+																\
+			  Config/Options.cpp Config/Signals.cpp				\
+			  Config/Logging.cpp								\
+																\
+			  Security/Authentication.cpp						\
+			  Security/Encryption.cpp							\
+																\
+			  Network/Socket.cpp Network/Client.cpp				\
+			  Network/Epoll.cpp Network/Communication.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #
@@ -80,7 +90,7 @@ _compile: $(OBJS)
 
 #	Compile
 	@printf "\r%50s\r\t$(CYAN)Compiling... $(YELLOW)$(NAME)$(NC)"
-	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) -lm 
+	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CEFLAGS)
 	@printf "\r%50s\r\t$(CYAN)Compiled    $(GREEN)✓ $(YELLOW)$(NAME)$(NC)\n"
 
 	@$(MAKE) -s _progress; printf "\n"
@@ -119,7 +129,7 @@ _show_title:
 		$(MAKE) -s _progress; printf "\n" \
 		$(MAKE) -s _show_cursor; \
 	elif [ -f "$(NAME)" ] && \
-		[ -z "$$(find $(SRC_PATHS) -newer "$(NAME)" 2>/dev/null; find inc -name '*.h' -newer "$(NAME)" 2>/dev/null)" ] && \
+		[ -z "$$(find $(SRC_PATHS) -newer "$(NAME)" 2>/dev/null; find inc -name '*.hpp' -newer "$(NAME)" 2>/dev/null)" ] && \
 		[ $$(find $(OBJS) 2>/dev/null | wc -l) -eq $$(echo "$(OBJS)" | wc -w) ]; then \
         printf "\t$(GREEN)✓ $(YELLOW)$(NAME)$(CYAN) is up to date$(NC)"; \
 		printf "\n\t$(WHITE)──────────────────────────$(NC)"; \
@@ -225,7 +235,7 @@ _hide_cursor:
 _show_cursor:
 	@printf "\e[?25h"
 
-# ──────────────────── #
+# ──────────────────── #-
 # ── DELETE OBJECTS ── #
 # ──────────────────── #
 
