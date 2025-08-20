@@ -4,10 +4,19 @@
 .vscode/launch.json
 .vscode/settings.json
 
-!inc
-!inc/**
-!src
-!src/**
+!doc
+!doc/**
+doc/taskmaster\ 3.0.pdf
+
+!Taskmaster
+!Taskmaster/**
+build/
+taskmaster
+
+!TaskmasterCTL
+!TaskmasterCTL/**
+build
+taskmasterctl
 
 !.gitignore
 !README.md
