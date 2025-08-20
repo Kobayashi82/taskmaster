@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/18 17:30:25 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/20 21:00:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 #pragma region "Defines"
 
-	#define NAME	"MattDaemon"												// Name of the program
+	#define NAME	"taskmasterd"												// Name of the program
 
 #pragma endregion
 

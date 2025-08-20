@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 14:01:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/20 21:39:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,40 +81,67 @@
 	#pragma region "Help"
 
 		int Options::help() {
+
+
+// supervisord -- run a set of applications as daemons.
+
+// Usage: /usr/bin/supervisord [options]
+
+// Options:
+// -c/--configuration FILENAME -- configuration file path (searches if not given)
+// -n/--nodaemon -- run in the foreground (same as 'nodaemon=true' in config file)
+// -s/--silent -- no logs to stdout (maps to 'silent=true' in config file)
+// -h/--help -- print this usage message and exit
+// -v/--version -- print supervisord version number and exit
+// -u/--user USER -- run supervisord as this user (or numeric uid)
+// -m/--umask UMASK -- use this umask for daemon subprocess (default is 022)
+// -d/--directory DIRECTORY -- directory to chdir to when daemonized
+// -l/--logfile FILENAME -- use FILENAME as logfile path
+// -y/--logfile_maxbytes BYTES -- use BYTES to limit the max size of logfile
+// -z/--logfile_backups NUM -- number of backups to keep when max bytes reached
+// -e/--loglevel LEVEL -- use LEVEL as log level (debug,info,warn,error,critical)
+// -j/--pidfile FILENAME -- write a pid file for the daemon process to FILENAME
+// -i/--identifier STR -- identifier used for this instance of supervisord
+// -q/--childlogdir DIRECTORY -- the log directory for child process logs
+// -k/--nocleanup --  prevent the process from performing cleanup (removal of
+//                    old automatic child log files) at startup.
+// -a/--minfds NUM -- the minimum number of file descriptors for start success
+// -t/--strip_ansi -- strip ansi escape codes from process output
+// --minprocs NUM  -- the minimum number of processes available for start success
+// --profile_options OPTIONS -- run supervisord under profiler and output
+//                              results based on OPTIONS, which  is a comma-sep'd
+//                              list of 'cumulative', 'calls', and/or 'callers',
+//                              e.g. 'cumulative,callers')
+
+
+
 			std::cerr << "Usage: " << NAME << " [ OPTION... ] \n";
 			std::cerr << "\n";
 			std::cerr << " Options:\n";
 			std::cerr << "\n";
-			std::cerr << "  -k,  --disable-encryption   Disable encryption communication for Ben_AFK clients\n";
-			std::cerr << "  -s,  --disable-shell        Disable remote shell access\n";
-			std::cerr << "  -c,  --max-clients=NUM      Maximum number of clients                           (default: 3, unlimited = 0)\n";
-			std::cerr << "  -p,  --port=PORT            Port number to listen on                            (default: 4242)\n";
-			std::cerr << "  -t,  --timeout=SECOND       Timeout in seconds for inactive connections         (default: 600)\n";
-			std::cerr << "  -f,  --log-file=PATH        Path to the log file                                (default: /var/log/matt_daemon/matt_daemon.log)\n";
-			std::cerr << "  -l,  --log-level=LEVEL      Logging verbosity level                             (default: INFO)\n";
-			std::cerr << "  -n,  --log-new              Create a new log file on start\n";
-			std::cerr << "  -m,  --log-rotate-max=NUM   Maximum number of log files to keep when rotating   (default: 5)\n";
-			std::cerr << "  -r,  --log-rotate-size=BYTE Minimum log size before rotation                    (default: 10M\n";
-			std::cerr << "  -x,  --shell-path=PATH      Path of the shell to execute\n";
+			std::cerr << "  -c,  --configuration FILENAME   Configuration file path (searches if not given)\n";
+			std::cerr << "  -n,  --nodaemon                 Run in the foreground (same as 'nodaemon=true' in config file)\n";
+			std::cerr << "  -s,  --silent                   No logs to stdout (maps to 'silent=true' in config file)\n";
+			std::cerr << "  -u,  --user USER                run supervisord as this user (or numeric uid)\n";
+			std::cerr << "  -m,  --umask UMASK              use this umask for daemon subprocess (default is 022)\n";
+			std::cerr << "  -d,  --directory DIRECTORY      directory to chdir to when daemonized\n";
+			std::cerr << "  -l,  --logfile FILENAME         use FILENAME as logfile path\n";
+			std::cerr << "  -y,  --logfile_maxbytes BYTES   use BYTES to limit the max size of logfile\n";
+			std::cerr << "  -z,  --logfile_backups NUM      number of backups to keep when max bytes reached\n";
+			std::cerr << "  -e,  --loglevel LEVEL           use LEVEL as log level (debug,info,warn,error,critical)\n";
+			std::cerr << "  -j,  --pidfile FILENAME         write a pid file for the daemon process to FILENAME\n";
+			std::cerr << "  -i,  --identifier STR           identifier used for this instance of supervisord\n";
+			std::cerr << "  -q,  --childlogdir DIRECTORY    the log directory for child process logs\n";
+			std::cerr << "  -k,  --nocleanup                prevent the process from performing cleanup (removal of old automatic child log files) at startup\n";
+			std::cerr << "  -a,  --minfds NUM               the minimum number of file descriptors for start success\n";
+			std::cerr << "  -t,  --strip_ansi               strip ansi escape codes from process output\n";
+			std::cerr << "  -p,  --minprocs NUM             the minimum number of processes available for start success\n";
+			std::cerr << "  -o,  --profile_options OPTIONS  run supervisord under profiler and output results based on OPTIONS, which  is a comma-sep'd list of 'cumulative', 'calls', and/or 'callers', e.g. 'cumulative,callers')\n";
 			std::cerr << "\n";
-			std::cerr << "  -h?, --help                 Display this help message\n";
-      		std::cerr << "  -u,  --usage                Display short usage message\n";
-  			std::cerr << "  -V,  --version              Show program version\n";
+			std::cerr << "  -h,  --help                     Display this help message\n";
+  			std::cerr << "  -v,  --version                  Show program version\n";
 			std::cerr << "\n";
 			std::cerr << "Report bugs to <kobayashi82@outlook.com>\n";
-
-			return (1);
-		}
-
-	#pragma endregion
-
-	#pragma region "Usage"
-
-		int Options::usage() {
-			std::cerr << "Usage: " << NAME << " [-k, --disable-encryption] [-s, --disable-shell] [-c NUM, --max-clients=NUM] [-p PORT, --port=PORT]\n";
-			std::cerr << "                  [-t SECOND, --timeout=SECOND] [-f PATH, --log-file=PATH] [-l LEVEL, --log-level=LEVEL] [-n, --log-new]\n";
-			std::cerr << "                  [-m NUM, --log-rotate-max=NUM] [-r BYTE, --log-rotate-size=BYTE] [-x, --shell-path=PATH]\n";
-			std::cerr << "                  [-h? --help] [-u --usage] [-V --version]\n";
 
 			return (1);
 		}
@@ -140,7 +167,7 @@
 	#pragma region "Invalid"
 
 		int Options::invalid() {
-			std::cerr << "Try '" << _fullName << " --help' or '" << _fullName << " --usage' for more information.\n";
+			std::cerr << "Try '" << _fullName << " --help' for more information.\n";
 			return (2);
 		}
 
@@ -176,50 +203,39 @@
 		_fullName = argv[0];
 
 		struct option long_options[] = {
-			{"disable-encryption",	no_argument,		0, 'k'},	// [-k, --disable-encryption]
-			{"disable-shell",		no_argument,		0, 's'},	// [-s, --disable-shell]
-			{"max-clients",			required_argument,	0, 'c'},	// [-c, --max-clients=NUM]
-			{"port",				required_argument,	0, 'p'},	// [-p, --port=NUM]
-			{"timeout",				required_argument,	0, 't'},	// [-t, --timeout=SEC]
-			{"log-file",			required_argument,	0, 'f'},	// [-c, --log-file=PATH]
-			{"log-level",			required_argument,	0, 'l'},	// [-c, --log-level=LEVEL]
-			{"log-new",				no_argument,		0, 'n'},	// [-n, --log-new]
-			{"log-rotate-max",		required_argument,	0, 'm'},	// [-m, --log-rotate-max=NUM]
-			{"log-rotate-size",		required_argument,	0, 'r'},	// [-r, --log-rotate-size=NUM]
-			{"shell-path",			required_argument,	0, 'x'},	// [-x, --shell-path=PATH]
-
-			{"help",				no_argument,		0, 'h'},	// [-h?, --help]
-			{"usage",				no_argument,		0, 'u'},	// [	--usage]
+			{"configuration",		required_argument,	0, 'c'},	// [-c, --configuration FILENAME]
+			{"nodaemon",			no_argument,		0, 'n'},	// [-n, --nodaemon]
+			{"silent",				no_argument,		0, 's'},	// [-s, --silent]
+			{"user",				required_argument,	0, 'u'},	// [-u, --user USER]
+			{"umask",				required_argument,	0, 'm'},	// [-m, --umask UMASK]
+			{"directory",			required_argument,	0, 'd'},	// [-d, --directory DIRECTORY]
+			{"logfile",				required_argument,	0, 'l'},	// [-l, --logfile FILENAME]
+			{"logfile_maxbytes",	required_argument,	0, 'y'},	// [-y, --logfile_maxbytes BYTES]
+			{"logfile_backups",		required_argument,	0, 'z'},	// [-z, --log-rotate-max NUM]
+			{"loglevel",			required_argument,	0, 'e'},	// [-e, --loglevel LEVEL]
+			{"pidfile",				required_argument,	0, 'j'},	// [-j, --pidfile FILENAME]
+			{"identifier",			required_argument,	0, 'i'},	// [-i, --identifier STR]
+			{"childlogdir",			required_argument,	0, 'q'},	// [-q, --childlogdir DIRECTORY]
+			{"nocleanup",			no_argument,		0, 'k'},	// [-k, --nocleanup]
+			{"minfds",				required_argument,	0, 'a'},	// [-a, --minfds NUM]
+			{"strip_ansi",			no_argument,		0, 't'},	// [-t, --strip_ansi]
+			{"minprocs",			required_argument,	0, 'p'},	// [-p, --minprocs NUM]
+			{"profile_options",		required_argument,	0, 'o'},	// [-o, --profile_options OPTIONS]
+			{"help",				no_argument,		0, 'h'},	// [-h, --help]
 			{"version",				no_argument,		0, 'V'},	// [-V, --version]
 			{0, 0, 0, 0}
 		};
 
 		int opt;
-		while ((opt = getopt_long(argc, argv, "ksc:p:t:f:l:nm:r:x:h?uV", long_options, NULL)) != -1) {
+		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:ka:tp:o:hV", long_options, NULL)) != -1) {
 			switch (opt) {
 				case 'k':	disabledEncryption = true;																	break;
 				case 's':	disabledShell = true;																		break;
 				case 'c':	if (ft_strtoul(argv, optarg, &maxClients, 1024 , true))				return (2);				break;
-				case 'p':	if (ft_strtoul(argv, optarg, &portNumber, 65535, false))			return (2);				break;
-				case 't':	if (ft_strtoul(argv, optarg, &timeout, 65535, true))				return (2);				break;
-				case 'f':	logFile = std::string(optarg);																break;
-				case 'l':	if (log_level(std::string(optarg)))									return (2);				break;
-				case 'n':	logNew = true;																				break;
-				case 'm':	if (ft_strtoul(argv, optarg, &logMax, 256, true))					return (2);				break;
-				case 'r':
-				{
-					std::string value = std::string(optarg);
-					int multiplier = 1;
-					if (!value.empty() && (value.back() == 'k' || value.back() == 'K')) { multiplier = 1024;		value.pop_back(); }
-					if (!value.empty() && (value.back() == 'm' || value.back() == 'M')) { multiplier = 1024 * 1024;	value.pop_back(); }
-					if (ft_strtoul(argv, value.c_str(), &logSize, 1024 * 1024 * 1024, true))	return (2);
-					logSize *= multiplier;																				break;
-				}
 				case 'x':	shellPath = std::string(optarg);															break;
 
 				case '?':	if (std::string(argv[optind - 1]) == "-?")							return (help());		return (invalid());
 				case 'h':																		return (help());
-				case 'u':																		return (usage());
 				case 'V':																		return (version());
 			}
 		}

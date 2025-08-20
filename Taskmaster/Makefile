@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/20 14:10:00 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/20 20:55:55 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -89,9 +89,9 @@ _compile: $(OBJS)
 	@mkdir -p $(BLD_DIR)
 
 #	Compile
-	@printf "\r%50s\r\t$(CYAN)Compiling... $(YELLOW)$(NAME)$(NC)"
-	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(CEFLAGS)
-	@printf "\r%50s\r\t$(CYAN)Compiled    $(GREEN)✓ $(YELLOW)$(NAME)$(NC)\n"
+	@printf "\r%50s\r\t$(CYAN)Compiling... $(YELLOW)$(NAME)d$(NC)"
+	@$(CC) $(CFLAGS) -o $(NAME)d $(OBJS) $(CEFLAGS)
+	@printf "\r%50s\r\t$(CYAN)Compiled    $(GREEN)✓ $(YELLOW)$(NAME)d$(NC)\n"
 
 	@$(MAKE) -s _progress; printf "\n"
 	@$(MAKE) -s _show_cursor
@@ -123,15 +123,15 @@ _show_title:
 	@$(MAKE) -s _title
 
 #	Check if source exists and needs recompiling
-	@if  [ ! -n "$(NAME)" ] || [ ! -n "$(SRCS)" ] || [ ! -d "$(SRC_DIR)" ]; then \
+	@if  [ ! -n "$(NAME)d" ] || [ ! -n "$(SRCS)" ] || [ ! -d "$(SRC_DIR)" ]; then \
         printf "\t$(CYAN)Source files don't exist$(NC)"; \
 		printf "\n\t$(WHITE)──────────────────────────$(NC)"; \
 		$(MAKE) -s _progress; printf "\n" \
 		$(MAKE) -s _show_cursor; \
-	elif [ -f "$(NAME)" ] && \
-		[ -z "$$(find $(SRC_PATHS) -newer "$(NAME)" 2>/dev/null; find inc -name '*.hpp' -newer "$(NAME)" 2>/dev/null)" ] && \
+	elif [ -f "$(NAME)d" ] && \
+		[ -z "$$(find $(SRC_PATHS) -newer "$(NAME)d" 2>/dev/null; find inc -name '*.hpp' -newer "$(NAME)d" 2>/dev/null)" ] && \
 		[ $$(find $(OBJS) 2>/dev/null | wc -l) -eq $$(echo "$(OBJS)" | wc -w) ]; then \
-        printf "\t$(GREEN)✓ $(YELLOW)$(NAME)$(CYAN) is up to date$(NC)"; \
+        printf "\t$(GREEN)✓ $(YELLOW)$(NAME)d$(CYAN) is up to date$(NC)"; \
 		printf "\n\t$(WHITE)──────────────────────────$(NC)"; \
 		$(MAKE) -s _progress; printf "\n" \
 		$(MAKE) -s _show_cursor; \
@@ -154,7 +154,7 @@ re:
 	@$(MAKE) -s _title
 
 #	Check if source exists and needs recompiling
-	@if  [ ! -n "$(NAME)" ] || [ ! -n "$(SRCS)" ] || [ ! -d "$(SRC_DIR)" ]; then \
+	@if  [ ! -n "$(NAME)d" ] || [ ! -n "$(SRCS)" ] || [ ! -d "$(SRC_DIR)" ]; then \
         printf "\t$(CYAN)Source files don't exist$(NC)"; \
 		printf "\n\t$(WHITE)──────────────────────────$(NC)"; \
 		$(MAKE) -s _progress; \
@@ -163,11 +163,11 @@ re:
 
 #	Delete objects
 	@$(MAKE) -s _delete_objects
-	@if [ -f $(NAME) ]; then \
-		printf "\t$(CYAN)Deleting... $(YELLOW)$(NAME)$(NC)"; \
-		rm -f $(NAME); \
+	@if [ -f $(NAME)d ]; then \
+		printf "\t$(CYAN)Deleting... $(YELLOW)$(NAME)d$(NC)"; \
+		rm -f $(NAME)d; \
 	fi
-	@printf "\r%50s\r\t$(CYAN)Deleted     $(GREEN)✓ $(YELLOW)$(NAME)$(NC)\n"
+	@printf "\r%50s\r\t$(CYAN)Deleted     $(GREEN)✓ $(YELLOW)$(NAME)d$(NC)\n"
 	@$(MAKE) -s _progress; printf "\n"
 	@-find $(BLD_DIR) -type d -empty -delete >/dev/null 2>&1 || true
 	@printf "\t$(WHITE)──────────────────────────\n$(NC)"
@@ -199,11 +199,11 @@ fclean:
 	@$(MAKE) -s _title
 
 	@$(MAKE) -s _delete_objects
-	@if [ -f $(NAME) ]; then \
-		printf "\t$(CYAN)Deleting... $(YELLOW)$(NAME)$(NC)"; \
-		rm -f $(NAME); \
+	@if [ -f $(NAME)d ]; then \
+		printf "\t$(CYAN)Deleting... $(YELLOW)$(NAME)d$(NC)"; \
+		rm -f $(NAME)d; \
 	fi
-	@printf "\r%50s\r\t$(CYAN)Deleted     $(GREEN)✓ $(YELLOW)$(NAME)$(NC)\n"
+	@printf "\r%50s\r\t$(CYAN)Deleted     $(GREEN)✓ $(YELLOW)$(NAME)d$(NC)\n"
 	@find $(BLD_DIR) -type d -empty -delete >/dev/null 2>&1 || true
 	@find  -type d -empty -delete >/dev/null 2>&1 || true
 
@@ -258,7 +258,7 @@ _delete_objects:
 
 wipe:
 	@rm -rf $(BLD_DIR)
-	@rm -rf $(NAME)
+	@rm -rf $(NAME)d
 
 # ─────────────────── #
 # ── PROGRESS LINE ── #

@@ -11,7 +11,7 @@ doc/taskmaster\ 3.0.pdf
 !Taskmaster
 !Taskmaster/**
 build/
-taskmaster
+taskmasterd
 
 !TaskmasterCTL
 !TaskmasterCTL/**
