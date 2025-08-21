@@ -4,6 +4,9 @@
 .vscode/launch.json
 .vscode/settings.json
 
+!config
+!config/**
+
 !doc
 !doc/**
 doc/taskmaster\ 3.0.pdf

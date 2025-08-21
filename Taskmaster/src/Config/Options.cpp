@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/21 16:12:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/21 20:23:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,9 +158,11 @@
 
 	#pragma endregion
 
-	int Options::validate_path(const std::string& level) {
+	int Options::validate_path(const std::string& path) {
+		(void) path;
 		// Convertir ~
 		// 
+		return (0);
 	}
 
 
