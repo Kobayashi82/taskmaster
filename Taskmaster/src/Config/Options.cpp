@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 22:06:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/21 16:12:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,27 +85,23 @@
 			std::cerr << "\n";
 			std::cerr << " Options:\n";
 			std::cerr << "\n";
-			std::cerr << "  -c,  --configuration=FILENAME   Configuration file path (searches if not given)\n";
-			std::cerr << "  -n,  --nodaemon                 Run in the foreground (same as 'nodaemon=true' in config file)\n";
-			std::cerr << "  -s,  --silent                   No logs to stdout (maps to 'silent=true' in config file)\n";
-			std::cerr << "  -u,  --user=USER                run supervisord as this user (or numeric uid)\n";
-			std::cerr << "  -m,  --umask=UMASK              use this umask for daemon subprocess (default is 022)\n";
-			std::cerr << "  -d,  --directory=DIRECTORY      directory to chdir to when daemonized\n";
-			std::cerr << "  -l,  --logfile=FILENAME         use FILENAME as logfile path\n";
-			std::cerr << "  -y,  --logfile_maxbytes=BYTES   use BYTES to limit the max size of logfile\n";
-			std::cerr << "  -z,  --logfile_backups=NUM      number of backups to keep when max bytes reached\n";
-			std::cerr << "  -e,  --loglevel=LEVEL           use LEVEL as log level (debug,info,warn,error,critical)\n";
-			std::cerr << "  -j,  --pidfile=FILENAME         write a pid file for the daemon process to FILENAME\n";
-			std::cerr << "  -i,  --identifier=STR           identifier used for this instance of supervisord\n";
-			std::cerr << "  -q,  --childlogdir=DIRECTORY    the log directory for child process logs\n";
-			std::cerr << "  -k,  --nocleanup                prevent the process from performing cleanup (removal of old automatic\n";
-			std::cerr << "                                  child log files) at startup\n";
-			std::cerr << "  -a,  --minfds=NUM               the minimum number of file descriptors for start success\n";
-			std::cerr << "  -t,  --strip_ansi               strip ansi escape codes from process output\n";
-			std::cerr << "  -p,  --minprocs=NUM             the minimum number of processes available for start success\n";
-			std::cerr << "  -o,  --profile_options=OPTIONS  run supervisord under profiler and output results based on OPTIONS,\n";
-			std::cerr << "                                  which  is a comma-sep'd list of 'cumulative', 'calls',\n";
-			std::cerr << "                                  and/or 'callers', e.g. 'cumulative,callers')\n";
+			std::cerr << "  -c,  --configuration=FILENAME   Configuration file path\n";
+			std::cerr << "  -n,  --nodaemon                 Run in the foreground\n";
+			std::cerr << "  -s,  --silent                   No logs to stdout\n";
+			std::cerr << "  -u,  --user=USER                Run taskmasterd as this user (or numeric uid)\n";
+			std::cerr << "  -m,  --umask=UMASK              Use this umask for daemon subprocess (default is 022)\n";
+			std::cerr << "  -d,  --directory=DIRECTORY      Directory to chdir to when daemonized\n";
+			std::cerr << "  -l,  --logfile=FILENAME         Use FILENAME as logfile path\n";
+			std::cerr << "  -y,  --logfile_maxbytes=BYTES   Use BYTES to limit the max size of logfile\n";
+			std::cerr << "  -z,  --logfile_backups=NUM      Number of backups to keep when max bytes reached\n";
+			std::cerr << "  -e,  --loglevel=LEVEL           Use LEVEL as log level (debug,info,warn,error,critical)\n";
+			std::cerr << "  -j,  --pidfile=FILENAME         Write a pid file for the daemon process to FILENAME\n";
+			std::cerr << "  -i,  --identifier=STR           Identifier used for this instance of taskmasterd\n";
+			std::cerr << "  -q,  --childlogdir=DIRECTORY    The log directory for child process logs\n";
+			std::cerr << "  -k,  --nocleanup                Prevent the process from performing cleanup at startup\n";
+			std::cerr << "  -a,  --minfds=NUM               The minimum number of file descriptors for start success\n";
+			std::cerr << "  -t,  --strip_ansi               Strip ansi escape codes from process output\n";
+			std::cerr << "  -p,  --minprocs=NUM             The minimum number of processes available for start success\n";
 			std::cerr << "\n";
 			std::cerr << "  -h,  --help                     Display this help message\n";
   			std::cerr << "  -v,  --version                  Show program version\n";
@@ -145,7 +141,7 @@
 
 	#pragma region "Log Level"
 
-		int Options::log_level(const std::string &level) {
+		int Options::validate_loglevel(const std::string& level) {
 			std::string l = level;
 			std::transform(l.begin(), l.end(), l.begin(), ::tolower);
 
@@ -162,6 +158,12 @@
 
 	#pragma endregion
 
+	int Options::validate_path(const std::string& level) {
+		// Convertir ~
+		// 
+	}
+
+
 #pragma endregion
 
 #pragma region "Parse"
@@ -170,31 +172,30 @@
 		_fullName = argv[0];
 
 		struct option long_options[] = {
-			{"configuration",		required_argument,	0, 'c'},	// [-c, --configuration=FILENAME]				- Ruta por defecto: /etc/supervisord.conf
+			{"configuration",		required_argument,	0, 'c'},	// [-c, --configuration=FILENAME]				- Ruta por defecto: /etc/taskmasterd.conf
 			{"nodaemon",			no_argument,		0, 'n'},	// [-n, --nodaemon]								- Muestra log y sale con sañales
-			{"silent",				no_argument,		0, 's'},	// [-s, --silent]								- 
-			{"user",				required_argument,	0, 'u'},	// [-u, --user=USER]
-			{"umask",				required_argument,	0, 'm'},	// [-m, --umask=UMASK]
-			{"directory",			required_argument,	0, 'd'},	// [-d, --directory=DIRECTORY]
-			{"logfile",				required_argument,	0, 'l'},	// [-l, --logfile=FILENAME]
-			{"logfile_maxbytes",	required_argument,	0, 'y'},	// [-y, --logfile_maxbytes=BYTES]
-			{"logfile_backups",		required_argument,	0, 'z'},	// [-z, --log-rotate-max=NUM]
-			{"loglevel",			required_argument,	0, 'e'},	// [-e, --loglevel=LEVEL]
-			{"pidfile",				required_argument,	0, 'j'},	// [-j, --pidfile=FILENAME]
-			{"identifier",			required_argument,	0, 'i'},	// [-i, --identifier=STR]
-			{"childlogdir",			required_argument,	0, 'q'},	// [-q, --childlogdir=DIRECTORY]
-			{"nocleanup",			no_argument,		0, 'k'},	// [-k, --nocleanup]
-			{"minfds",				required_argument,	0, 'a'},	// [-a, --minfds=NUM]
-			{"strip_ansi",			no_argument,		0, 't'},	// [-t, --strip_ansi]
-			{"minprocs",			required_argument,	0, 'p'},	// [-p, --minprocs=NUM]
-			{"profile_options",		required_argument,	0, 'o'},	// [-o, --profile_options=OPTIONS]
+			{"silent",				no_argument,		0, 's'},	// [-s, --silent]								- Oculta logs en el stdout desde debug a warning (solo funciona con -n)
+			{"user",				required_argument,	0, 'u'},	// [-u, --user=USER]							- Cambia a este usuario después del inicio (privilege de-escalation) (requiere root)
+			{"umask",				required_argument,	0, 'm'},	// [-m, --umask=UMASK]							- Establece la máscara de permisos para archivos creados								(por defecto: 022)
+			{"directory",			required_argument,	0, 'd'},	// [-d, --directory=DIRECTORY]					- Establece el directorio de trabajo inicial											(por defecto: )
+			{"logfile",				required_argument,	0, 'l'},	// [-l, --logfile=FILENAME]						- Archivo donde escribir los logs del daemon											(por defecto: )
+			{"logfile_maxbytes",	required_argument,	0, 'y'},	// [-y, --logfile_maxbytes=BYTES]				- Tamaño máximo del archivo de log antes de rotarlo										(por defecto: 10MB)
+			{"logfile_backups",		required_argument,	0, 'z'},	// [-z, --logfile_backups=NUM]					- Número de archivos de backup a mantener durante rotación								(por defecto: 5)
+			{"loglevel",			required_argument,	0, 'e'},	// [-e, --loglevel=LEVEL]						- Nivel de logging: debug, info, warning, error, critical								(por defecto: info)
+			{"pidfile",				required_argument,	0, 'j'},	// [-j, --pidfile=FILENAME]						- Archivo donde escribir el PID del proceso taskmaster
+			{"identifier",			required_argument,	0, 'i'},	// [-i, --identifier=STR]						- Identificador único para esta instancia de taskmaster (Se usa en logs y comunicación)
+			{"childlogdir",			required_argument,	0, 'q'},	// [-q, --childlogdir=DIRECTORY]				- Directorio donde los procesos hijos escriben sus logs por defecto
+			{"nocleanup",			no_argument,		0, 'k'},	// [-k, --nocleanup]							- No limpia archivos temporales al salir
+			{"minfds",				required_argument,	0, 'a'},	// [-a, --minfds=NUM]							- Número mínimo de file descriptors requeridos											(por defecto: 1024)
+			{"strip_ansi",			no_argument,		0, 't'},	// [-t, --strip_ansi]							- Número mínimo de procesos disponibles en el sistema									(por defecto: 200)
+			{"minprocs",			required_argument,	0, 'p'},	// [-p, --minprocs=NUM]							- Elimina secuencias de escape ANSI de los logs de procesos hijos
 			{"help",				no_argument,		0, 'h'},	// [-h, --help]
 			{"version",				no_argument,		0, 'V'},	// [-V, --version]
 			{0, 0, 0, 0}
 		};
 
 		int opt;
-		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:ka:tp:o:hv", long_options, NULL)) != -1) {
+		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:ka:tp:hv", long_options, NULL)) != -1) {
 			switch (opt) {
 				case 'k':	disabledEncryption = true;																	break;
 				case 's':	disabledShell = true;																		break;

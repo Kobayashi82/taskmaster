@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 14:01:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/21 12:44:21 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,4 +128,16 @@
 
 #pragma endregion
 
-// sudo pkill MattDaemon; sudo ./MattDaemon -f lala -l debug -e
+// pkill -u $USER supervisord; supervisord -c ~/supervisord.conf
+
+// pkill -u $USER taskmasterd; taskmasterd -c ~/taskmasterd.conf
+
+// ./taskmasterd.conf					- En el directorio actual
+// ./etc/taskmasterd.conf				- En subdirectorio etc/ del directorio actual
+// /etc/taskmasterd.conf				- En el directorio global /etc/
+// /etc/taskmaster/taskmasterd.conf		- En el directorio global /etc/taskmasterd
+
+// Advertencia de seguridad:
+//	A warning is emitted when taskmaster is started as root without '-c' argument,
+//	porque alguien podría engañarte para ejecutartaskmaster desde un directorio que
+//	contiene un archivo taskmasterd.conf malicioso

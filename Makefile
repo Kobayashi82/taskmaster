@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/20 14:11:35 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/21 12:46:49 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,12 +17,14 @@ server: daemon
 daemon:
 	@mkdir -p bin
 	@$(MAKE) -s -C Taskmaster all
-	@cp Taskmaster/taskmaster bin/
+	@-rm -f bin/taskmaster
+	@cp Taskmaster/taskmasterd bin/
 
 taskmasterctl: client
 client:
 	@mkdir -p bin
 	@$(MAKE) -s -C TaskmasterCTL all
+	@-rm -f bin/taskmasterctl
 	@cp TaskmasterCTL/taskmasterctl bin/
 
 re:

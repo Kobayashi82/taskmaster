@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 21:00:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/21 16:12:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,9 @@
 		
 			template<typename T>
 			static int	ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero);
-			static int	log_level(const std::string &level);
+			static int	validate_loglevel(const std::string &level);
+			static int	validate_path(const std::string& level);
 			static int	help();
-			static int	usage();
 			static int	version();
 			static int	invalid();
 	};
