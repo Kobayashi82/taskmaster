@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/22 17:40:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/24 18:59:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,22 @@
 
 #pragma region "Options"
 
-	class Options {
+class Options {
+
+		private:
+
+			static std::string	_fullName;										// Name and path used to execute the program (same as argv[0])
+
+			Options() {}														// Default constructor (no instantiable)
+			~Options() {}														// Destructor (no instantiable)
+
+			template<typename T>
+			static int			ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero);
+			static int			validate_loglevel(const std::string &level);
+			static int			validate_path(const std::string& level);
+			static int			help();
+			static int			version();
+			static int			invalid();
 
 		public:
 
@@ -44,34 +59,14 @@
 			static std::string	pidfile;										// File where the taskmaster process PID is written
 			static std::string	identifier;										// Unique identifier for this taskmaster instance (used in logs and communication)
 			static std::string	childlogdir;									// Directory where child processes write their logs by default
+			static bool			strip_ansi;										// Minimum number of processes available in the system									(default: 200)
 			static bool			nocleanup;										// Do not clean temporary files on exit
 			static uint16_t		minfds;											// Minimum number of file descriptors required											(default: 1024)
-			static bool			strip_ansi;										// Minimum number of processes available in the system									(default: 200)
 			static uint16_t		minprocs;										// Remove ANSI escape sequences from child process logs
 
-			static bool			is_root;										// 
+			static std::string	options;										// 
 
 			static int	parse(int argc, char **argv);							// Parse options passed as arguments to the program
-
-		private:
-
-			enum e_level { DEBUG, INFO, LOG, WARNING, ERROR, CRITICAL };
-
-			static std::string	_fullName;										// Name and path used to execute the program (same as argv[0])
-
-			Options() {}														// Default constructor (no instantiable)
-			~Options() {}														// Destructor (no instantiable)
-		
-			template<typename T>
-			static int			ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero);
-			static std::string	getTempPath();
-			static int			check_fd_limit(uint16_t minfds);
-			static int			check_process_limit(uint16_t minprocs);
-			static int			validate_loglevel(const std::string &level);
-			static int			validate_path(const std::string& level);
-			static int			help();
-			static int			version();
-			static int			invalid();
 	};
 
 #pragma endregion

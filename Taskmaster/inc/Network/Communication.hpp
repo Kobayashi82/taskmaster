@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 21:46:18 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/18 15:37:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/24 16:27:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,15 +23,6 @@
 	class Client;
 	class Communication {
 
-		public:
-
-			//	Methods
-			static int	read_client(Client *client);							// Reads data from the client socket
-			static void	write_client(Client *client);							// Writes data to the client socket
-
-			static int	read_shell(Client *client);								// Reads data from the shell associated with the client
-			static void	write_shell(Client *client);							// Writes data to the shell associated with the client
-
 		private:
 	
 			//	Variables
@@ -40,6 +31,15 @@
 			// Constructors
 			Communication() {}													// Default constructor (no instantiable)
 			~Communication() {}													// Destructor (no instantiable)
+
+		public:
+
+			//	Methods
+			static int	read_client(Client *client);							// Reads data from the client socket
+			static void	write_client(Client *client);							// Writes data to the client socket
+
+			static int	read_shell(Client *client);								// Reads data from the shell associated with the client
+			static void	write_shell(Client *client);							// Writes data to the shell associated with the client
 	};
 
 #pragma endregion

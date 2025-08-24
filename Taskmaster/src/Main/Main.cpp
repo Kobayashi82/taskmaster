@@ -6,13 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/22 17:17:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/24 19:11:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
+	#include "Config/Config.hpp"
 
 	#include <iostream>															// std::cerr()
 	#include <unistd.h>															// getuid()
@@ -60,7 +61,11 @@
 		int result = 0;
 
 		if ((result = validate_input(argc, argv))) return (result - 1);
-		
+
+		Config::taskmasterd.user = "Popo";
+		Config::add_opt_args();
+		std::cout << Config::taskmasterd.user << std::endl;
+
 		return (result);
 	}
 

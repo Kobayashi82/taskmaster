@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 11:17:16 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/14 21:12:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/24 16:28:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,7 @@
 
 	class Socket;
 	class Epoll {
-
-		public:
-
-			// Variables
-			static bool Running;												// Indicates whether the main loop is running
-
-			// Methods
-			static int	create();												// Creates and initializes EPOLL and timeout
-			static void	close();												// Closes EPOLL
-			static int	add(int fd, bool epollin, bool epollout);				// Adds an event to EPOLL
-			static int	set(int fd, bool epollin, bool epollout);				// Modifies an event in EPOLL
-			static void	remove(int fd);											// Removes an event from EPOLL
-			static int	events(Socket *socket);									// Processes EPOLL events
-
+		
 		private:
 
 			// Variables
@@ -46,6 +33,19 @@
 			// Methods
 			static int	create_timeout();										// Creates the file descriptor for timeout
 			static void check_timeout();										// Checks for time outs
+
+		public:
+
+			// Variables
+			static bool Running;												// Indicates whether the main loop is running
+
+			// Methods
+			static int	create();												// Creates and initializes EPOLL and timeout
+			static void	close();												// Closes EPOLL
+			static int	add(int fd, bool epollin, bool epollout);				// Adds an event to EPOLL
+			static int	set(int fd, bool epollin, bool epollout);				// Modifies an event in EPOLL
+			static void	remove(int fd);											// Removes an event from EPOLL
+			static int	events(Socket *socket);									// Processes EPOLL events
 	};
 
 #pragma endregion

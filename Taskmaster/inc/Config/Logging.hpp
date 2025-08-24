@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/15 14:54:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/24 16:26:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,21 @@
 #pragma region "Tintin Reporter"
 
 	class Tintin_reporter {
+
+		private:
+
+			//	Variables
+			std::string		_logPath;											// Path to the log file
+    		std::ofstream	_logFile;											// Output file stream for logging
+			uint8_t			_logLevel;											// Current logging level
+			std::mutex		_mutex;												// Mutex for thread-safe logging
+
+			// Methods
+			void			open();												// Opens or creates the log file in append mode
+			void			clear();											// Clears all entries from the log
+			void			rotateLog();										// Rotates log files
+			void			createDirectory(const std::string& filePath);		// Creates the full directory path to the log file
+			std::string		getTimestamp();										// Returns the current timestamp in log-friendly format
 
 		public:
 
@@ -51,21 +66,6 @@
 			void			warning(const std::string& msg);					// Writes a WARNING level log
 			void			error(const std::string& msg);						// Writes an ERROR level log
 			void			critical(const std::string& msg);					// Writes a CRITICAL level log
-
-		private:
-
-			//	Variables
-			std::string		_logPath;											// Path to the log file
-    		std::ofstream	_logFile;											// Output file stream for logging
-			uint8_t			_logLevel;											// Current logging level
-			std::mutex		_mutex;												// Mutex for thread-safe logging
-
-			// Methods
-			void			open();												// Opens or creates the log file in append mode
-			void			clear();											// Clears all entries from the log
-			void			rotateLog();										// Rotates log files
-			void			createDirectory(const std::string& filePath);		// Creates the full directory path to the log file
-			std::string		getTimestamp();										// Returns the current timestamp in log-friendly format
 	};
 
 #pragma endregion
