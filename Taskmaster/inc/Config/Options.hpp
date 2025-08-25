@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 18:59:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 14:50:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,58 +15,57 @@
 #pragma region "Include"
 
 	#include <string>															// std::string
-	#include <cstdint>															// uint8_t, uint16_t
 
 #pragma endregion
 
-#pragma region "Defines"
+#pragma region "ConfigOptions"
 
-	#define NAME	"taskmasterd"												// Name of the program
-
-#pragma endregion
-
-#pragma region "Options"
-
-class Options {
+	class ConfigOptions {
 
 		private:
 
-			static std::string	_fullName;										// Name and path used to execute the program (same as argv[0])
+			// Variables
+			std::string	_fullName;												// Name and path used to execute the program (same as argv[0])
 
-			Options() {}														// Default constructor (no instantiable)
-			~Options() {}														// Destructor (no instantiable)
-
-			template<typename T>
-			static int			ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero);
-			static int			validate_loglevel(const std::string &level);
-			static int			validate_path(const std::string& level);
-			static int			help();
-			static int			version();
-			static int			invalid();
+			// Methods
+			int	help();
+			int	version();
+			int	invalid();
 
 		public:
 
-			static std::string	configuration;									// Default path: /etc/taskmasterd.conf
-			static bool			nodaemon;										// Shows log and exits on signals
-			static bool			silent;											// Hides logs in stdout from debug to warning (only works with -n)
-			static std::string	user;											// Switch to this user after startup (privilege de-escalation) (requires root)
-			static uint8_t		umask;											// Set the file creation permission mask												(default: 022)
-			static std::string	directory;										// Set the initial working directory													(default: )
-			static std::string	logfile;										// File where the daemon writes its logs												(default: )
-			static size_t		logfile_maxbytes;								// Maximum log file size before rotation												(default: 10MB)
-			static uint8_t		logfile_backups;								// Number of backup files to keep during rotation										(default: 5)
-			static uint8_t		loglevel;										// Logging level: debug, info, warning, error, critical									(default: info)
-			static std::string	pidfile;										// File where the taskmaster process PID is written
-			static std::string	identifier;										// Unique identifier for this taskmaster instance (used in logs and communication)
-			static std::string	childlogdir;									// Directory where child processes write their logs by default
-			static bool			strip_ansi;										// Minimum number of processes available in the system									(default: 200)
-			static bool			nocleanup;										// Do not clean temporary files on exit
-			static uint16_t		minfds;											// Minimum number of file descriptors required											(default: 1024)
-			static uint16_t		minprocs;										// Remove ANSI escape sequences from child process logs
+			// Variables
+			std::string	configuration;											// Default path: /etc/taskmasterd.conf
+			std::string	nodaemon;												// Shows log and exits on signals
+			std::string	silent;													// Hides logs in stdout from debug to warning (only works with -n)
+			std::string	user;													// Switch to this user after startup (privilege de-escalation) (requires root)
+			std::string	umask;													// Set the file creation permission mask												(default: 022)
+			std::string	directory;												// Set the initial working directory													(default: )
+			std::string	logfile;												// File where the daemon writes its logs												(default: )
+			std::string	logfile_maxbytes;										// Maximum log file size before rotation												(default: 10MB)
+			std::string	logfile_backups;										// Number of backup files to keep during rotation										(default: 5)
+			std::string	loglevel;												// Logging level: debug, info, warning, error, critical									(default: info)
+			std::string	pidfile;												// File where the taskmaster process PID is written
+			std::string	identifier;												// Unique identifier for this taskmaster instance (used in logs and communication)
+			std::string	childlogdir;											// Directory where child processes write their logs by default
+			std::string	strip_ansi;												// Remove ANSI escape sequences from child process logs
+			std::string	nocleanup;												// Do not clean temporary files on exit
+			std::string	minfds;													// Minimum number of file descriptors required											(default: 1024)
+			std::string	minprocs;												// Minimum number of processes available in the system									(default: 200)
 
-			static std::string	options;										// 
+			std::string	options;												// 
+			bool		is_root;												// 
 
-			static int	parse(int argc, char **argv);							// Parse options passed as arguments to the program
+			// Constructor
+			ConfigOptions();													// Default constructor (no instantiable)
+			ConfigOptions(const ConfigOptions& src);
+			~ConfigOptions() = default;											// Destructor (no instantiable)
+
+			// Overloads
+			ConfigOptions& operator=(const ConfigOptions& rhs);
+
+			// Methods
+			int	parse(int argc, char **argv);									// Parse options passed as arguments to the program
 	};
 
 #pragma endregion

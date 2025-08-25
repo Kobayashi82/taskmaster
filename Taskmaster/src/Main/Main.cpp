@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 19:11:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 14:40:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Config.hpp"
+	#include "Config/Parser.hpp"
 
 	#include <iostream>															// std::cerr()
 	#include <unistd.h>															// getuid()
@@ -45,10 +45,25 @@
 
 #pragma region "Validate Input"
 
-	static int validate_input(int argc, char **argv) {
+	static int load_configuration(int argc, char **argv) {
 		int result = 0;
 
-		if ((result = Options::parse(argc, argv))) return (result);
+		try {
+			ConfigOptions Options;
+			if ((result = Options.parse(argc, argv))) return (result);
+			// Options::validate();
+			Parser.parseFile("taskmasterd.ini");
+			// Parser.validate();
+			Parser.add_opt_args(Options);
+
+			// Test
+			for (const auto& prog : Parser.getProgramSections()) {
+				std::cout << prog.substr(8) << std::endl;
+			}
+			std::cout << Parser.getValue("taskmasterd", "nodaemon") << std::endl;
+			std::cout << Parser.getValue("program:dummy", "command") << std::endl;
+
+		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
 
 		return (0);
 	}
@@ -60,11 +75,7 @@
 	int main(int argc, char **argv) {
 		int result = 0;
 
-		if ((result = validate_input(argc, argv))) return (result - 1);
-
-		Config::taskmasterd.user = "Popo";
-		Config::add_opt_args();
-		std::cout << Config::taskmasterd.user << std::endl;
+		if ((result = load_configuration(argc, argv))) return (result - 1);
 
 		return (result);
 	}

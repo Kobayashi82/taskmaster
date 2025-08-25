@@ -6,13 +6,15 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 22:03:49 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 14:41:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #pragma region "Includes"
+
+	#include "Config/Options.hpp"
 
 	#include <string>															// std::string
 	#include <set>																// std::set
@@ -21,9 +23,9 @@
 
 #pragma endregion
 
-#pragma region "Parser"
+#pragma region "ConfigParser"
 
-	class Parser {
+	class ConfigParser {
 
 		private:
 
@@ -60,12 +62,12 @@
 		public:
 
 			// Constructors
-			Parser();
-			Parser(const Parser&) = delete;
-			~Parser() = default;
+			ConfigParser();
+			ConfigParser(const ConfigParser&) = delete;
+			~ConfigParser() = default;
 
 			// Overloads
-			Parser& operator=(const Parser&) = delete;
+			ConfigParser& operator=(const ConfigParser&) = delete;
 
 			// File
 			int parseFile(const std::string& filePath);
@@ -81,6 +83,14 @@
 			// Debug
 			void	clear();
 			void	printConfig() const;
+
+			void	add_opt_args(ConfigOptions& Options);
 	};
+
+#pragma endregion
+	
+#pragma region "Variables"
+
+	extern ConfigParser Parser;
 
 #pragma endregion

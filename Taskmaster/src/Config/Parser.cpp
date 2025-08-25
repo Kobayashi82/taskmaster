@@ -6,26 +6,30 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:04:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 22:10:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 14:41:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Parser.hpp"
 	#include "Utils/Utils.hpp"
+	#include "Config/Options.hpp"
+	#include "Config/Parser.hpp"
 
-	#include <fstream>
-	#include <stdexcept>
-	#include <algorithm>
-	#include <iostream>
-	#include <sstream>
+	#include <fstream>															// std::ifstream
+	#include <algorithm>														// std::transform()
+
+#pragma endregion
+
+#pragma region "Variables"
+
+	ConfigParser Parser;
 
 #pragma endregion
 
 #pragma region "Constructors"
 
-	Parser::Parser() {
+	ConfigParser::ConfigParser() {
 		initialize();
 		default_values();
 	}
@@ -36,7 +40,7 @@
 
 	#pragma region "Initialize"
 
-		void Parser::initialize() {
+		void ConfigParser::initialize() {
 			validSections = {
 				"taskmasterd",
 				"program:",				// program:name
@@ -75,7 +79,7 @@
 
 	#pragma region "Default Values"
 
-		void Parser::default_values() {
+		void ConfigParser::default_values() {
 			std::string	logfile = expand_path("taskmasterd.log");	// $CWD/taskmasterd.log
 			std::string	pidfile = expand_path("taskmasterd.pid");	// $CWD/taskmasterd.pid
 			std::string	childlogdir = temp_path();
@@ -144,7 +148,7 @@
 
 	#pragma region "Trim"
 
-		std::string Parser::trim(const std::string& str) const {
+		std::string ConfigParser::trim(const std::string& str) const {
 			size_t first = str.find_first_not_of(" \t\r\n");
 			if (first == std::string::npos) return ("");
 
@@ -156,7 +160,7 @@
 
 	#pragma region "To Lower"
 
-		std::string Parser::toLower(const std::string& str) const {
+		std::string ConfigParser::toLower(const std::string& str) const {
 			std::string result = str;
 			std::transform(result.begin(), result.end(), result.begin(), ::tolower);
 
@@ -173,7 +177,7 @@
 
 		#pragma region "Is Valid"
 
-			bool Parser::isValidKey(const std::string& section, const std::string& key) const {
+			bool ConfigParser::isValidKey(const std::string& section, const std::string& key) const {
 				std::string sectionType = SectionType(section);
 				if (sectionType.empty()) return (false);
 
@@ -187,7 +191,7 @@
 
 		#pragma region "Parse"
 
-			void Parser::parseKeyValue(const std::string& line) {
+			void ConfigParser::parseKeyValue(const std::string& line) {
 				if (currentSection.empty()) throw std::runtime_error("Key-value pair found outside of section: " + line);
 				
 				size_t pos = line.find('=');
@@ -211,7 +215,7 @@
 
 		#pragma region "Type"
 
-			std::string Parser::SectionType(const std::string& section) const {
+			std::string ConfigParser::SectionType(const std::string& section) const {
 				for (const auto& validSection : validSections) {
 					if (validSection.back() == ':') {
 						if (section.substr(0, validSection.length()) == validSection)	return (validSection);
@@ -225,7 +229,7 @@
 
 		#pragma region "Is Valid"
 
-			bool Parser::isValidSection(const std::string& section) const {
+			bool ConfigParser::isValidSection(const std::string& section) const {
 				if (validSections.count(section)) return (true);
 
 				for (const auto& validSection : validSections) {
@@ -243,7 +247,7 @@
 
 		#pragma region "Extract"
 
-			std::string Parser::extractSection(const std::string& line) const {
+			std::string ConfigParser::extractSection(const std::string& line) const {
 				std::string trimmed = trim(line);
 				return (trimmed.substr(1, trimmed.length() - 2));
 			}
@@ -252,7 +256,7 @@
 
 		#pragma region "Parse"
 
-			void Parser::parseSection(const std::string& line) {
+			void ConfigParser::parseSection(const std::string& line) {
 				std::string section = extractSection(line);
 
 				if (!isValidSection(section)) throw std::runtime_error("Invalid section: [" + section + "]");
@@ -271,7 +275,7 @@
 
 		#pragma region "Is Section"
 
-			bool Parser::isSection(const std::string& line) const {
+			bool ConfigParser::isSection(const std::string& line) const {
 				std::string trimmed = trim(line);
 				return trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']';
 			}
@@ -280,7 +284,7 @@
 
 		#pragma region "Is Comment"
 
-			bool Parser::isComment(const std::string& line) const {
+			bool ConfigParser::isComment(const std::string& line) const {
 				std::string trimmed = trim(line);
 				return (trimmed.empty() || trimmed[0] == '#' || trimmed[0] == ';');
 			}
@@ -289,7 +293,7 @@
 
 		#pragma region "Parse"
 
-			void Parser::parseLine(const std::string& line) {
+			void ConfigParser::parseLine(const std::string& line) {
 				if (isComment(line))	return;
 				if (isSection(line))	parseSection(line);
 				else					parseKeyValue(line);
@@ -301,22 +305,23 @@
 
 	#pragma region "File"
 
-		int Parser::parseFile(const std::string& filePath) {
+		int ConfigParser::parseFile(const std::string& filePath) {
 			std::ifstream file(filePath);
 			if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath);
 
 			clear();
 
 			std::string	line;
+			std::string	errors;
 			int			lineNumber = 0;
 
-			try {
-				while (std::getline(file, line)) {
-					lineNumber++;
-					parseLine(line);
-				}
-			} catch (const std::exception& e) { throw std::runtime_error("Error at line " + std::to_string(lineNumber) + ": " + e.what()); }
+			while (std::getline(file, line)) {
+				lineNumber++;
+				try { parseLine(line); }
+				catch (const std::exception& e) { errors += "Error at line " + std::to_string(lineNumber) + ": " + e.what() + "\n"; }
+			}
 
+			if (!errors.empty()) throw std::runtime_error(errors);
 			return (0);
 		}
 
@@ -328,7 +333,7 @@
 
 	#pragma region "Has Section"
 
-		bool Parser::hasSection(const std::string& section) const {
+		bool ConfigParser::hasSection(const std::string& section) const {
 			return (sections.find(section) != sections.end());
 		}
 
@@ -336,7 +341,7 @@
 
 	#pragma region "Value"
 
-		std::string Parser::getValue(const std::string& section, const std::string& key, const std::string& defaultValue) const {
+		std::string ConfigParser::getValue(const std::string& section, const std::string& key, const std::string& defaultValue) const {
 			auto sectionIt = sections.find(section);
 			std::string normalizedKey = toLower(key);
 			
@@ -364,7 +369,7 @@
 
 	#pragma region "Section"
 
-		std::map<std::string, std::string> Parser::getSection(const std::string& section) const {
+		std::map<std::string, std::string> ConfigParser::getSection(const std::string& section) const {
 			auto it = sections.find(section);
 			if (it != sections.end()) return (it->second);
 
@@ -375,7 +380,7 @@
 
 	#pragma region "Section with Defaults"
 
-		std::map<std::string, std::string> Parser::getSectionWithDefaults(const std::string& section) const {
+		std::map<std::string, std::string> ConfigParser::getSectionWithDefaults(const std::string& section) const {
 			std::map<std::string, std::string> result;
 
 			// Empezar con los defaults
@@ -398,7 +403,7 @@
 
 	#pragma region "Program"
 
-		std::vector<std::string> Parser::getProgramSections() const {
+		std::vector<std::string> ConfigParser::getProgramSections() const {
 			std::vector<std::string> programs;
 			for (const auto& section : sections) {
 				if (section.first.substr(0, 8) == "program:") programs.push_back(section.first);
@@ -411,7 +416,7 @@
 
 	#pragma region "Group"
 
-		std::vector<std::string> Parser::getGroupSections() const {
+		std::vector<std::string> ConfigParser::getGroupSections() const {
 			std::vector<std::string> groups;
 			for (const auto& section : sections) {
 				if (section.first.substr(0, 6) == "group:") groups.push_back(section.first);
@@ -428,7 +433,7 @@
 
 	#pragma region "Clear"
 
-	void Parser::clear() {
+	void ConfigParser::clear() {
 		currentSection.clear();
 		sections.clear();
 	}
@@ -437,7 +442,9 @@
 
 	#pragma region "Print"
 
-	void Parser::printConfig() const {
+	#include <iostream>
+
+	void ConfigParser::printConfig() const {
 		for (const auto& section : sections) {
 			std::cout << "[" << section.first << "]" << std::endl;
 			for (const auto& kv : section.second) {
@@ -450,3 +457,22 @@
 #pragma endregion
 
 #pragma endregion
+
+	void ConfigParser::add_opt_args(ConfigOptions& Options) {
+		if (Options.options.find_first_of('n') != std::string::npos) sections["taskmasterd"]["nodaemon"]			= Options.nodaemon;
+		if (Options.options.find_first_of('s') != std::string::npos) sections["taskmasterd"]["silent"]				= Options.silent;
+		if (Options.options.find_first_of('u') != std::string::npos) sections["taskmasterd"]["user"]				= Options.user;
+		if (Options.options.find_first_of('m') != std::string::npos) sections["taskmasterd"]["umask"]				= Options.umask;
+		if (Options.options.find_first_of('d') != std::string::npos) sections["taskmasterd"]["directory"]			= Options.directory;
+		if (Options.options.find_first_of('l') != std::string::npos) sections["taskmasterd"]["logfile"]				= Options.logfile;
+		if (Options.options.find_first_of('y') != std::string::npos) sections["taskmasterd"]["logfile_maxbytes"]	= Options.logfile_maxbytes;
+		if (Options.options.find_first_of('z') != std::string::npos) sections["taskmasterd"]["logfile_backups"]		= Options.logfile_backups;
+		if (Options.options.find_first_of('e') != std::string::npos) sections["taskmasterd"]["loglevel"]			= Options.loglevel;
+		if (Options.options.find_first_of('j') != std::string::npos) sections["taskmasterd"]["pidfile"]				= Options.pidfile;
+		if (Options.options.find_first_of('i') != std::string::npos) sections["taskmasterd"]["identifier"]			= Options.identifier;
+		if (Options.options.find_first_of('q') != std::string::npos) sections["taskmasterd"]["childlogdir"]			= Options.childlogdir;
+		if (Options.options.find_first_of('t') != std::string::npos) sections["taskmasterd"]["strip_ansi"]			= Options.strip_ansi;
+		if (Options.options.find_first_of('k') != std::string::npos) sections["taskmasterd"]["nocleanup"]			= Options.nocleanup;
+		if (Options.options.find_first_of('a') != std::string::npos) sections["taskmasterd"]["minfds"]				= Options.minfds;
+		if (Options.options.find_first_of('p') != std::string::npos) sections["taskmasterd"]["minprocs"]			= Options.minprocs;
+	}

@@ -6,18 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 11:44:57 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/22 17:21:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 14:21:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
 	#include "Config/Signals.hpp"
-
-	#include "Network/Client.hpp"
-	#include "Network/Epoll.hpp"
 
 	#include <iostream>															// std::getline(), std::cerr(), std::exit()
 	#include <unistd.h>															// close()

@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/24 19:40:36 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/25 13:39:47 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -62,7 +62,7 @@ SRC_DIR		= src/
 
 SRCS		= Main/Main.cpp										\
 																\
-			  Config/Config.cpp Config/Options.cpp				\
+			  Config/Options.cpp				\
 			  Config/Signals.cpp Config/Parser.cpp				\
 			  													\
 			  Utils/Path.cpp Utils/System.cpp  Utils/String.cpp

@@ -6,47 +6,111 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 19:06:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 15:00:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Options.hpp"	
-	#include "Config/Config.hpp"
 	#include "Utils/Utils.hpp"
+	#include "Config/Options.hpp"	
 
-	#include <cstring>															// std::strlen()
+	#include <unistd.h>															// getuid()
 	#include <iostream>															// std::cerr()
-	#include <algorithm>														// std::transform()
-
 	#include <getopt.h>															// getopt_long()
 
 #pragma endregion
 
-#pragma region "Variables"
+#pragma region "Constructors"
 
-	std::string	Options::configuration		= config_path();					// Default path: /etc/taskmasterd.conf
-	bool		Options::nodaemon			= false;							// Shows log and exits on signals
-	bool		Options::silent				= false;							// Hides logs in stdout from debug to warning (only works with -n)
-	std::string	Options::user				= "do not switch";					// Switch to this user after startup (privilege de-escalation) (requires root)
-	uint8_t		Options::umask				= 022;								// Set the file creation permission mask												(default: 022)
-	std::string	Options::directory			= "do not change";					// Set the initial working directory													(default: )
-	std::string	Options::logfile			= expand_path("supervisord.log");	// File where the daemon writes its logs												(default: )
-	size_t		Options::logfile_maxbytes	= 50 * 1024 * 1024;					// Maximum log file size before rotation												(default: 10MB)
-	uint8_t		Options::logfile_backups	= 10;								// Number of backup files to keep during rotation										(default: 5)
-	uint8_t		Options::loglevel			= Config::INFO;						// Logging level: debug, info, warning, error, critical									(default: info)
-	std::string	Options::pidfile			= expand_path("supervisord.pid");	// File where the taskmaster process PID is written
-	std::string	Options::identifier			= "taskmaster";						// Unique identifier for this taskmaster instance (used in logs and communication)
-	std::string	Options::childlogdir		= temp_path();						// Directory where child processes write their logs by default
-	bool		Options::strip_ansi			= false;							// Minimum number of processes available in the system									(default: 200)
-	bool		Options::nocleanup			= false;							// Do not clean temporary files on exit
-	uint16_t	Options::minfds				= 1024;								// Minimum number of file descriptors required											(default: 1024)
-	uint16_t	Options::minprocs			= 200;								// Remove ANSI escape sequences from child process logs
+	#pragma region "Constructor"
 
-	std::string	Options::options			= "";								// 
+		ConfigOptions::ConfigOptions() :
+			_fullName			("taskmasterd"),						// Name and path used to execute the program (same as argv[0])
+			configuration		(config_path()),						// Default path: /etc/taskmasterd.conf
+			nodaemon			("false"),								// Shows log and exits on signals
+			silent				("false"),								// Hides logs in stdout from debug to warning (only works with -n)
+			user				("do not switch"),						// Switch to this user after startup (privilege de-escalation) (requires root)
+			umask				("022"),								// Set the file creation permission mask												(default: 022)
+			directory			("do not change"),						// Set the initial working directory													(default: )
+			logfile				(expand_path("supervisord.log")),		// File where the daemon writes its logs												(default: )
+			logfile_maxbytes	("50 MB"),								// Maximum log file size before rotation												(default: 10MB)
+			logfile_backups		("10"),									// Number of backup files to keep during rotation										(default: 5)
+			loglevel			("info"),								// Logging level: debug, info, warning, error, critical									(default: info)
+			pidfile				(expand_path("supervisord.pid")),		// File where the taskmaster process PID is written
+			identifier			("taskmaster"),							// Unique identifier for this taskmaster instance (used in logs and communication)
+			childlogdir			(temp_path()),							// Directory where child processes write their logs by default
+			strip_ansi			("false"),								// Remove ANSI escape sequences from child process logs
+			nocleanup			("false"),								// Do not clean temporary files on exit
+			minfds				("1024"),								// Minimum number of file descriptors required											(default: 1024)
+			minprocs			("200"),								// Minimum number of processes available in the system									(default: 200)
+			options				(""),									// 
+			is_root				(getuid() == 0)							// 
+		{}
 
-	std::string	Options::_fullName			= "taskmasterd";					// Name and path used to execute the program (same as argv[0])
+	#pragma endregion
+
+	#pragma region "Constructor (copy)"
+
+		ConfigOptions::ConfigOptions(const ConfigOptions& src) :
+			_fullName			(src._fullName),						// Name and path used to execute the program (same as argv[0])
+			configuration		(src.configuration),					// Default path: /etc/taskmasterd.conf
+			nodaemon			(src.nodaemon),							// Shows log and exits on signals
+			silent				(src.silent),							// Hides logs in stdout from debug to warning (only works with -n)
+			user				(src.user),								// Switch to this user after startup (privilege de-escalation) (requires root)
+			umask				(src.umask),							// Set the file creation permission mask												(default: 022)
+			directory			(src.directory),						// Set the initial working directory													(default: )
+			logfile				(src.logfile),							// File where the daemon writes its logs												(default: )
+			logfile_maxbytes	(src.logfile_maxbytes),					// Maximum log file size before rotation												(default: 10MB)
+			logfile_backups		(src.logfile_backups),					// Number of backup files to keep during rotation										(default: 5)
+			loglevel			(src.loglevel),							// Logging level: debug, info, warning, error, critical									(default: info)
+			pidfile				(src.pidfile),							// File where the taskmaster process PID is written
+			identifier			(src.identifier),						// Unique identifier for this taskmaster instance (used in logs and communication)
+			childlogdir			(src.childlogdir),						// Directory where child processes write their logs by default
+			strip_ansi			(src.strip_ansi),						// Remove ANSI escape sequences from child process logs
+			nocleanup			(src.nocleanup),						// Do not clean temporary files on exit
+			minfds				(src.minfds),							// Minimum number of file descriptors required											(default: 1024)
+			minprocs			(src.minprocs),							// Minimum number of processes available in the system									(default: 200)
+			options				(src.options),							// 
+			is_root				(src.is_root)							// 
+		{}
+
+	#pragma endregion
+
+#pragma endregion
+
+#pragma region "Overloads"
+
+	#pragma region "Assing"
+
+	ConfigOptions& ConfigOptions::operator=(const ConfigOptions& rhs) {
+		if (this == &rhs) return (*this);
+
+		_fullName			= rhs._fullName;						// Name and path used to execute the program (same as argv[0])
+		configuration		= rhs.configuration;					// Default path: /etc/taskmasterd.conf
+		nodaemon			= rhs.nodaemon;							// Shows log and exits on signals
+		silent				= rhs.silent;							// Hides logs in stdout from debug to warning (only works with -n)
+		user				= rhs.user;								// Switch to this user after startup (privilege de-escalation) (requires root)
+		umask				= rhs.umask;							// Set the file creation permission mask												(default: 022)
+		directory			= rhs.directory;						// Set the initial working directory													(default: )
+		logfile				= rhs.logfile;							// File where the daemon writes its logs												(default: )
+		logfile_maxbytes	= rhs.logfile_maxbytes;					// Maximum log file size before rotation												(default: 10MB)
+		logfile_backups		= rhs.logfile_backups;					// Number of backup files to keep during rotation										(default: 5)
+		loglevel			= rhs.loglevel;							// Logging level: debug, info, warning, error, critical									(default: info)
+		pidfile				= rhs.pidfile;							// File where the taskmaster process PID is written
+		identifier			= rhs.identifier;						// Unique identifier for this taskmaster instance (used in logs and communication)
+		childlogdir			= rhs.childlogdir;						// Directory where child processes write their logs by default
+		strip_ansi			= rhs.strip_ansi;						// Remove ANSI escape sequences from child process logs
+		nocleanup			= rhs.nocleanup;						// Do not clean temporary files on exit
+		minfds				= rhs.minfds;							// Minimum number of file descriptors required											(default: 1024)
+		minprocs			= rhs.minprocs;							// Minimum number of processes available in the system									(default: 200)
+		options				= rhs.options;							// 
+		is_root				= rhs.is_root;							// 
+
+		return (*this);
+	}
+
+#pragma endregion
 
 #pragma endregion
 
@@ -54,34 +118,34 @@
 
 	#pragma region "Strtoul"
 
-		template<typename T>
-		int Options::ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero) {
-			try {
-				size_t			idx;
-				unsigned long	tmp = std::stoul(optarg, &idx, 0);
+		// template<typename T>
+		// int ConfigOptions::ft_strtoul(char **argv, const char *optarg, T *value, unsigned long max_value, bool allow_zero) {
+		// 	try {
+		// 		size_t			idx;
+		// 		unsigned long	tmp = std::stoul(optarg, &idx, 0);
 
-				if (idx != std::strlen(optarg)) {
-					std::cerr << argv[0] << ": invalid value (`" << optarg << "' near `" << (optarg + idx) << "')\n";
-					return (1);
-				}
+		// 		if (idx != std::strlen(optarg)) {
+		// 			std::cerr << argv[0] << ": invalid value (`" << optarg << "' near `" << (optarg + idx) << "')\n";
+		// 			return (1);
+		// 		}
 
-				if (!tmp && !allow_zero) {
-					std::cerr << argv[0] << ": option value too small: " << optarg << "\n";
-					return (1);
-				}
+		// 		if (!tmp && !allow_zero) {
+		// 			std::cerr << argv[0] << ": option value too small: " << optarg << "\n";
+		// 			return (1);
+		// 		}
 
-				if (max_value && tmp > max_value) {
-					std::cerr << argv[0] << ": option value too big: " << optarg << "\n";
-					return (1);
-				}
+		// 		if (max_value && tmp > max_value) {
+		// 			std::cerr << argv[0] << ": option value too big: " << optarg << "\n";
+		// 			return (1);
+		// 		}
 
-				*value = static_cast<T>(tmp);
-				return (0);
-			} catch (const std::exception &) {
-				std::cerr << argv[0] << ": invalid number: " << optarg << "\n";
-				return (1);
-			}
-		}
+		// 		*value = static_cast<T>(tmp);
+		// 		return (0);
+		// 	} catch (const std::exception &) {
+		// 		std::cerr << argv[0] << ": invalid number: " << optarg << "\n";
+		// 		return (1);
+		// 	}
+		// }
 
 	#pragma endregion
 
@@ -91,8 +155,8 @@
 
 	#pragma region "Help"
 
-		int Options::help() {
-			std::cerr << "Usage: " << NAME << " [ OPTION... ] \n";
+		int ConfigOptions::help() {
+			std::cerr << "Usage: " << "taskmasterd: [ OPTION... ] \n";
 			std::cerr << "\n";
 			std::cerr << " Options:\n";
 			std::cerr << "\n";
@@ -126,8 +190,8 @@
 
 	#pragma region "Version"
 
-		int Options::version() {
-			std::cerr << NAME << " 1.0 part of Taskmaster\n";
+		int ConfigOptions::version() {
+			std::cerr << "taskmasterd: 1.0 part of Taskmaster\n";
 			std::cerr << "Copyright (C) 2025 Kobayashi Corp ⓒ.\n";
 			std::cerr << "\n";
 			std::cerr << "License WTFPL: DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE.\n";
@@ -143,7 +207,7 @@
 
 	#pragma region "Invalid"
 
-		int Options::invalid() {
+		int ConfigOptions::invalid() {
 			std::cerr << "Try '" << _fullName << " --help' for more information.\n";
 			return (2);
 		}
@@ -152,34 +216,34 @@
 
 	#pragma region "Log Level"
 
-		int Options::validate_loglevel(const std::string& level) {
-			std::string l = level;
-			std::transform(l.begin(), l.end(), l.begin(), ::tolower);
+		// int ConfigOptions::validate_loglevel(const std::string& level) {
+		// 	std::string l = level;
+		// 	std::transform(l.begin(), l.end(), l.begin(), ::tolower);
 
-			if		(l == "debug")		loglevel = Config::DEBUG;
-			else if	(l == "info")		loglevel = Config::INFO;
-			else if	(l == "warning")	loglevel = Config::WARNING;
-			else if	(l == "warn")		loglevel = Config::WARNING;
-			else if	(l == "error")		loglevel = Config::ERROR;
-			else if	(l == "critical")	loglevel = Config::CRITICAL;
-			else { std::cerr << "Invalid log level. Valid values are: DEBUG, INFO, WARNING, CRITICAL\n"; return (1); }
+		// 	if		(l == "debug")		loglevel = Config::DEBUG;
+		// 	else if	(l == "info")		loglevel = Config::INFO;
+		// 	else if	(l == "warning")	loglevel = Config::WARNING;
+		// 	else if	(l == "warn")		loglevel = Config::WARNING;
+		// 	else if	(l == "error")		loglevel = Config::ERROR;
+		// 	else if	(l == "critical")	loglevel = Config::CRITICAL;
+		// 	else { std::cerr << "Invalid log level. Valid values are: DEBUG, INFO, WARNING, CRITICAL\n"; return (1); }
 
-			return (0);
-		}
+		// 	return (0);
+		// }
 
 	#pragma endregion
 
-	int Options::validate_path(const std::string& path) {
-		(void) path;
-		// Convertir ~
-		return (0);
-	}
+	// int ConfigOptions::validate_path(const std::string& path) {
+	// 	(void) path;
+	// 	// Convertir ~
+	// 	return (0);
+	// }
 
 #pragma endregion
 
 #pragma region "Parse"
 
-	int Options::parse(int argc, char **argv) {
+	int ConfigOptions::parse(int argc, char **argv) {
 		_fullName = argv[0];
 
 		struct option long_options[] = {
@@ -206,34 +270,34 @@
 		};
 
 		int opt;
-		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:ka:tp:hv", long_options, NULL)) != -1) {
+		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:tka:p:hv", long_options, NULL)) != -1) {
 			switch (opt) {
-				case 'c':	{ options += opt; configuration = std::string(optarg);														break; }
-				case 'n':	{ options += opt; nodaemon = true;																			break; }
-				case 's':	{ options += opt; silent = true;																			break; }
-				case 'u':	{ options += opt; user = std::string(optarg);																break; }
-				case 'm':	{ options += opt; umask = 022;																				break; }
-				case 'd':	{ options += opt; directory = std::string(optarg);															break; }
-				case 'l':	{ options += opt; logfile = std::string(optarg);															break; }
-				case 'y':	{ options += opt; if (ft_strtoul(argv, optarg, &logfile_maxbytes, 1024 , true))		return (2);				break; }
-				case 'z':	{ options += opt; if (ft_strtoul(argv, optarg, &logfile_backups, 255 , true))		return (2);				break; }
-				case 'e':	{ options += opt; if (validate_loglevel(optarg))									return (2);				break; }
-				case 'j':	{ options += opt; pidfile = std::string(optarg);															break; }
-				case 'i':	{ options += opt; identifier = std::string(optarg);															break; }
-				case 'q':	{ options += opt; childlogdir = std::string(optarg);														break; }
-				case 't':	{ options += opt; strip_ansi = true;																		break; }
-				case 'k':	{ options += opt; nocleanup = true;																			break; }
-				case 'a':	{ options += opt; if (ft_strtoul(argv, optarg, &minfds, 1024 , true))				return (2);				break; }
-				case 'p':	{ options += opt; if (ft_strtoul(argv, optarg, &minprocs, 255 , true))				return (2);				break; }
+				case 'c':	{ options += opt; configuration		= std::string(optarg);		break; }
+				case 'n':	{ options += opt; nodaemon			= "true";					break; }
+				case 's':	{ options += opt; silent			= "true";					break; }
+				case 'u':	{ options += opt; user				= std::string(optarg);		break; }
+				case 'm':	{ options += opt; umask				= std::string(optarg);		break; }
+				case 'd':	{ options += opt; directory			= std::string(optarg);		break; }
+				case 'l':	{ options += opt; logfile			= std::string(optarg);		break; }
+				case 'y':	{ options += opt; logfile_maxbytes	= std::string(optarg);		break; }
+				case 'z':	{ options += opt; logfile_backups	= std::string(optarg);		break; }
+				case 'e':	{ options += opt; loglevel			= std::string(optarg);		break; }
+				case 'j':	{ options += opt; pidfile			= std::string(optarg);		break; }
+				case 'i':	{ options += opt; identifier		= std::string(optarg);		break; }
+				case 'q':	{ options += opt; childlogdir		= std::string(optarg);		break; }
+				case 't':	{ options += opt; strip_ansi		= "true";					break; }
+				case 'k':	{ options += opt; nocleanup			= "true";					break; }
+				case 'a':	{ options += opt; minfds			= std::string(optarg);		break; }
+				case 'p':	{ options += opt; minprocs			= std::string(optarg);		break; }
 
-				case '?':	if (std::string(argv[optind - 1]) == "-?")											return (help());		return (invalid());
-				case 'h':																						return (help());
-				case 'v':																						return (version());
+				case '?':	if (std::string(argv[optind - 1]) != "-?") return (invalid());	return (help());
+				case 'h':																	return (help());
+				case 'v':																	return (version());
 			}
 		}
 
 		if (optind < argc) {
-			std::cerr << NAME << ": invalid argument: " << argv[optind] << "\n";
+			std::cerr << "taskmasterd: invalid argument: " << argv[optind] << "\n";
 			invalid(); return (2);
 		}
 
