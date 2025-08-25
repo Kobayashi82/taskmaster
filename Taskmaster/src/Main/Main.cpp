@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 14:40:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 23:26:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,15 +53,16 @@
 			if ((result = Options.parse(argc, argv))) return (result);
 			// Options::validate();
 			Parser.parseFile("taskmasterd.ini");
+			Parser.validate();
 			// Parser.validate();
 			Parser.add_opt_args(Options);
 
 			// Test
-			for (const auto& prog : Parser.getProgramSections()) {
-				std::cout << prog.substr(8) << std::endl;
-			}
-			std::cout << Parser.getValue("taskmasterd", "nodaemon") << std::endl;
-			std::cout << Parser.getValue("program:dummy", "command") << std::endl;
+			// for (const auto& prog : Parser.getProgramSections()) {
+			// 	std::cout << prog.substr(8) << std::endl;
+			// }
+			// std::cout << Parser.getValue("taskmasterd", "nodaemon") << std::endl;
+			// std::cout << Parser.getValue("program:dummy", "command") << std::endl;
 
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
 
@@ -76,6 +77,7 @@
 		int result = 0;
 
 		if ((result = load_configuration(argc, argv))) return (result - 1);
+		Parser.printConfig();
 
 		return (result);
 	}

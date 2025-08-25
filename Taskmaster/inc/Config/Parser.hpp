@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 14:41:03 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 22:11:51 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
+	#include <climits>															// LONG_MIN, LONG_MAX
 
 #pragma endregion
 
@@ -37,27 +38,45 @@
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 
 			// Initialize
-			void	initialize();
-			void	default_values();
+			void		initialize();
+			void		default_values();
 
 			// Utils
 			std::string	trim(const std::string& str) const;
 			std::string	toLower(const std::string& str) const;
 
 			// Key=Value
-			bool isValidKey(const std::string& section, const std::string& key) const;
-			void parseKeyValue(const std::string& line);
+			bool		isValidKey(const std::string& section, const std::string& key) const;
+			void		parseKeyValue(const std::string& line);
 
 			// Section
-			std::string SectionType(const std::string& section) const;
-			bool isValidSection(const std::string& section) const;
-			std::string extractSection(const std::string& line) const;
-			void parseSection(const std::string& line);
+			std::string	SectionType(const std::string& section) const;
+			bool		isValidSection(const std::string& section) const;
+			std::string	extractSection(const std::string& line) const;
+			void		parseSection(const std::string& line);
 
 			// Line
-			bool isSection(const std::string& line) const;
-			bool isComment(const std::string& line) const;
-			void parseLine(const std::string& line);
+			bool		isSection(const std::string& line) const;
+			bool		isComment(const std::string& line) const;
+			void		parseLine(const std::string& line);
+
+			// Validation helpers
+			bool		isValidBool(const std::string& value) const;
+			bool		isValidNumber(const std::string& value, long min = 0, long max = 2147483647) const;
+			bool		isValidPath(const std::string& value, bool is_directory) const;
+			bool		isValidSignal(const std::string& value) const;
+			bool		isValidExitCodes(const std::string& value) const;
+			bool		isValidLogLevel(const std::string& value) const;
+			bool		isValidAutorestart(const std::string& value) const;
+			bool		isValidUmask(const std::string& value) const;
+			bool		isValidUser(const std::string& value) const;
+
+			// Section validators
+			void		validateTaskmasterdSection(const std::string& section, std::string& errors) const;
+			void		validateProgramSection(const std::string& section, std::string& errors) const;
+			void		validateUnixHttpServerSection(const std::string& section, std::string& errors) const;
+			void		validateInetHttpServerSection(const std::string& section, std::string& errors) const;
+			void		validateGroupSection(const std::string& section, std::string& errors) const;
 
 		public:
 
@@ -70,7 +89,8 @@
 			ConfigParser& operator=(const ConfigParser&) = delete;
 
 			// File
-			int parseFile(const std::string& filePath);
+			void	parseFile(const std::string& filePath);
+			void	validate() const;
 
 			// Getters
 			bool								hasSection(const std::string& section) const;

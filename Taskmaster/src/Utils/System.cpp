@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 17:50:21 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 14:42:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 22:56:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 			if (rl.rlim_cur > minprocs) return (0);
 			else if (getuid() == 0 && rl.rlim_cur < rl.rlim_max && minprocs <= rl.rlim_max) {
 				rl.rlim_cur = minprocs;
-				return (setrlimit(RLIMIT_NOFILE, &rl) != 0);
+				return (setrlimit(RLIMIT_NPROC, &rl) != 0);
 			}
 		}
 

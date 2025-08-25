@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 17:00:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 18:05:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 23:34:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 		else p = std::filesystem::current_path() / path;
 
 		// resolve symbolic links
-		try { return (std::filesystem::canonical(p).string()); }
+		try { return (std::filesystem::weakly_canonical(p).string()); }
 		catch (const std::filesystem::filesystem_error&) { return (""); }
 	}
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 19:36:01 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 22:09:48 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 23:49:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,4 +28,22 @@
 		std::transform(result.begin(), result.end(), result.begin(), ::tolower);
 
 		return result;
+	}
+
+	long parseSize(const std::string &value) {
+		char *end;
+		long num = std::strtol(value.c_str(), &end, 10);
+
+		std::string suffix(end);
+		suffix = trim(suffix);
+		for (auto &c : suffix) c = toupper(c);
+
+		if		(suffix.empty())	return (num);
+		else if	(suffix == "BYTES")	return (num);
+		else if	(suffix == "BYTE")	return (num);
+		else if	(suffix == "B" )	return (num);
+		else if (suffix == "KB")	return (num * 1024);
+		else if (suffix == "MB")	return (num * 1024 * 1024);
+		else if (suffix == "GB")	return (num * 1024 * 1024 * 1024);
+		else						return (-1);
 	}

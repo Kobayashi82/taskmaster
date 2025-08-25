@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 17:00:33 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/24 19:55:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/25 22:50:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 
 	int	check_fd_limit(uint16_t minfds);
 	int	check_process_limit(uint16_t minprocs);
+
+	long parseSize(const std::string &value);
 
 	// std::string	trim(const std::string& str);
 	// std::string	toLower(const std::string& str);
