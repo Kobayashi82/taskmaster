@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:04:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 19:55:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 20:15:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,93 +284,106 @@
 
 	#pragma endregion
 
-	#pragma region "File"
+	#pragma region "Include"
 
-		void ConfigParser::parseIncludeFile(const std::string& filePath) {
-			std::ifstream file(filePath);
-			if (!file.is_open()) throw std::runtime_error("\n[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
+		#pragma region "File"
 
-			std::string configDir = std::filesystem::path(filePath).parent_path();
-			std::string line;
-			std::string errors;
-			bool invalid_section = false;
-			int lineNumber = 0;
+			void ConfigParser::parseIncludeFile(const std::string& filePath) {
+				std::ifstream file(filePath);
+				if (!file.is_open()) throw std::runtime_error("\n[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
 
-			while (std::getline(file, line)) {
-				lineNumber++;
-				size_t pos = line.find_first_of(";#");
-				if (pos != std::string::npos) line = line.substr(0, pos);
-				line = trim(line);
-				if (line.empty()) continue;
+				std::string configDir = std::filesystem::path(filePath).parent_path();
+				std::string line;
+				std::string errors;
+				bool invalid_section = false;
+				int lineNumber = 0;
 
-				try {
-					if (isSection(line)) {
-						parseSection(line);
-						if (!currentSection.empty() && currentSection.substr(0, 8) != "program:" && currentSection.substr(0, 6) != "group:") {
-							in_include = false;
-							throw std::runtime_error("Invalid section [" + currentSection + "]");
+				while (std::getline(file, line)) {
+					lineNumber++;
+					size_t pos = line.find_first_of(";#");
+					if (pos != std::string::npos) line = line.substr(0, pos);
+					line = trim(line);
+					if (line.empty()) continue;
+
+					try {
+						if (isSection(line)) {
+							parseSection(line);
+							if (!currentSection.empty() && currentSection.substr(0, 8) != "program:" && currentSection.substr(0, 6) != "group:") {
+								in_include = false;
+								throw std::runtime_error("Invalid section [" + currentSection + "]");
+							}
+							invalid_section = false;
 						}
-						invalid_section = false;
+						else if (invalid_section)	continue;
+						else						parseKeyValue(line);
 					}
-					else if (invalid_section)	continue;
-					else						parseKeyValue(line);
-				}
-				catch (const std::exception& e) {
-					if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
-					if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
-					else if	(line == "[include]" && std::string(e.what()).substr(0, 17) == "Duplicate section") {
-						invalid_section = true;
-						errors += "Error at line " + std::to_string(lineNumber) + ":\tInvalid section: [include]\n";
+					catch (const std::exception& e) {
+						if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
+						if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
+						else if	(line == "[include]" && std::string(e.what()).substr(0, 17) == "Duplicate section") {
+							invalid_section = true;
+							errors += "Error at line " + std::to_string(lineNumber) + ":\tInvalid section: [include]\n";
+						}
+						else errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
 					}
-					else errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
 				}
+				in_include = false;
+
+				if (!errors.empty()) throw std::runtime_error("\n[" + filePath + "]\n" + errors);
 			}
-			in_include = false;
 
-			if (!errors.empty()) throw std::runtime_error("\n[" + filePath + "]\n" + errors);
-		}
+		#pragma endregion
 
-		void ConfigParser::parseProcessInclude() {
-			std::vector<std::string> includeFiles;
-			std::string files = getValue("include", "files");
-			std::string errors, current;
-			bool inQuotes = false;
-			bool quotedToken = false;
-			char quoteChar = 0;
+		#pragma region "Process"
 
-			auto pushToken = [&](bool wasQuoted) {
-				if (!current.empty()) {
-					std::string token = wasQuoted ? current : trim(current);
-					if (!token.empty()) includeFiles.push_back(token);
-					current.clear();
+			void ConfigParser::parseProcessInclude() {
+				std::vector<std::string> includeFiles;
+				std::string files = getValue("include", "files");
+				std::string errors, current;
+				bool inQuotes = false;
+				bool quotedToken = false;
+				char quoteChar = 0;
+
+				auto pushToken = [&](bool wasQuoted) {
+					if (!current.empty()) {
+						std::string token = wasQuoted ? current : trim(current);
+						if (!token.empty()) includeFiles.push_back(token);
+						current.clear();
+					}
+				};
+
+				for (size_t i = 0; i < files.size(); ++i) {
+					char c = files[i];
+
+					if (c == '\\' && i + 1 < files.size()) current.push_back(files[++i]);
+					else if ((c == '"' || c == '\'') && !inQuotes) { inQuotes = quotedToken = true; quoteChar = c; }
+					else if (inQuotes && c == quoteChar) inQuotes = false;
+					else if (!inQuotes && (c == ' ' || c == ',')) { pushToken(quotedToken); quotedToken = false; }
+					else current.push_back(c);
 				}
-			};
 
-			for (size_t i = 0; i < files.size(); ++i) {
-				char c = files[i];
+				pushToken(quotedToken);
 
-				if (c == '\\' && i + 1 < files.size()) current.push_back(files[++i]);
-				else if ((c == '"' || c == '\'') && !inQuotes) { inQuotes = quotedToken = true; quoteChar = c; }
-				else if (inQuotes && c == quoteChar) inQuotes = false;
-				else if (!inQuotes && (c == ' ' || c == ',')) { pushToken(quotedToken); quotedToken = false; }
-				else current.push_back(c);
+				for (const auto& file : includeFiles) {
+					try { parseIncludeFile(file); }
+					catch (const std::exception& e) { errors += std::string(e.what()); }
+				}
+
+				if (!errors.empty()) throw std::runtime_error(errors);
 			}
 
-			pushToken(quotedToken);
+		#pragma endregion
 
-			for (const auto& file : includeFiles) {
-				try { parseIncludeFile(file); }
-				catch (const std::exception& e) { errors += std::string(e.what()); }
-			}
+	#pragma endregion
 
-			if (!errors.empty()) throw std::runtime_error(errors);
-		}
+	#pragma region "File"
 
 		void ConfigParser::parseFile(const std::string& filePath) {
 			std::ifstream file(filePath);
 			if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
-			clear();
+			currentSection.clear();
+			sections.clear();
 
 			std::string line;
 			std::string errors;
@@ -872,22 +885,9 @@
 
 #pragma endregion
 
-#pragma region "Debug"
+#pragma region "Print"
 
-	#pragma region "Clear"
-
-	void ConfigParser::clear() {
-		currentSection.clear();
-		sections.clear();
-	}
-
-#pragma endregion
-
-	#pragma region "Print"
-
-	#include <iostream>
-
-	void ConfigParser::printConfig() const {
+	void ConfigParser::print() const {
 		for (const auto& section : sections) {
 			std::cout << "[" << section.first << "]" << std::endl;
 			for (const auto& kv : section.second) {
@@ -897,9 +897,7 @@
 		}
 	}
 
-#pragma endregion
-
-#pragma endregion
+	#pragma endregion
 
 #pragma region "Add OPT Args"
 

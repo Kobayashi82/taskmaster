@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 16:28:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 20:15:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,7 @@
 			std::vector<std::string>			getGroupSections() const;
 
 			// Debug
-			void	clear();
-			void	printConfig() const;
+			void	print() const;
 
 			void	add_opt_args(ConfigOptions& Options);
 	};
