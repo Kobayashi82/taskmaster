@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 23:26:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 13:48:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@
 			if ((result = Options.parse(argc, argv))) return (result);
 			// Options::validate();
 			Parser.parseFile("taskmasterd.ini");
-			Parser.validate();
+			// Parser.validate();
 			// Parser.validate();
 			Parser.add_opt_args(Options);
 

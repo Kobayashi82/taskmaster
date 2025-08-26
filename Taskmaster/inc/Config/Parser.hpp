@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 22:11:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 14:08:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,11 +72,12 @@
 			bool		isValidUser(const std::string& value) const;
 
 			// Section validators
-			void		validateTaskmasterdSection(const std::string& section, std::string& errors) const;
-			void		validateProgramSection(const std::string& section, std::string& errors) const;
-			void		validateUnixHttpServerSection(const std::string& section, std::string& errors) const;
-			void		validateInetHttpServerSection(const std::string& section, std::string& errors) const;
-			void		validateGroupSection(const std::string& section, std::string& errors) const;
+			void		validateTaskmasterdSection(const std::string& section, const std::string& key, std::string& value) const;
+			void		validateProgramSection(const std::string& section, std::string& key, std::string& value) const;
+			void		validateUnixHttpServerSection(const std::string& section, std::string& key, std::string& value) const;
+			void		validateInetHttpServerSection(const std::string& section, std::string& key, std::string& value) const;
+			void		validateGroupSection(const std::string& section, std::string& key, std::string& value) const;
+			void		validateIncludeSection(const std::string& section, std::string& key, std::string& value) const;
 
 		public:
 
@@ -90,7 +91,7 @@
 
 			// File
 			void	parseFile(const std::string& filePath);
-			void	validate() const;
+			void	validate(const std::string& section, std::string& key, std::string& value) const;
 
 			// Getters
 			bool								hasSection(const std::string& section) const;

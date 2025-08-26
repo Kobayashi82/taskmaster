@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:04:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 12:19:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 14:16:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::canonical()
 	#include <unistd.h>															// access()
 	#include <pwd.h>															// struct passwd, getpwnam()
+
+	#include <iostream>
 
 #pragma endregion
 
@@ -84,7 +86,7 @@
 					{"logfile_backups", "10"},
 					{"loglevel", "1"},
 					{"pidfile", pidfile},
-					{"identifier", "supervisor"},
+					{"identifier", "taskmaster"},
 					{"childlogdir", childlogdir},
 					{"strip_ansi", "false"},
 					{"nocleanup", "false"},
@@ -180,10 +182,11 @@
 		#pragma region "Parse"
 
 			void ConfigParser::parseKeyValue(const std::string& line) {
-				if (currentSection.empty()) throw std::runtime_error("Key-value pair found outside of section: " + line);
-	
+				if (currentSection.empty() && !trim(line).empty()) throw std::runtime_error("Key found outside of section: " + line);
+				if (trim(line).empty()) return;
+
 				size_t pos = line.find('=');
-				if (pos == std::string::npos) throw std::runtime_error("Invalid line format (missing =): " + line);
+				if (pos == std::string::npos) throw std::runtime_error("Invalid key in section [" + currentSection + "]");
 	
 				std::string key = trim(line.substr(0, pos));
 				std::string value = trim(line.substr(pos + 1));
@@ -191,8 +194,9 @@
 				if (key.empty()) throw std::runtime_error("Empty key in line: " + line);
 				if (!isValidKey(currentSection, key)) throw std::runtime_error("Invalid key '" + key + "' in section [" + currentSection + "]");
 	
-				std::string normalizedKey = toLower(key);
-				sections[currentSection][normalizedKey] = value;
+				key = toLower(key);
+				validate(currentSection, key, value);
+				sections[currentSection][key] = value;
 			}
 
 		#pragma endregion
@@ -233,6 +237,15 @@
 
 		#pragma endregion
 
+		#pragma region "Is Section"
+
+			bool ConfigParser::isSection(const std::string& line) const {
+				std::string trimmed = trim(line);
+				return trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']';
+			}
+
+		#pragma endregion
+
 		#pragma region "Extract"
 
 			std::string ConfigParser::extractSection(const std::string& line) const {
@@ -247,44 +260,17 @@
 			void ConfigParser::parseSection(const std::string& line) {
 				std::string section = extractSection(line);
 
-				if (!isValidSection(section)) throw std::runtime_error("Invalid section: [" + section + "]");
-				currentSection = section;
+				if (!isValidSection(section))					{ currentSection = ""; throw std::runtime_error("Invalid section: [" + section + "]");  }
+				if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section [" + section + "]"); }
 
-				if (sections.find(currentSection) == sections.end()) {
+				currentSection = section;
+				std::string sectionType = SectionType(section);
+				if (!sectionType.empty()) {
+					auto defaultSectionIt = defaultValues.find(sectionType);
+					if (defaultSectionIt != defaultValues.end()) sections[currentSection] = defaultSectionIt->second;
+				} else {
 					sections[currentSection] = std::map<std::string, std::string>();
 				}
-			}
-
-		#pragma endregion
-
-	#pragma endregion
-
-	#pragma region "Line"
-
-		#pragma region "Is Section"
-
-			bool ConfigParser::isSection(const std::string& line) const {
-				std::string trimmed = trim(line);
-				return trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']';
-			}
-
-		#pragma endregion
-
-		#pragma region "Is Comment"
-
-			bool ConfigParser::isComment(const std::string& line) const {
-				std::string trimmed = trim(line);
-				return (trimmed.empty() || trimmed[0] == '#' || trimmed[0] == ';');
-			}
-
-		#pragma endregion
-
-		#pragma region "Parse"
-
-			void ConfigParser::parseLine(const std::string& line) {
-				if (isComment(line))	return;
-				if (isSection(line))	parseSection(line);
-				else					parseKeyValue(line);
 			}
 
 		#pragma endregion
@@ -294,22 +280,92 @@
 	#pragma region "File"
 
 		void ConfigParser::parseFile(const std::string& filePath) {
-			std::ifstream file(filePath);
-			if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath);
+				std::ifstream file(filePath);
+				if (!file.is_open()) throw std::runtime_error("Error: Cannot open config file: " + filePath);
 
-			clear();
+				clear();
 
-			std::string	line;
-			std::string	errors;
-			int			lineNumber = 0;
+				std::string line;
+				std::string errors;
+				bool invalid_section = false;
+				int lineNumber = 0;
 
-			while (std::getline(file, line)) {
-				lineNumber++;
-				try { parseLine(line); }
-				catch (const std::exception& e) { errors += "Error at line " + std::to_string(lineNumber) + ": " + e.what() + "\n"; }
-			}
+				std::vector<std::string> includeFiles;
+				std::string configDir = std::filesystem::path(filePath).parent_path();
 
-			if (!errors.empty()) throw std::runtime_error(errors);
+				while (std::getline(file, line)) {
+					lineNumber++;
+					size_t pos = line.find_first_of(";#");
+					if (pos != std::string::npos) line = line.substr(0, pos);
+					line = trim(line);
+					if (line.empty()) continue;
+
+					try {
+						if (isSection(line)) {		parseSection(line); invalid_section = false; }
+						else if (invalid_section)	continue;
+						else						parseKeyValue(line);
+					}
+					catch (const std::exception& e) {
+						errors += "Error at line " + std::to_string(lineNumber) + ": " + e.what() + "\n";
+						if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
+						if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
+					}
+				}
+
+				if (!errors.empty()) throw std::runtime_error(errors);
+
+							// if (currentSection == "include") {
+							// 	// Procesar clave files
+							// 	std::string key, value;
+							// 	size_t pos = line.find('=');
+							// 	if (pos == std::string::npos) throw std::runtime_error("Invalid line format (missing =) in include: " + line);
+							// 	key = trim(line.substr(0, pos));
+							// 	value = trim(line.substr(pos + 1));
+							// 	if (toLower(key) == "files") {
+							// 		std::istringstream iss(value);
+							// 		std::string fileGlob;
+							// 		while (iss >> fileGlob) {
+							// 			// Por ahora asumimos rutas absolutas
+							// 			includeFiles.push_back(fileGlob);
+							// 		}
+							// 	}
+							// 	sections[currentSection][toLower(key)] = value;
+							// } else {
+							// 	// Detección de duplicados en el archivo principal
+							// parseKeyValue(line);
+							// }
+
+
+				// Procesar archivos incluidos
+				// for (const auto& incFile : includeFiles) {
+				// 	std::ifstream inc(incFile);
+				// 	if (!inc.is_open()) {
+				// 		errors += "Cannot open included file: " + incFile + "\n";
+				// 		continue;
+				// 	}
+				// 	std::string incLine;
+				// 	std::string incSection;
+				// 	int incLineNumber = 0;
+				// 	while (std::getline(inc, incLine)) {
+				// 		incLineNumber++;
+				// 		try {
+				// 			if (isSection(incLine)) {
+				// 				incSection = extractSection(incLine);
+				// 				if (incSection.substr(0,8) != "program:" && incSection.substr(0,6) != "group:") {
+				// 					throw std::runtime_error("Only [program:] and [group:] sections allowed in included file: " + incFile + " at line " + std::to_string(incLineNumber));
+				// 				}
+				// 				if (sections.find(incSection) != sections.end()) {
+				// 					throw std::runtime_error("Duplicate section '" + incSection + "' found in included file: " + incFile);
+				// 				}
+				// 				sections[incSection] = std::map<std::string, std::string>();
+				// 				currentSection = incSection;
+				// 			} else if (!isComment(incLine)) {
+				// 				// parseKeyValue(incLine);
+				// 			}
+				// 		}
+				// 		catch (const std::exception& e) { errors += "Error in included file " + incFile + " at line " + std::to_string(incLineNumber) + ": " + e.what() + "\n"; }
+				// 	}
+				// }
 		}
 
 	#pragma endregion
@@ -462,183 +518,198 @@
 
 		#pragma region "Taskmasterd"
 
-			void ConfigParser::validateTaskmasterdSection(const std::string& section, std::string& errors) const {
-				auto config = getSectionWithDefaults(section);
-
+			void ConfigParser::validateTaskmasterdSection(const std::string& section, const std::string& key, std::string& value) const {
 				// Boolean values
-				if (!isValidBool(config["nodaemon"]))
-					errors += "[" + section + "] nodaemon must be true or false\n";
+				if (key == "nodaemon" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] nodaemon must be true or false");
 
-				if (!isValidBool(config["silent"]))
-					errors += "[" + section + "] silent must be true or false\n";
+				if (key == "silent" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] silent must be true or false");
 
-				if (!isValidBool(config["strip_ansi"]))
-					errors += "[" + section + "] strip_ansi must be true or false\n";
+				if (key == "strip_ansi" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] strip_ansi must be true or false");
 
-				if (!isValidBool(config["nocleanup"]))
-					errors += "[" + section + "] nocleanup must be true or false\n";
+				if (key == "nocleanup" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] nocleanup must be true or false");
 
 				// Numeric values
-				long bytes = parseSize(config["logfile_maxbytes"]);
-				if (bytes == -1 || !isValidNumber(std::to_string(bytes), 0, INT_MAX))
-					errors += "[" + section + "] logfile_maxbytes must be between 0 bytes and 2 GB\n";
+				if (key == "logfile_maxbytes") {
+					long bytes = parseSize(value);
+					if (bytes == -1 || !isValidNumber(std::to_string(bytes), 0, INT_MAX))
+						throw std::runtime_error("[" + section + "] logfile_maxbytes must be between 0 bytes and 2 GB");
+				}
 
-				if (!isValidNumber(config["logfile_backups"], 0, 1000))
-					errors += "[" + section + "] logfile_backups must be between 0 and 1000\n";
+				if (key == "logfile_backups" && !isValidNumber(value, 0, 1000))
+					throw std::runtime_error("[" + section + "] logfile_backups must be between 0 and 1000");
 
-				if (!isValidLogLevel(config["loglevel"]))
-					errors += "[" + section + "] loglevel must be one of: DEBUG, INFO, WARN, ERROR, CRITICAL\n";
+				if (key == "loglevel" && !isValidLogLevel(value))
+					throw std::runtime_error("[" + section + "] loglevel must be one of: DEBUG, INFO, WARN, ERROR, CRITICAL");
 
-				if (!isValidNumber(config["minfds"], 1, 65535))
-					errors += "[" + section + "] minfds must be between 1 and 65535\n";
-				if (check_fd_limit(static_cast<uint16_t>(std::stoul(config["minfds"]))))
-					errors += "[" + section + "] minfds limit could not be applied (system limit too low or insufficient permissions)\n";
+				if (key == "minfds") {
+					if (!isValidNumber(value, 1, 65535))
+						throw std::runtime_error("[" + section + "] minfds must be between 1 and 65535");
+					if (check_fd_limit(static_cast<uint16_t>(std::stoul(value))))
+						throw std::runtime_error("[" + section + "] minfds limit could not be applied (system limit too low or insufficient permissions)");
+				}
 
-				if (!isValidNumber(config["minprocs"], 1, 10000))
-					errors += "[" + section + "] minprocs must be between 1 and 10000\n";
-				if (check_process_limit(static_cast<uint16_t>(std::stoul(config["minprocs"]))))
-					errors += "[" + section + "] minprocs limit could not be applied (system limit too low or insufficient permissions)\n";
+				if (key == "minprocs") {
+					if (!isValidNumber(value, 1, 10000))
+						throw std::runtime_error("[" + section + "] minprocs must be between 1 and 10000");
+					if (check_process_limit(static_cast<uint16_t>(std::stoul(value))))
+						throw std::runtime_error("[" + section + "] minprocs limit could not be applied (system limit too low or insufficient permissions)");
+				}
 
 				// Path validation
-				if (!isValidPath(config["directory"], true))
-					errors += "[" + section + "] directory path is invalid\n";
+				if (key == "directory" && !isValidPath(value, true))
+					throw std::runtime_error("[" + section + "] directory path is invalid");
 
-				if (!isValidPath(config["logfile"], false))
-					errors += "[" + section + "] logfile path is invalid\n";
+				if (key == "logfile" && !isValidPath(value, false))
+					throw std::runtime_error("[" + section + "] logfile path is invalid");
 
-				if (!isValidPath(config["pidfile"], false))
-					errors += "[" + section + "] pidfile path is invalid\n";
+				if (key == "pidfile" && !isValidPath(value, false))
+					throw std::runtime_error("[" + section + "] pidfile path is invalid");
 
-				if (!isValidPath(config["childlogdir"], true))
-					errors += "[" + section + "] childlogdir path is invalid\n";
+				if (key == "childlogdir" && !isValidPath(value, true))
+					throw std::runtime_error("[" + section + "] childlogdir path is invalid");
 
 				// Umask validation
-				if (!isValidUmask(config["umask"]))
-					errors += "[" + section + "] umask must be in octal format (e.g., 022)\n";
+				if (key == "umask" && !isValidUmask(value))
+					throw std::runtime_error("[" + section + "] umask must be in octal format (e.g., 022)");
 			}
 
 		#pragma endregion
 
 		#pragma region "Program"
 
-			void ConfigParser::validateProgramSection(const std::string& section, std::string& errors) const {
-				auto config = getSectionWithDefaults(section);
-
+			void ConfigParser::validateProgramSection(const std::string& section, std::string& key, std::string& value) const {
 				// Required field
 				// Verified command exists
-				if (config.find("command") == config.end() || config["command"].empty())
-					errors += "[" + section + "] command is required\n";
+				// if (config.find("command") == config.end() || config["command"].empty())
+				// 	throw std::runtime_error("[" + section + "] command is required");
+
+				// Command
+				if (key == "command" && value.empty())
+					throw std::runtime_error("[" + section + "] command must exists");
 
 				// Boolean values
-				if (!isValidBool(config["autostart"]))
-					errors += "[" + section + "] autostart must be true or false\n";
+				if (key == "autostart" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] autostart must be true or false");
 
-				if (!isValidBool(config["stopasgroup"]))
-					errors += "[" + section + "] stopasgroup must be true or false\n";
+				if (key == "stopasgroup" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] stopasgroup must be true or false");
 
-				if (!isValidBool(config["killasgroup"]))
-					errors += "[" + section + "] killasgroup must be true or false\n";
+				if (key == "killasgroup" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] killasgroup must be true or false");
 
-				if (!isValidBool(config["redirect_stderr"]))
-					errors += "[" + section + "] redirect_stderr must be true or false\n";
+				if (key == "redirect_stderr" && !isValidBool(value))
+					throw std::runtime_error("[" + section + "] redirect_stderr must be true or false");
 
 				// Numeric values
-				if (!isValidNumber(config["numprocs"], 1, 1000))
-					errors += "[" + section + "] numprocs must be between 1 and 1000\n";
+				if (key == "numprocs" && !isValidNumber(value, 1, 1000))
+					throw std::runtime_error("[" + section + "] numprocs must be between 1 and 1000");
 
-				if (!isValidNumber(config["priority"], 0, 999))
-					errors += "[" + section + "] priority must be between 0 and 999\n";
+				if (key == "priority" && !isValidNumber(value, 0, 999))
+					throw std::runtime_error("[" + section + "] priority must be between 0 and 999");
 
-				if (!isValidNumber(config["startsecs"], 0, 3600))
-					errors += "[" + section + "] startsecs must be between 0 and 3600\n";
+				if (key == "startsecs" && !isValidNumber(value, 0, 3600))
+					throw std::runtime_error("[" + section + "] startsecs must be between 0 and 3600");
 
-				if (!isValidNumber(config["startretries"], 0, 100))
-					errors += "[" + section + "] startretries must be between 0 and 100\n";
+				if (key == "startretries" && !isValidNumber(value, 0, 100))
+					throw std::runtime_error("[" + section + "] startretries must be between 0 and 100");
 
-				if (!isValidNumber(config["stopwaitsecs"], 1, 3600))
-					errors += "[" + section + "] stopwaitsecs must be between 1 and 3600\n";
+				if (key == "stopwaitsecs" && !isValidNumber(value, 1, 3600))
+					throw std::runtime_error("[" + section + "] stopwaitsecs must be between 1 and 3600");
 
 				// Special validations
-				if (!isValidAutorestart(config["autorestart"]))
-					errors += "[" + section + "] autorestart must be false, unexpected or true\n";
+				if (key == "autorestart" && !isValidAutorestart(value))
+					throw std::runtime_error("[" + section + "] autorestart must be false, unexpected or true");
 
-				if (!isValidExitCodes(config["exitcodes"]))
-					errors += "[" + section + "] exitcodes must be comma-separated numbers between 0 and 255\n";
+				if (key == "exitcodes" && !isValidExitCodes(value))
+					throw std::runtime_error("[" + section + "] exitcodes must be comma-separated numbers between 0 and 255");
 
-				if (!isValidSignal(config["stopsignal"]))
-					errors += "[" + section + "] stopsignal must be a valid signal (TERM, HUP, INT, QUIT, KILL, USR1, USR2)\n";
+				if (key == "stopsignal" && !isValidSignal(value))
+					throw std::runtime_error("[" + section + "] stopsignal must be a valid signal (TERM, HUP, INT, QUIT, KILL, USR1, USR2)");
 
 				// Path validation
-				if (!isValidPath(config["directory"], true))
-					errors += "[" + section + "] directory path is invalid\n";
+				if (key == "directory" && !isValidPath(value, true))
+					throw std::runtime_error("[" + section + "] directory path is invalid");
 
 				// std_out, std_err: NONE, AUTO
 				// AUTO = childlogdir
 
 				// Umask validation
-				if (!config["umask"].empty() && !isValidUmask(config["umask"]))
-					errors += "[" + section + "] umask must be in octal format (e.g., 022)\n";
+				if (key == "umask" && !value.empty() && !isValidUmask(value))
+					throw std::runtime_error("[" + section + "] umask must be in octal format (e.g., 022)");
 			}
 
 		#pragma endregion
 
 		#pragma region "Group"
 
-			void ConfigParser::validateGroupSection(const std::string& section, std::string& errors) const {
-				auto config = getSectionWithDefaults(section);
+			// void ConfigParser::validateGroupSection(const std::string& section, std::string& key, std::string& value) const {
+			// 	// Required field
+			// 	if (config.find("programs") == config.end() || config["programs"].empty())
+			// 		errors += "[" + section + "] programs is required\n";
 
-				// Required field
-				if (config.find("programs") == config.end() || config["programs"].empty())
-					errors += "[" + section + "] programs is required\n";
+			// 	// Priority validation
+			// 	if (!isValidNumber(config["priority"], 0, 999))
+			// 		errors += "[" + section + "] priority must be between 0 and 999\n";
 
-				// Priority validation
-				if (!isValidNumber(config["priority"], 0, 999))
-					errors += "[" + section + "] priority must be between 0 and 999\n";
+			// 	// Validate that referenced programs exist
+			// 	std::string programs = config["programs"];
+			// 	std::istringstream ss(programs);
+			// 	std::string program;
 
-				// Validate that referenced programs exist
-				std::string programs = config["programs"];
-				std::istringstream ss(programs);
-				std::string program;
-
-				while (std::getline(ss, program, ',')) {
-					program = trim(program);
-					std::string programSection = "program:" + program;
-					if (!hasSection(programSection))
-						errors += "[" + section + "] references non-existent program: " + program + "\n";
-				}
-			}
+			// 	while (std::getline(ss, program, ',')) {
+			// 		program = trim(program);
+			// 		std::string programSection = "program:" + program;
+			// 		if (!hasSection(programSection))
+			// 			errors += "[" + section + "] references non-existent program: " + program + "\n";
+			// 	}
+			// }
 
 		#pragma endregion
 
 		#pragma region "Unix Server"
 
-			void ConfigParser::validateUnixHttpServerSection(const std::string& section, std::string& errors) const {
-				auto config = getSectionWithDefaults(section);
+			// void ConfigParser::validateUnixHttpServerSection(const std::string& section, std::string& key, std::string& value) const {
+			// 	// Required field
+			// 	// Can be created
+			// 	if (config.find("file") == config.end() || config["file"].empty())
+			// 		errors += "[" + section + "] file is required\n";
 
-				// Required field
-				// Can be created
-				if (config.find("file") == config.end() || config["file"].empty())
-					errors += "[" + section + "] file is required\n";
-
-				// Permission validation
-				if (!config["chmod"].empty() && !isValidUmask(config["chmod"]))
-					errors += "[" + section + "] chmod must be in octal format (e.g., 700)\n";
-			}
+			// 	// Permission validation
+			// 	if (!config["chmod"].empty() && !isValidUmask(config["chmod"]))
+			// 		errors += "[" + section + "] chmod must be in octal format (e.g., 700)\n";
+			// }
 
 		#pragma endregion
 
 		#pragma region "Inet Server"
 
-			void ConfigParser::validateInetHttpServerSection(const std::string& section, std::string& errors) const {
-				auto config = getSectionWithDefaults(section);
+			// void ConfigParser::validateInetHttpServerSection(const std::string& section, std::string& key, std::string& value) const {
+			// 	// Required field
+			// 	if (config.find("port") == config.end() || config["port"].empty())
+			// 		errors += "[" + section + "] port is required\n";
 
+			// 	// Port validation
+			// 	if (!isValidNumber(config["port"], 1, 65535))
+			// 		errors += "[" + section + "] port must be between 1 and 65535\n";
+			// }
+
+		#pragma endregion
+
+		#pragma region "Include"
+
+			void ConfigParser::validateIncludeSection(const std::string& section, std::string& key, std::string& value) const {
 				// Required field
-				if (config.find("port") == config.end() || config["port"].empty())
-					errors += "[" + section + "] port is required\n";
+				// Verified command exists
+				// if (config.find("command") == config.end() || config["command"].empty())
+				// 	throw std::runtime_error("[" + section + "] command is required");
 
-				// Port validation
-				if (!isValidNumber(config["port"], 1, 65535))
-					errors += "[" + section + "] port must be between 1 and 65535\n";
+				// Path validation
+				if (key == "files" && !isValidPath(value, false))
+					throw std::runtime_error("[" + section + "] file path is invalid");
 			}
 
 		#pragma endregion
@@ -647,21 +718,15 @@
 
 	#pragma region "Validate"
 
-		void ConfigParser::validate() const {
-			std::string errors;
+		void ConfigParser::validate(const std::string& section, std::string& key, std::string& value) const {
+			std::string sectionType = SectionType(section);
 
-			for (const auto& section : sections) {
-				std::string sectionName = section.first;
-				std::string sectionType = SectionType(sectionName);
-
-				if		(sectionType == "taskmasterd")			validateTaskmasterdSection(sectionName, errors);
-				else if	(sectionType == "program:")				validateProgramSection(sectionName, errors);
-				else if	(sectionType == "unix_http_server")		validateUnixHttpServerSection(sectionName, errors);
-				else if	(sectionType == "inet_http_server")		validateInetHttpServerSection(sectionName, errors);
-				else if	(sectionType == "group:")				validateGroupSection(sectionName, errors);
-			}
-
-			if (!errors.empty()) throw std::runtime_error(errors);
+			if		(sectionType == "taskmasterd")			validateTaskmasterdSection(section, key, value);
+			else if	(sectionType == "program:")				validateProgramSection(section, key, value);
+			else if	(sectionType == "include")				validateIncludeSection(section, key, value);
+			// else if	(sectionType == "unix_http_server")		validateUnixHttpServerSection(section);
+			// else if	(sectionType == "inet_http_server")		validateInetHttpServerSection(section);
+			// else if	(sectionType == "group:")				validateGroupSection(section);
 		}
 
 	#pragma endregion
