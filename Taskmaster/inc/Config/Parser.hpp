@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 20:15:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 22:20:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 
 			// Variables
 			bool														in_include;
+			bool														section_on_error;
 			std::string													currentSection;
 			std::map<std::string, std::map<std::string, std::string>>	sections;
 			std::set<std::string>										validSections;
@@ -78,7 +79,6 @@
 			void		validateUnixHttpServerSection(const std::string& section, std::string& key, std::string& value) const;
 			void		validateInetHttpServerSection(const std::string& section, std::string& key, std::string& value) const;
 			void		validateGroupSection(const std::string& section, std::string& key, std::string& value) const;
-			void		validateIncludeSection(const std::string& section, std::string& key, std::string& value) const;
 
 			void		parseIncludeFile(const std::string& filePath);
 			void		parseProcessInclude();

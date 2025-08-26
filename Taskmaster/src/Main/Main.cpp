@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 13:48:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 20:19:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@
 		int result = 0;
 
 		if ((result = load_configuration(argc, argv))) return (result - 1);
-		Parser.printConfig();
+		Parser.print();
 
 		return (result);
 	}

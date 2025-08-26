@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:04:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 20:15:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 22:29:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 #pragma region "Constructors"
 
 	ConfigParser::ConfigParser() {
+		section_on_error = true;
 		initialize();
 		default_values();
 	}
@@ -187,14 +188,15 @@
 
 				size_t pos = line.find('=');
 				if (pos == std::string::npos) throw std::runtime_error("Invalid key '" + line + "' in section [" + currentSection + "]");
-	
+
 				std::string key = trim(line.substr(0, pos));
 				std::string value = trim(line.substr(pos + 1));
-	
-				if (key.empty()) throw std::runtime_error("Empty key in line: " + line);
+
+				if (key.empty()) throw std::runtime_error("Empty key in section [" + currentSection + "]");
 				if (!isValidKey(currentSection, key)) throw std::runtime_error("Invalid key '" + key + "' in section [" + currentSection + "]");
-	
+
 				key = toLower(key);
+				if (value.empty()) throw std::runtime_error("Empty value for '" + key + "' in section [" + currentSection + "]");
 				validate(currentSection, key, value);
 				sections[currentSection][key] = value;
 			}
@@ -260,10 +262,12 @@
 			void ConfigParser::parseSection(const std::string& line) {
 				std::string section = extractSection(line);
 
-				if (!isValidSection(section))					{ currentSection = ""; throw std::runtime_error("Invalid section: [" + section + "]");  }
-				if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section [" + section + "]"); }
+				if (!isValidSection(section))					{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
+				if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section:\t[" + section + "]"); }
 
 				currentSection = section;
+				if (currentSection == "taskmasterctl") { throw std::runtime_error("Ignore section"); }
+
 				std::string sectionType = SectionType(section);
 				if (!sectionType.empty()) {
 					auto defaultSectionIt = defaultValues.find(sectionType);
@@ -273,11 +277,6 @@
 				}
 
 				if (currentSection == "include") in_include = true;
-				else if (in_include) {
-					in_include = false;
-					try { parseProcessInclude(); currentSection = section; }
-					catch (const std::exception& e) { currentSection = section; throw std::runtime_error("Include " + std::string(e.what())); }
-				}
 			}
 
 		#pragma endregion
@@ -290,7 +289,7 @@
 
 			void ConfigParser::parseIncludeFile(const std::string& filePath) {
 				std::ifstream file(filePath);
-				if (!file.is_open()) throw std::runtime_error("\n[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
+				if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
 
 				std::string configDir = std::filesystem::path(filePath).parent_path();
 				std::string line;
@@ -307,29 +306,33 @@
 
 					try {
 						if (isSection(line)) {
+							std::string section = extractSection(line);
+							if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:")
+								throw std::runtime_error("Invalid section:\t[" + section + "]");
 							parseSection(line);
-							if (!currentSection.empty() && currentSection.substr(0, 8) != "program:" && currentSection.substr(0, 6) != "group:") {
-								in_include = false;
-								throw std::runtime_error("Invalid section [" + currentSection + "]");
-							}
 							invalid_section = false;
 						}
 						else if (invalid_section)	continue;
 						else						parseKeyValue(line);
 					}
 					catch (const std::exception& e) {
+						if (std::string(e.what()).substr(0, 14) == "Ignore section") {
+							errors += "Error at line " + std::to_string(lineNumber) + ":\tInvalid section:\t[" + currentSection + "]\n";
+							invalid_section = true; continue;
+						}
+						if	(line == "[include]" && std::string(e.what()).substr(0, 17) == "Duplicate section") {
+							errors += "Error at line " + std::to_string(lineNumber) + ":\tInvalid section:\t[include]\n";
+							invalid_section = true; continue;
+						}
 						if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
 						if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
-						else if	(line == "[include]" && std::string(e.what()).substr(0, 17) == "Duplicate section") {
-							invalid_section = true;
-							errors += "Error at line " + std::to_string(lineNumber) + ":\tInvalid section: [include]\n";
-						}
-						else errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
+						errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
 					}
 				}
 				in_include = false;
+				invalid_section = true;
 
-				if (!errors.empty()) throw std::runtime_error("\n[" + filePath + "]\n" + errors);
+				if (!errors.empty()) throw std::runtime_error("[" + filePath + "]\n" + errors);
 			}
 
 		#pragma endregion
@@ -366,7 +369,7 @@
 
 				for (const auto& file : includeFiles) {
 					try { parseIncludeFile(file); }
-					catch (const std::exception& e) { errors += std::string(e.what()); }
+					catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 				}
 
 				if (!errors.empty()) throw std::runtime_error(errors);
@@ -398,26 +401,40 @@
 				if (line.empty()) continue;
 
 				try {
+					if (in_include && isSection(line)) {
+						std::string section = extractSection(line);
+						if (section != "include" && in_include) {
+							in_include = false; currentSection = "";
+							try { parseProcessInclude(); invalid_section = false; }
+							catch (const std::exception& e) {
+								errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
+								section_on_error = true; invalid_section = false;
+							}
+						}
+					}
 					if (isSection(line)) {		parseSection(line); invalid_section = false; }
 					else if (invalid_section)	continue;
 					else						parseKeyValue(line);
 				}
 				catch (const std::exception& e) {
-					if (std::string(e.what()).substr(0, 7) == "Include") errors += std::string(e.what());
-					else errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
+					if (std::string(e.what()).substr(0, 14) == "Ignore section")	{ invalid_section = true; continue; }
+					if (section_on_error) {
+						errors += ((errors.empty()) ? "" : "\n") + std::string("[" + filePath + "]\n");
+						section_on_error = false;
+					}
+					errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
 					if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
 					if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
 				}
 			}
 
 			if (in_include) {
-				in_include = false;
-				currentSection = "";
+				in_include = false; currentSection = "";
 				try { parseProcessInclude(); }
-				catch (const std::exception& e) { errors += std::string(e.what()); }
+				catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 			}
 
-			if (!errors.empty()) throw std::runtime_error("[" + filePath + "]\n" + errors);
+			if (!errors.empty()) throw std::runtime_error(errors);
 		}
 
 	#pragma endregion
@@ -751,21 +768,6 @@
 
 		#pragma endregion
 
-		#pragma region "Include"
-
-			void ConfigParser::validateIncludeSection(const std::string& section, std::string& key, std::string& value) const {
-				// Required field
-				// Verified command exists
-				// if (config.find("command") == config.end() || config["command"].empty())
-				// 	throw std::runtime_error("[" + section + "] command is required");
-
-				// Path validation
-				if (key == "files" && !isValidPath(value, false))
-					throw std::runtime_error("[" + section + "] file path is invalid");
-			}
-
-		#pragma endregion
-
 	#pragma endregion
 
 	#pragma region "Validate"
@@ -775,7 +777,6 @@
 
 			if		(sectionType == "taskmasterd")			validateTaskmasterdSection(section, key, value);
 			else if	(sectionType == "program:")				validateProgramSection(section, key, value);
-			else if	(sectionType == "include")				validateIncludeSection(section, key, value);
 			// else if	(sectionType == "unix_http_server")		validateUnixHttpServerSection(section);
 			// else if	(sectionType == "inet_http_server")		validateInetHttpServerSection(section);
 			// else if	(sectionType == "group:")				validateGroupSection(section);
