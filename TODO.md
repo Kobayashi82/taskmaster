@@ -13,15 +13,7 @@
 
 ## 2. Sistema de includes
 - **Nueva sección** `[includes]` con clave `files`
-- **Carga recursiva** de archivos de configuración
-- **Restricciones**: archivos incluidos solo `program:` y `group:`
-- **Prevención** de includes recursivos/circulares
 - **Resolución de paths** relativos al archivo principal
-
-## 3. Validaciones de secciones duplicadas
-- **Detectar** secciones repetidas en el mismo archivo
-- **Detectar** secciones repetidas entre archivo principal e includes
-- **Error claro** cuando hay duplicados
 
 ## 4. Validaciones faltantes en campos existentes
 
@@ -29,14 +21,6 @@
 - **Verificar** que el comando existe y es ejecutable
 - **Validar** paths de `stdout_logfile` y `stderr_logfile`
 - **Crear directorios** padre si no existen
-
-### Usuarios y permisos:
-- **Verificar** que `chown` en unix_http_server tiene formato `user:group`
-- **Validar** que el usuario puede cambiar a ese user:group
-
-### Networking:
-- **Verificar** que el puerto en `inet_http_server` no esté en uso
-- **Validar** formato de IP si se especifica `host:port`
 
 ## 5. Valores especiales no procesados
 - **AUTO** en `stdout_logfile`/`stderr_logfile` (usar childlogdir)
