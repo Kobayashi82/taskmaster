@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 20:04:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 00:03:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/26 12:19:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,33 +45,21 @@
 	#pragma region "Initialize"
 
 		void ConfigParser::initialize() {
-			validSections = {
-				"taskmasterd",
-				"program:",				// program:name
-				"group:",				// group:name
-				"unix_http_server",
-				"inet_http_server",
-			};
+			validSections = { "taskmasterd", "program:", "group:", "unix_http_server", "inet_http_server", "include", "taskmasterctl" };
 			validKeys = {
 				{"taskmasterd", {
 					"nodaemon", "silent", "user", "umask", "directory", "logfile", "logfile_maxbytes", "logfile_backups", "loglevel",
 					"pidfile", "identifier", "childlogdir", "strip_ansi", "nocleanup", "minfds", "minprocs", "environment"
 				}},
 				{"program:", {
-					"command", "process_name", "numprocs", "directory", "umask", "priority",
-					"autostart", "autorestart", "startsecs", "startretries", "exitcodes",
-					"stopsignal", "stopwaitsecs", "stopasgroup", "killasgroup", "user",
+					"command", "process_name", "numprocs", "directory", "umask", "priority", "autostart", "autorestart",
+					"startsecs", "startretries", "exitcodes", "stopsignal", "stopwaitsecs", "stopasgroup", "killasgroup", "user",
 					"redirect_stderr", "stdout_logfile", "stderr_logfile", "environment"
 				}},
-				{"unix_http_server", {
-					"file", "chmod", "chown", "username", "password"
-				}},
-				{"inet_http_server", {
-					"port", "username", "password"
-				}},
-				{"group:", {
-					"programs", "priority"
-				}}
+				{"unix_http_server",	{ "file", "chmod", "chown", "username", "password" }},
+				{"inet_http_server",	{ "port", "username", "password" }},
+				{"group:",				{ "programs", "priority" }},
+				{"include",				{ "files" }}
 			};
 		}
 
