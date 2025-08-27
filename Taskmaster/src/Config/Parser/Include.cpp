@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:46:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:17:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 
 		void ConfigParser::parse_include_file(const std::string& filePath) {
 			std::ifstream file(filePath);
-			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
+			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file\n");
 
 			std::string configDir = std::filesystem::path(filePath).parent_path();
 			std::string line;
@@ -104,7 +104,11 @@
 			pushToken(quotedToken);
 
 			for (const auto& file : includeFiles) {
-				try { parse_include_file(file); }
+				try {
+					std::string fullpath = expand_path(file, configPath.parent_path());
+					if (fullpath.empty()) fullpath = file;
+					parse_include_file(fullpath);
+				}
 				catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 			}
 

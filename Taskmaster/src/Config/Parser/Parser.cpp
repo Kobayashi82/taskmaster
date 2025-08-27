@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:47:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:16:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,10 @@
 #pragma region "File"
 
 	void ConfigParser::parse_file(const std::string& filePath) {
-		std::ifstream file(filePath);
+		configPath = expand_path(filePath);
+		if (configPath.empty()) configPath = filePath;
+
+		std::ifstream file(configPath);
 		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
 		currentSection.clear();
@@ -76,7 +79,7 @@
 			catch (const std::exception& e) {
 				if (std::string(e.what()).substr(0, 14) == "Ignore section")	{ invalid_section = true; continue; }
 				if (section_on_error) {
-					errors += ((errors.empty()) ? "" : "\n") + std::string("[" + filePath + "]\n");
+					errors += ((errors.empty()) ? "" : "\n") + std::string("[" + configPath.string() + "]\n");
 					section_on_error = false;
 				}
 				errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";

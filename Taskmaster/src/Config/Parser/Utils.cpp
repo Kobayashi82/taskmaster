@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:19:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:13:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,11 @@
 
 #pragma region "Expand Path"
 
-	std::string ConfigParser::expand_path(const std::string& path) const {
+	std::string ConfigParser::expand_path(const std::string& path, const std::string current_path) const {
 		if (path.empty()) return ("");
 
 		std::filesystem::path p;
+		std::filesystem::path cp = (current_path.empty()) ? std::filesystem::current_path() : std::filesystem::path(current_path);
 
 		// is home
 		if (path[0] == '~') {
@@ -76,7 +77,7 @@
 		// is absolute
 		else if (std::filesystem::path(path).is_absolute()) p = path;
 		// is relative
-		else p = std::filesystem::current_path() / path;
+		else p = cp / path;
 
 		// resolve symbolic links
 		try { return (std::filesystem::weakly_canonical(p).string()); }

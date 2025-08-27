@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:51:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 13:11:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
+	#include <filesystem>														// std::filesystem::path()
 
 #pragma endregion
 
@@ -30,13 +31,15 @@
 		private:
 
 			// Variables
-			bool														in_include;
-			bool														section_on_error;
 			std::string													currentSection;
 			std::map<std::string, std::map<std::string, std::string>>	sections;
 			std::set<std::string>										validSections;
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
+
+			bool														in_include;
+			bool														section_on_error;
+			std::filesystem::path										configPath;
 
 			// Initialize
 			void		initialize();
@@ -101,7 +104,7 @@
 			std::string	trim(const std::string& str) const;
 			std::string	toLower(const std::string& str) const;
 			std::string	toUpper(const std::string& str) const;
-			std::string	expand_path(const std::string& path) const;
+			std::string	expand_path(const std::string& path, const std::string current_path = "") const;
 			std::string	temp_path() const;
 			std::string	config_path() const;
 			int			check_fd_limit(uint16_t minfds) const;

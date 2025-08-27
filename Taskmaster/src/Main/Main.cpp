@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:41:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:58:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@
 			ConfigOptions Options;
 			if ((result = Options.parse(argc, argv))) return (result);
 			// Options::validate();
-			Parser.parse_file("taskmasterd.ini");
+			Parser.parse_file("../config/taskmasterd.conf");
 			Parser.merge_options(Options);
 			Parser.print();
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
