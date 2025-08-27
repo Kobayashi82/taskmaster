@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 13:17:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 14:16:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,34 +76,10 @@
 	#pragma region "Process"
 
 		void ConfigParser::process_includes() {
-			std::vector<std::string> includeFiles;
-			std::string files = get_value("include", "files");
-			std::string errors, current;
-			bool inQuotes = false;
-			bool quotedToken = false;
-			char quoteChar = 0;
+			std::vector<std::string> files = parse_files(get_value("include", "files"));
+			std::string errors;
 
-			auto pushToken = [&](bool wasQuoted) {
-				if (!current.empty()) {
-					std::string token = wasQuoted ? current : trim(current);
-					if (!token.empty()) includeFiles.push_back(token);
-					current.clear();
-				}
-			};
-
-			for (size_t i = 0; i < files.size(); ++i) {
-				char c = files[i];
-
-				if (c == '\\' && i + 1 < files.size()) current.push_back(files[++i]);
-				else if ((c == '"' || c == '\'') && !inQuotes) { inQuotes = quotedToken = true; quoteChar = c; }
-				else if (inQuotes && c == quoteChar) inQuotes = false;
-				else if (!inQuotes && (c == ' ' || c == ',')) { pushToken(quotedToken); quotedToken = false; }
-				else current.push_back(c);
-			}
-
-			pushToken(quotedToken);
-
-			for (const auto& file : includeFiles) {
+			for (const auto& file : files) {
 				try {
 					std::string fullpath = expand_path(file, configPath.parent_path());
 					if (fullpath.empty()) fullpath = file;

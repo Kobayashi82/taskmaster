@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 13:13:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 14:54:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include <unistd.h>															// getuid()
 	#include <algorithm>														// std::transform()
-	#include <filesystem>														// std::filesystem::path(), std::filesystem::current_path(), std::filesystem::temp_directory_path(), std::filesystem::weakly_canonical(), std::filesystem::exists()
+	#include <filesystem>														// std::filesystem::path(), std::filesystem::parent_path(), std::filesystem::current_path(), std::filesystem::temp_directory_path(), std::filesystem::weakly_canonical(), std::filesystem::exists()
 	#include <sys/resource.h>													// getrlimit(), setrlimit()
 	#include <pwd.h>															// struct passwd, getpwnam()
 
@@ -58,7 +58,7 @@
 
 #pragma region "Expand Path"
 
-	std::string ConfigParser::expand_path(const std::string& path, const std::string current_path) const {
+	std::string ConfigParser::expand_path(const std::string& path, const std::string current_path, bool expand_symbolic) const {
 		if (path.empty()) return ("");
 
 		std::filesystem::path p;
@@ -80,8 +80,12 @@
 		else p = cp / path;
 
 		// resolve symbolic links
-		try { return (std::filesystem::weakly_canonical(p).string()); }
-		catch (const std::filesystem::filesystem_error&) { return (""); }
+		if (expand_symbolic) {
+			try { return (std::filesystem::weakly_canonical(p).string()); }
+			catch (const std::filesystem::filesystem_error&) { return (""); }
+		}
+
+		return (p);
 	}
 
 #pragma endregion
@@ -153,7 +157,7 @@
 
 #pragma endregion
 
-#pragma region "Parser Size"
+#pragma region "Parse Size"
 
 	long ConfigParser::parse_size(const std::string &value) const {
 		char *end;
@@ -171,6 +175,47 @@
 		else if (suffix == "MB")	return (num * 1024 * 1024);
 		else if (suffix == "GB")	return (num * 1024 * 1024 * 1024);
 		else						return (-1);
+	}
+
+#pragma endregion
+
+#pragma region "Parse Files"
+
+	std::vector<std::string> ConfigParser::parse_files(const std::string& fileString) {
+		std::vector<std::string>	files;
+		std::string					current;
+		bool						inQuotes = false;
+		bool						quotedToken = false;
+		char						quoteChar = 0;
+
+		auto pushToken = [&](bool wasQuoted) {
+			if (!current.empty()) {
+				std::string token = wasQuoted ? current : trim(current);
+				if (!token.empty()) files.push_back(token);
+				current.clear();
+			}
+		};
+
+		for (size_t i = 0; i < fileString.size(); ++i) {
+			char c = fileString[i];
+
+			if		(c == '\\' && i + 1 < fileString.size())			  current.push_back(fileString[++i]);
+			else if	((c == '"' || c == '\'') && !inQuotes)				{ inQuotes = quotedToken = true; quoteChar = c; }
+			else if	(inQuotes && c == quoteChar)						  inQuotes = false;
+			else if	(!inQuotes && (c == ' ' || c == ',' || c == '\t'))	{ pushToken(quotedToken); quotedToken = false; }
+			else														  current.push_back(c);
+		}
+
+		pushToken(quotedToken);
+
+		for (auto& file : files) {
+			std::string fullpath = expand_path(file, configPath.parent_path(), false);
+			if (!fullpath.empty()) file = fullpath;
+		}
+
+		files = expand_globs(files);
+
+ 		return (files);
 	}
 
 #pragma endregion

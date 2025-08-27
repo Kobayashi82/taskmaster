@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 13:11:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 15:05:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,16 +100,24 @@
 			std::vector<std::string>			get_program() const;
 			std::vector<std::string>			get_group() const;
 
+			// Globbing
+			bool								has_glob(const std::string& path);
+			bool								match_glob(const std::string& pattern, const std::string& text);
+			std::string							glob_to_regex(const std::string& glob);
+			std::vector<std::string>			expand_glob(const std::string& pattern);
+			std::vector<std::string>			expand_globs(const std::vector<std::string>& patterns);
+
 			// Utils
-			std::string	trim(const std::string& str) const;
-			std::string	toLower(const std::string& str) const;
-			std::string	toUpper(const std::string& str) const;
-			std::string	expand_path(const std::string& path, const std::string current_path = "") const;
-			std::string	temp_path() const;
-			std::string	config_path() const;
-			int			check_fd_limit(uint16_t minfds) const;
-			int			check_process_limit(uint16_t minprocs) const;
-			long		parse_size(const std::string &value) const;
+			std::string							trim(const std::string& str) const;
+			std::string							toLower(const std::string& str) const;
+			std::string							toUpper(const std::string& str) const;
+			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true) const;
+			std::string							temp_path() const;
+			std::string							config_path() const;
+			std::vector<std::string>			parse_files(const std::string& fileString);
+			int									check_fd_limit(uint16_t minfds) const;
+			int									check_process_limit(uint16_t minprocs) const;
+			long								parse_size(const std::string &value) const;
 
 	};
 
