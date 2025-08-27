@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 22:20:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:19:50 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 	#include "Config/Options.hpp"
 
+	#include <cstdint>															// uint16_t
 	#include <string>															// std::string
 	#include <set>																// std::set
 	#include <map>																// std::map
@@ -42,10 +43,6 @@
 			// Initialize
 			void		initialize();
 			void		default_values();
-
-			// Utils
-			std::string	trim(const std::string& str) const;
-			std::string	toLower(const std::string& str) const;
 
 			// Key=Value
 			bool		isValidKey(const std::string& section, const std::string& key) const;
@@ -104,6 +101,17 @@
 			std::map<std::string, std::string>	getSectionWithDefaults(const std::string& section) const;
 			std::vector<std::string>			getProgramSections() const;
 			std::vector<std::string>			getGroupSections() const;
+
+			// Utils
+			std::string	trim(const std::string& str) const;
+			std::string	toLower(const std::string& str) const;
+			std::string	toUpper(const std::string& str) const;
+			std::string	expand_path(const std::string& path) const;
+			std::string	temp_path() const;
+			std::string	config_path() const;
+			int			check_fd_limit(uint16_t minfds) const;
+			int			check_process_limit(uint16_t minprocs) const;
+			long		parse_size(const std::string &value) const;
 
 			// Debug
 			void	print() const;
