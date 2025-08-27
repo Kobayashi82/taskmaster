@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:16:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:44:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 
 	#pragma region "Type"
 
-		std::string ConfigParser::SectionType(const std::string& section) const {
+		std::string ConfigParser::section_type(const std::string& section) const {
 			for (const auto& validSection : validSections) {
 				if (validSection.back() == ':') {
 					if (section.substr(0, validSection.length()) == validSection)	return (validSection);
@@ -36,7 +36,7 @@
 
 	#pragma region "Is Valid"
 
-		bool ConfigParser::isValidSection(const std::string& section) const {
+		bool ConfigParser::valid_section(const std::string& section) const {
 			if (validSections.count(section)) return (true);
 
 			for (const auto& validSection : validSections) {
@@ -54,7 +54,7 @@
 
 	#pragma region "Is Section"
 
-		bool ConfigParser::isSection(const std::string& line) const {
+		bool ConfigParser::is_section(const std::string& line) const {
 			std::string trimmed = trim(line);
 			return trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']';
 		}
@@ -63,7 +63,7 @@
 
 	#pragma region "Extract"
 
-		std::string ConfigParser::extractSection(const std::string& line) const {
+		std::string ConfigParser::extract_section(const std::string& line) const {
 			std::string trimmed = trim(line);
 			return (trimmed.substr(1, trimmed.length() - 2));
 		}
@@ -72,16 +72,16 @@
 
 	#pragma region "Parse"
 
-		void ConfigParser::parseSection(const std::string& line) {
-			std::string section = extractSection(line);
+		void ConfigParser::parse_section(const std::string& line) {
+			std::string section = extract_section(line);
 
-			if (!isValidSection(section))					{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
+			if (!valid_section(section))					{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
 			if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section:\t[" + section + "]"); }
 
 			currentSection = section;
 			if (currentSection == "taskmasterctl") { throw std::runtime_error("Ignore section"); }
 
-			std::string sectionType = SectionType(section);
+			std::string sectionType = section_type(section);
 			if (!sectionType.empty()) {
 				auto defaultSectionIt = defaultValues.find(sectionType);
 				if (defaultSectionIt != defaultValues.end()) sections[currentSection] = defaultSectionIt->second;

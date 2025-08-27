@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/26 20:19:16 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:41:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,18 +52,9 @@
 			ConfigOptions Options;
 			if ((result = Options.parse(argc, argv))) return (result);
 			// Options::validate();
-			Parser.parseFile("taskmasterd.ini");
-			// Parser.validate();
-			// Parser.validate();
-			Parser.add_opt_args(Options);
-
-			// Test
-			// for (const auto& prog : Parser.getProgramSections()) {
-			// 	std::cout << prog.substr(8) << std::endl;
-			// }
-			// std::cout << Parser.getValue("taskmasterd", "nodaemon") << std::endl;
-			// std::cout << Parser.getValue("program:dummy", "command") << std::endl;
-
+			Parser.parse_file("taskmasterd.ini");
+			Parser.merge_options(Options);
+			Parser.print();
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
 
 		return (0);
@@ -77,7 +68,6 @@
 		int result = 0;
 
 		if ((result = load_configuration(argc, argv))) return (result - 1);
-		Parser.print();
 
 		return (result);
 	}

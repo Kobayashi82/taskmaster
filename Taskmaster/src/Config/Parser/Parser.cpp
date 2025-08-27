@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 11:48:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:47:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 
 #pragma region "File"
 
-	void ConfigParser::parseFile(const std::string& filePath) {
+	void ConfigParser::parse_file(const std::string& filePath) {
 		std::ifstream file(filePath);
 		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
@@ -58,20 +58,20 @@
 			if (line.empty()) continue;
 
 			try {
-				if (in_include && isSection(line)) {
-					std::string section = extractSection(line);
+				if (in_include && is_section(line)) {
+					std::string section = extract_section(line);
 					if (section != "include" && in_include) {
 						in_include = false; currentSection = "";
-						try { parseProcessInclude(); invalid_section = false; }
+						try { process_includes(); invalid_section = false; }
 						catch (const std::exception& e) {
 							errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
 							section_on_error = true; invalid_section = false;
 						}
 					}
 				}
-				if (isSection(line)) {		parseSection(line); invalid_section = false; }
+				if (is_section(line)) {		parse_section(line); invalid_section = false; }
 				else if (invalid_section)	continue;
-				else						parseKeyValue(line);
+				else						parse_key(line);
 			}
 			catch (const std::exception& e) {
 				if (std::string(e.what()).substr(0, 14) == "Ignore section")	{ invalid_section = true; continue; }
@@ -87,7 +87,7 @@
 
 		if (in_include) {
 			in_include = false; currentSection = "";
-			try { parseProcessInclude(); }
+			try { process_includes(); }
 			catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 		}
 
@@ -96,9 +96,9 @@
 
 #pragma endregion
 
-#pragma region "Add OPT Args"
+#pragma region "Merged Options"
 
-	void ConfigParser::add_opt_args(ConfigOptions& Options) {
+	void ConfigParser::merge_options(ConfigOptions& Options) {
 		if (Options.options.find_first_of('n') != std::string::npos) sections["taskmasterd"]["nodaemon"]			= Options.nodaemon;
 		if (Options.options.find_first_of('s') != std::string::npos) sections["taskmasterd"]["silent"]				= Options.silent;
 		if (Options.options.find_first_of('u') != std::string::npos) sections["taskmasterd"]["user"]				= Options.user;

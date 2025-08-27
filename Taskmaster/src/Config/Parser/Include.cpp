@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:22:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/27 12:46:44 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 
 	#pragma region "File"
 
-		void ConfigParser::parseIncludeFile(const std::string& filePath) {
+		void ConfigParser::parse_include_file(const std::string& filePath) {
 			std::ifstream file(filePath);
 			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file: " + filePath + "\n");
 
@@ -41,15 +41,15 @@
 				if (line.empty()) continue;
 
 				try {
-					if (isSection(line)) {
-						std::string section = extractSection(line);
+					if (is_section(line)) {
+						std::string section = extract_section(line);
 						if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:")
 							throw std::runtime_error("Invalid section:\t[" + section + "]");
-						parseSection(line);
+						parse_section(line);
 						invalid_section = false;
 					}
 					else if (invalid_section)	continue;
-					else						parseKeyValue(line);
+					else						parse_key(line);
 				}
 				catch (const std::exception& e) {
 					if (std::string(e.what()).substr(0, 14) == "Ignore section") {
@@ -75,9 +75,9 @@
 
 	#pragma region "Process"
 
-		void ConfigParser::parseProcessInclude() {
+		void ConfigParser::process_includes() {
 			std::vector<std::string> includeFiles;
-			std::string files = getValue("include", "files");
+			std::string files = get_value("include", "files");
 			std::string errors, current;
 			bool inQuotes = false;
 			bool quotedToken = false;
@@ -104,7 +104,7 @@
 			pushToken(quotedToken);
 
 			for (const auto& file : includeFiles) {
-				try { parseIncludeFile(file); }
+				try { parse_include_file(file); }
 				catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 			}
 
