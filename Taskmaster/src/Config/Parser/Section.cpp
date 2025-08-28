@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:41:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 20:56:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,6 @@
 				environment_del(temp_environment, "PROGRAM_NAME");
 				environment_del(temp_environment, "GROUP_NAME");
 			}
-
 		}
 
 	#pragma endregion
