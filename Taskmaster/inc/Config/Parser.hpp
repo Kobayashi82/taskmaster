@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 15:05:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 16:38:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,9 +37,11 @@
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 
+			std::map<std::string, std::string>							environment;
+			std::filesystem::path										configPath;
 			bool														in_include;
 			bool														section_on_error;
-			std::filesystem::path										configPath;
+
 
 			// Initialize
 			void		initialize();
@@ -76,6 +78,21 @@
 			// Include
 			void		parse_include_file(const std::string& filePath);
 			void		process_includes();
+
+			// Expand
+			std::string	apply_format(const std::string& value, const std::string& format);
+			std::string	apply_substring(const std::string& value, const std::string& substr_spec);
+			std::string	expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env);
+			std::string	environment_expand(std::string& str, std::map<std::string, std::string>& env);
+
+
+			// Environment
+			void	environment_del(std::map<std::string, std::string>& env, const std::string& key);
+			void	environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
+			void	environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
+			void	environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
+			void	environment_initialize();
+			void	environment_print(const std::map<std::string, std::string>& env) const;
 
 		public:
 

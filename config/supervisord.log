@@ -43,18 +43,7 @@
 2025-08-21 12:30:10,024 INFO success: dummy entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-08-21 12:32:40,746 WARN received SIGTERM indicating exit request
 2025-08-21 12:32:40,747 INFO waiting for dummy to die
-2025-08-21 12:32:40,749 ERRO Web interface error:Traceback (most recent call last):
-  File "/usr/lib/python3/dist-packages/supervisor/web.py", line 49, in more
-    response = self.callback()
-  File "/usr/lib/python3/dist-packages/supervisor/web.py", line 172, in __call__
-    body = self.render()
-  File "/usr/lib/python3/dist-packages/supervisor/web.py", line 502, in render
-    info = rpcinterface.supervisor.getProcessInfo(sent_name)
-  File "/usr/lib/python3/dist-packages/supervisor/rpcinterface.py", line 636, in getProcessInfo
-    self._update('getProcessInfo')
-  File "/usr/lib/python3/dist-packages/supervisor/rpcinterface.py", line 54, in _update
-    raise RPCError(Faults.SHUTDOWN_STATE)
-supervisor.xmlrpc.RPCError: code=6, text='SHUTDOWN_STATE'
+2025-08-21 12:32:40,749 ERRO Web interface
 2025-08-21 12:32:40,749 INFO stopped: dummy (terminated by SIGTERM)
 2025-08-21 12:33:15,477 INFO RPC interface 'supervisor' initialized
 2025-08-21 12:33:15,478 CRIT Server 'unix_http_server' running without any HTTP authentication checking

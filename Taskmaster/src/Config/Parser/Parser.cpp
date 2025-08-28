@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 13:23:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 15:33:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@
 		std::ifstream file(configPath);
 		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
+		environment_initialize();
 		currentSection.clear();
 		sections.clear();
 
@@ -93,6 +94,13 @@
 			try { process_includes(); }
 			catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 		}
+
+		std::map<std::string, std::string> program_env;
+		std::map<std::string, std::string> program_src;
+		environment_add(program_src, "KEY", "VALUE");
+		environment_clone(program_env, program_src);
+		environment_add_batch(program_env, get_value("taskmasterd", "environment"));
+		environment_print(program_env);
 
 		if (!errors.empty()) throw std::runtime_error(errors);
 	}

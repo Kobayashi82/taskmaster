@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:44:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 16:45:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,10 @@
 
 			key = toLower(key);
 			if (value.empty()) throw std::runtime_error("Empty value for '" + key + "' in section [" + currentSection + "]");
-			validate(currentSection, key, value);
-			sections[currentSection][key] = value;
+
+			std::string expanded_value = environment_expand(value, environment);
+			validate(currentSection, key, expanded_value);
+			sections[currentSection][key] = expanded_value;
 		}
 
 	#pragma endregion
