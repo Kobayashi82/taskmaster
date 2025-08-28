@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 14:16:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 20:46:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,17 @@
 			std::ifstream file(filePath);
 			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file\n");
 
-			std::string configDir = std::filesystem::path(filePath).parent_path();
-			std::string line;
-			std::string errors;
-			bool invalid_section = false;
-			int lineNumber = 0;
+			std::string	configDir = std::filesystem::path(filePath).parent_path();
+			std::string	line;
+			std::string	errors;
+			bool		invalid_section = false;
+			int			lineNumber = 0;
+
+			environment_add(temp_environment, "HERE", std::filesystem::path(filePath).parent_path());
 
 			while (std::getline(file, line)) {
 				lineNumber++;
-				size_t pos = line.find_first_of(";#");
-				if (pos != std::string::npos) line = line.substr(0, pos);
-				line = trim(line);
+				line = trim(remove_comments(line));
 				if (line.empty()) continue;
 
 				try {

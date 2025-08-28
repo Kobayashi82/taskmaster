@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 15:33:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 20:51:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 	#include "Config/Options.hpp"
 	#include "Config/Parser.hpp"
 
+	#include <unistd.h>															// 
 	#include <fstream>															// std::ifstream
 	#include <iostream>															// std::cout
 
@@ -46,19 +47,22 @@
 		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
 		environment_initialize();
+		char hostname[255];
+		if (!gethostname(hostname, sizeof(hostname)))	environment_add(temp_environment, "HOST_NAME", std::string(hostname));
+		else											environment_add(temp_environment, "HOST_NAME", "unknown");
+		environment_add(temp_environment, "HERE", configPath.parent_path());
+
 		currentSection.clear();
 		sections.clear();
 
-		std::string line;
-		std::string errors;
-		bool invalid_section = false;
-		int lineNumber = 0;
+		std::string	line;
+		std::string	errors;
+		bool		invalid_section = false;
+		int			lineNumber = 0;
 
 		while (std::getline(file, line)) {
 			lineNumber++;
-			size_t pos = line.find_first_of(";#");
-			if (pos != std::string::npos) line = line.substr(0, pos);
-			line = trim(line);
+			line = trim(remove_comments(line));
 			if (line.empty()) continue;
 
 			try {
@@ -66,11 +70,13 @@
 					std::string section = extract_section(line);
 					if (section != "include" && in_include) {
 						in_include = false; currentSection = "";
-						try { process_includes(); invalid_section = false; }
+						try { process_includes(); }
 						catch (const std::exception& e) {
 							errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
-							section_on_error = true; invalid_section = false;
+							section_on_error = true;
 						}
+						invalid_section = false;
+						environment_add(temp_environment, "HERE", configPath.parent_path());
 					}
 				}
 				if (is_section(line)) {		parse_section(line); invalid_section = false; }
@@ -93,6 +99,7 @@
 			in_include = false; currentSection = "";
 			try { process_includes(); }
 			catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
+			environment_add(temp_environment, "HERE", configPath.parent_path());
 		}
 
 		std::map<std::string, std::string> program_env;
@@ -101,6 +108,7 @@
 		environment_clone(program_env, program_src);
 		environment_add_batch(program_env, get_value("taskmasterd", "environment"));
 		environment_print(program_env);
+		std::cerr << get_value("program:dummy1", "stderr_logfile") << "\n";
 
 		if (!errors.empty()) throw std::runtime_error(errors);
 	}
@@ -129,6 +137,7 @@
 	}
 
 #pragma endregion
+
 
 #pragma region "Print"
 

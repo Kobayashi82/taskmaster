@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 14:54:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 18:35:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,29 @@
 		std::transform(result.begin(), result.end(), result.begin(), ::tolower);
 
 		return (result);
+	}
+
+#pragma endregion
+
+#pragma region "Remove Comments"
+
+	std::string ConfigParser::remove_comments(const std::string& line) const {
+		char	quoteChar = 0;
+		bool	inQuotes = false;
+		bool	escaped = false;
+
+		for (size_t i = 0; i < line.size(); ++i) {
+			char c = line[i];
+
+			if (escaped)								{ escaped = false; continue; }
+			if (c == '\\')								{ escaped = true; continue; }
+			if ((c == '"' || c == '\'') && !inQuotes)	{ inQuotes = true; quoteChar = c; continue; }
+			else if (inQuotes && c == quoteChar)		{ inQuotes = false; continue; }
+
+			if (!inQuotes && (c == '#' || c == ';'))	return (line.substr(0, i));
+		}
+
+		return (line);
 	}
 
 #pragma endregion

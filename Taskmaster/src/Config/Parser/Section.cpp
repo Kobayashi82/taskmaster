@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:44:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 20:41:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,19 @@
 			}
 
 			if (currentSection == "include") in_include = true;
+
+			if (currentSection.substr(0, 8) == "program:") {
+				std::string program_name = trim(currentSection.substr(8));
+				if (!program_name.empty()) environment_add(temp_environment, "PROGRAM_NAME", program_name);
+			}
+			else if (currentSection.substr(0, 6) == "group:") {
+				std::string group_name = trim(currentSection.substr(7));
+				if (!group_name.empty()) environment_add(temp_environment, "GROUP_NAME", group_name);
+			} else {
+				environment_del(temp_environment, "PROGRAM_NAME");
+				environment_del(temp_environment, "GROUP_NAME");
+			}
+
 		}
 
 	#pragma endregion

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:37:28 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:45:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/28 18:46:01 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,18 +56,14 @@
 
 	#pragma region "Section"
 
-		std::map<std::string, std::string> ConfigParser::get_section(const std::string& section) const {
-			auto it = sections.find(section);
-			if (it != sections.end()) return (it->second);
+		std::map<std::string, std::string> ConfigParser::get_section(const std::string& section, bool use_defaults) const {
+			if (!use_defaults) {
+				auto it = sections.find(section);
+				if (it != sections.end()) return (it->second);
 
-			return (std::map<std::string, std::string>());
-		}
+				return (std::map<std::string, std::string>());
+			}
 
-	#pragma endregion
-
-	#pragma region "Section with Defaults"
-
-		std::map<std::string, std::string> ConfigParser::get_section_with_defaults(const std::string& section) const {
 			std::map<std::string, std::string> result;
 
 			// Empezar con los defaults

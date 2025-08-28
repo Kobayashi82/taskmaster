@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/28 16:30:48 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/28 18:40:28 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -69,7 +69,7 @@ SRCS		= Main/Main.cpp												\
 			  Config/Parser/Include.cpp Config/Parser/Validation.cpp	\
 			  Config/Parser/Errors.cpp Config/Parser/Getters.cpp		\
 			  Config/Parser/Globbing.cpp Config/Parser/Utils.cpp		\
-			  Config/Parser/Environment.cpp Config/Parser/Expanser.cpp
+			  Config/Parser/Environment.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #
