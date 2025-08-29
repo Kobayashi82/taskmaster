@@ -1,8 +1,8 @@
 <div align="center">
 
 ![System & Kernel](https://img.shields.io/badge/System-brown?style=for-the-badge)
-![Process Control](https://img.shields.io/badge/Process-Control-blue?style=for-the-badge)
-![Job Daemon](https://img.shields.io/badge/Job-Daemon-green?style=for-the-badge)
+![Job Control](Job-Control)
+![Daemon Proceds](https://img.shields.io/badge/Daemon-Process-green?style=for-the-badge)
 ![C++ Language](https://img.shields.io/badge/Language-C++-red?style=for-the-badge)
 
 *Un daemon de control de trabajos con características similares a supervisor*
