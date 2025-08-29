@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:51:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 13:56:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 	#include "Config/Options.hpp"
 	#include "Config/Parser.hpp"
 
-	#include <unistd.h>															// 
+	#include <unistd.h>															// gethostname()
 	#include <fstream>															// std::ifstream
 	#include <iostream>															// std::cout
 

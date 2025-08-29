@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:43:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 15:49:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@
 			// Validation
 			bool						valid_bool(const std::string& value) const;
 			bool						valid_number(const std::string& value, long min = 0, long max = 2147483647) const;
-			bool						valid_path(const std::string& value, bool is_directory) const;
+			bool						valid_path(const std::string& value, bool is_directory = false, bool allow_auto = false, bool allow_none = false) const;
 			bool						valid_signal(const std::string& value) const;
 			bool						valid_code(const std::string& value) const;
 			bool						valid_loglevel(const std::string& value) const;
@@ -80,29 +80,35 @@
 			void						process_includes();
 
 			// Environment
-			std::string					apply_format(const std::string& value, const std::string& format);
-			std::string					apply_substring(const std::string& value, const std::string& substr_spec);
-			std::string					expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env);
+			std::string					environment_apply_format(const std::string& value, const std::string& format);
+			std::string					environment_apply_substring(const std::string& value, const std::string& substr_spec);
+			std::string					environment_expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env);
 			std::string					environment_expand(std::map<std::string, std::string>& env, std::string& str);
+			bool						environment_validate_variable(const std::string& var) const;
+			bool						environment_validate_quotes(const std::string& value) const;
+			bool						environment_validate(const std::string& env_string) const;
 			void						environment_del(std::map<std::string, std::string>& env, const std::string& key);
 			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
 			void						environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
 			void						environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
 			void						environment_initialize();
 			void						environment_print(const std::map<std::string, std::string>& env) const;
-
 			// Globbing
-			bool						has_glob(const std::string& path);
-			bool						match_glob(const std::string& pattern, const std::string& text);
-			std::string					glob_to_regex(const std::string& glob);
-			std::vector<std::string>	expand_glob(const std::string& pattern);
-			std::vector<std::string>	expand_globs(const std::vector<std::string>& patterns);
+			bool						globbing_has_glob(const std::string& path);
+			bool						globbing_match_glob(const std::string& pattern, const std::string& text);
+			std::string					globbing_glob_to_regex(const std::string& glob);
+			std::vector<std::string>	globbing_expand_glob(const std::string& pattern);
+			std::vector<std::string>	globbing_expand(const std::vector<std::string>& patterns);
 
 			// Utils
 			std::string					trim(const std::string& str) const;
 			std::string					toLower(const std::string& str) const;
 			std::string					toUpper(const std::string& str) const;
 			std::string					remove_comments(const std::string& line) const;
+
+			std::string					extract_command(const std::string& line) const;
+			bool						is_exec(const std::string& path) const;
+			bool						command_is_executable(const std::string& input, std::string& resolved) const;
 
 		public:
 

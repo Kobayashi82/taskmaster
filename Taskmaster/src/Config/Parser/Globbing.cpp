@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 14:58:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 15:15:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 
 #pragma region "Has Glob"
 
-	bool ConfigParser::has_glob(const std::string& path) {
+	bool ConfigParser::globbing_has_glob(const std::string& path) {
 		return (path.find_first_of("*?[") != std::string::npos);
 	}
 
@@ -29,9 +29,9 @@
 
 #pragma region "Match Glob"
 
-	bool ConfigParser::match_glob(const std::string& pattern, const std::string& text) {
+	bool ConfigParser::globbing_match_glob(const std::string& pattern, const std::string& text) {
 		try {
-			std::string regex_pattern = glob_to_regex(pattern);
+			std::string regex_pattern = globbing_glob_to_regex(pattern);
 			std::regex r(regex_pattern, std::regex_constants::nosubs);
 
 			return (std::regex_match(text, r));
@@ -42,7 +42,7 @@
 
 #pragma region "Glob to Regex"
 
-	std::string ConfigParser::glob_to_regex(const std::string& glob) {
+	std::string ConfigParser::globbing_glob_to_regex(const std::string& glob) {
 		std::string regex;
 		regex.reserve(glob.size() * 2);
 
@@ -76,7 +76,7 @@
 
 #pragma region "Expand Glob"
 
-	std::vector<std::string> ConfigParser::expand_glob(const std::string& pattern) {
+	std::vector<std::string> ConfigParser::globbing_expand_glob(const std::string& pattern) {
 		std::vector<std::string>	matches, parts;
 		std::filesystem::path		base, pathPattern(pattern);
 		std::string					glob_pattern;
@@ -87,7 +87,7 @@
 
 		size_t glob_idx = 0;
 		for (; glob_idx < parts.size(); ++glob_idx) {
-			if (has_glob(parts[glob_idx])) break;
+			if (globbing_has_glob(parts[glob_idx])) break;
 		}
 
 		for (size_t i = 0; i < glob_idx; ++i) base /= parts[i];
@@ -103,7 +103,7 @@
 			for (const auto& entry : std::filesystem::recursive_directory_iterator(base)) {
 				if (entry.is_regular_file()) {
 					std::filesystem::path rel = std::filesystem::relative(entry.path(), base);
-					if (match_glob(glob_pattern, rel.string())) matches.push_back(entry.path().string());
+					if (globbing_match_glob(glob_pattern, rel.string())) matches.push_back(entry.path().string());
 				}
 			}
 			std::sort(matches.begin(), matches.end());
@@ -118,12 +118,12 @@
 
 #pragma region "Expand Globs"
 
-	std::vector<std::string> ConfigParser::expand_globs(const std::vector<std::string>& patterns) {
+	std::vector<std::string> ConfigParser::globbing_expand(const std::vector<std::string>& patterns) {
 		std::vector<std::string> result;
 
 		for (const auto& pattern : patterns) {
-			if (has_glob(pattern)) {
-				auto matches = expand_glob(pattern);
+			if (globbing_has_glob(pattern)) {
+				auto matches = globbing_expand_glob(pattern);
 				result.insert(result.end(), matches.begin(), matches.end());
 			} else result.push_back(pattern);
 		}

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:50:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 15:50:01 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,12 +49,15 @@
 
 		#pragma region "Path"
 
-			bool ConfigParser::valid_path(const std::string& value, bool is_directory) const {
-				if (value.empty()) return (false);
-				if (value == "do not change") return (true);
+			bool ConfigParser::valid_path(const std::string& value, bool is_directory, bool allow_auto, bool allow_none) const {
+				std::string fullPath;
 
-				std::string fullPath = expand_path(value);
-				if (fullPath.empty()) return (false);
+				if (value.empty())											return (false);
+				if (allow_none && toLower(value) == "none")					return (true);
+				if (allow_auto && toLower(value) == "auto")					return (true);
+				else if (is_directory && toLower(value) == "do not change")	fullPath = expand_path(".");
+				else														fullPath = expand_path(value);
+				if (fullPath.empty())										return (false);
 
 				std::filesystem::path p(fullPath);
 
@@ -145,8 +148,8 @@
 		#pragma region "User"
 
 			bool ConfigParser::valid_user(const std::string& value) const {
-				if (value.empty()) return (false);
-				if (value == "do not switch") return (true);
+				if (value.empty())						return (false);
+				if (toLower(value) == "do not switch")	return (true);
 
 				struct passwd *pw = getpwnam(value.c_str());
 				if (!pw) return (false);
@@ -208,18 +211,26 @@
 				if (key == "directory" && !valid_path(value, true))
 					throw std::runtime_error("[" + section + "] directory path is invalid");
 
-				if (key == "logfile" && !valid_path(value, false))
+				if (key == "logfile" && !valid_path(value, false, false, true))
 					throw std::runtime_error("[" + section + "] logfile path is invalid");
 
-				if (key == "pidfile" && !valid_path(value, false))
+				if (key == "pidfile" && !valid_path(value))
 					throw std::runtime_error("[" + section + "] pidfile path is invalid");
 
 				if (key == "childlogdir" && !valid_path(value, true))
 					throw std::runtime_error("[" + section + "] childlogdir path is invalid");
 
+				// User validation
+				if (key == "user" && !valid_user(value))
+					throw std::runtime_error("[" + section + "] Invalid user");
+
 				// Umask validation
 				if (key == "umask" && !valid_umask(value))
-					throw std::runtime_error("[" + section + "] umask must be in octal format (e.g., 022)");
+					throw std::runtime_error("[" + section + "] umask must be in octal format");
+
+				// Environment validation
+				if (key == "environment" && !environment_validate(value))
+					throw std::runtime_error("[" + section + "] environment format is invalid");
 			}
 
 		#pragma endregion
@@ -229,8 +240,17 @@
 			void ConfigParser::validate_program(const std::string& section, std::string& key, std::string& value) const {
 				// Required field
 				// Verified command exists
-				// if (config.find("command") == config.end() || config["command"].empty())
-				// 	throw std::runtime_error("[" + section + "] command is required");
+				if (key == "command") {
+					std::string command;
+					if (!command_is_executable(value, command))
+						throw std::runtime_error("[" + section + "] command is not valid");
+				}
+
+				if (key == "process_name") {
+					std::string numprocs = get_value(currentSection, "numprocs");
+					if (numprocs != "1" && value.find("${PROCESS_NAME") == std::string::npos && value.find("$PROCESS_NAME") == std::string::npos)
+						throw std::runtime_error("[" + section + "] process_name must include $PROCESS_NAME when numprocs is greater than 1");
+				}
 
 				// Command
 				if (key == "command" && value.empty())
@@ -250,8 +270,29 @@
 					throw std::runtime_error("[" + section + "] redirect_stderr must be true or false");
 
 				// Numeric values
+				if (key == "stdout_logfile_maxbytes") {
+					long bytes = parse_size(value);
+					if (bytes == -1 || !valid_number(std::to_string(bytes), 0, INT_MAX))
+						throw std::runtime_error("[" + section + "] stdout_logfile_maxbytes must be between 0 bytes and 2 GB");
+				}
+				if (key == "stdout_logfile_backups" && !valid_number(value, 0, 1000))
+					throw std::runtime_error("[" + section + "] stdout_logfile_backups must be between 0 and 1000");
+
+				if (key == "stderr_logfile_maxbytes") {
+					long bytes = parse_size(value);
+					if (bytes == -1 || !valid_number(std::to_string(bytes), 0, INT_MAX))
+						throw std::runtime_error("[" + section + "] stderr_logfile_maxbytes must be between 0 bytes and 2 GB");
+				}
+				if (key == "stderr_logfile_backups" && !valid_number(value, 0, 1000))
+					throw std::runtime_error("[" + section + "] stderr_logfile_backups must be between 0 and 1000");
+
 				if (key == "numprocs" && !valid_number(value, 1, 1000))
 					throw std::runtime_error("[" + section + "] numprocs must be between 1 and 1000");
+				if (key == "numprocs" && value != "1") {
+					std::string process_name = get_value(currentSection, "process_name");
+					if (process_name.empty() || (process_name.find("${PROCESS_NAME") == std::string::npos && process_name.find("$PROCESS_NAME") == std::string::npos))
+						throw std::runtime_error("[" + section + "] process_name must include $PROCESS_NAME when numprocs is greater than 1");
+				}
 
 				if (key == "priority" && !valid_number(value, 0, 999))
 					throw std::runtime_error("[" + section + "] priority must be between 0 and 999");
@@ -275,16 +316,27 @@
 				if (key == "stopsignal" && !valid_signal(value))
 					throw std::runtime_error("[" + section + "] stopsignal must be a valid signal (TERM, HUP, INT, QUIT, KILL, USR1, USR2)");
 
+				// User validation
+				if (key == "user" && !valid_user(value))
+					throw std::runtime_error("[" + section + "] Invalid user");
+
 				// Path validation
 				if (key == "directory" && !valid_path(value, true))
 					throw std::runtime_error("[" + section + "] directory path is invalid");
 
-				// std_out, std_err: NONE, AUTO
-				// AUTO = childlogdir
+				if (key == "stdout_logfile" && !valid_path(value, false, true, true))
+					throw std::runtime_error("[" + section + "] stdout_logfile path is invalid");
+
+				if (key == "stderr_logfile" && !valid_path(value, false, true, true))
+					throw std::runtime_error("[" + section + "] stderr_logfile path is invalid");
 
 				// Umask validation
 				if (key == "umask" && !value.empty() && !valid_umask(value))
 					throw std::runtime_error("[" + section + "] umask must be in octal format (e.g., 022)");
+		
+				// Environment validation
+				if (key == "environment" && !environment_validate(value))
+					throw std::runtime_error("[" + section + "] environment format is invalid");
 			}
 
 		#pragma endregion

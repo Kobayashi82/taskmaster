@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:43:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 15:13:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 	#include "Config/Parser.hpp"
 
 	#include <algorithm>														// std::all_of()
+	#include <regex>															// regex_match()
 
 #pragma endregion
 
@@ -24,11 +25,87 @@
 
 #pragma endregion
 
+#pragma region "Validation"
+
+	#pragma region "Quotes"
+
+		bool ConfigParser::environment_validate_quotes(const std::string& value) const {
+			bool	in_double = false;
+			bool	in_single = false;
+			bool	escaped = false;
+
+			for (char c : value) {
+				if (escaped)				escaped = false;
+				else if (in_single)	{
+					if (c == '\'')			in_single = false;
+				} else if (in_double) {
+					if		(c == '\\')		escaped = true;
+					else if	(c == '"')		in_double = false;
+				} else {
+					if		(c == '"')		in_double = true;
+					else if	(c == '\'')		in_single = true;
+					else if	(c == '\\')		escaped = true;
+				}
+			}
+
+			return (!in_double && !in_single && !escaped);
+		}
+
+	#pragma endregion
+
+	#pragma region "Variable"
+
+		bool ConfigParser::environment_validate_variable(const std::string& var) const {
+			static const std::regex	env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$)");
+			std::smatch				match;
+
+			return (std::regex_match(var, match, env_regex) && environment_validate_quotes(match[2].str()));
+		}
+
+	#pragma endregion
+
+	#pragma region "Validate"
+
+		bool ConfigParser::environment_validate(const std::string& env_string) const {
+			std::string	current;
+			bool		in_single = false;
+			bool		in_double = false;
+			bool		escaped = false;
+
+			for (char c : env_string) {
+				if (escaped) { current += c; escaped = false; }
+				else if (in_single) {
+					current += c;
+					if (c == '\'')			in_single = false;
+				} else if (in_double) {
+					current += c;
+					if		(c == '\\')		escaped = true;
+					else if	(c == '"')		in_double = false;
+				} else if (c == ',') {
+					std::string trimmed = trim(current);
+					if (!trimmed.empty() && !environment_validate_variable(trimmed)) return (false);
+					current.clear();
+				} else {
+					current += c;
+					if		(c == '"')		in_double = true;
+					else if	(c == '\'')		in_single = true;
+					else if	(c == '\\')		escaped = true;
+				}
+			}
+
+			std::string trimmed = trim(current);
+			return (trimmed.empty() || environment_validate_variable(trimmed));
+		}
+
+	#pragma endregion
+
+#pragma endregion
+
 #pragma region "Expanse"
 
 	#pragma region "Format"
 
-		std::string ConfigParser::apply_format(const std::string& value, const std::string& format) {
+		std::string ConfigParser::environment_apply_format(const std::string& value, const std::string& format) {
 			if (format.empty() || format[0] != '*') return (value);
 
 			std::string fmt = format.substr(1); // Quitar el *
@@ -86,7 +163,7 @@
 
 	#pragma region "Substring"
 
-		std::string ConfigParser::apply_substring(const std::string& value, const std::string& substr_spec) {
+		std::string ConfigParser::environment_apply_substring(const std::string& value, const std::string& substr_spec) {
 			size_t colon = substr_spec.find(':');
 
 			// ${VAR: -2} - últimos N caracteres
@@ -118,7 +195,7 @@
 
 	#pragma region "Expand Var"
 
-		std::string ConfigParser::expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env) {
+		std::string ConfigParser::environment_expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env) {
 			// ${VAR:modifier}
 			size_t		colon = var_expr.find(':');
 			std::string	var_name = (colon == std::string::npos) ? var_expr : var_expr.substr(0, colon);
@@ -129,7 +206,7 @@
 
 			// Do not expand to "" if NUMPROCS or PROCESS_NUM are not set in the environment (they will be expanded later during program instance creation)
 			if (it != env.end()) value = it->second;
-			else if (var_name == "NUMPROCS" || var_name == "PROCESS_NUM") return "${" + var_expr + "}";
+			else if (currentSection.substr(0, 8) == "program:" && (var_name == "NUMPROCS" || var_name == "PROCESS_NUM")) return "${" + var_expr + "}";
 			else value = "";
 
 			if (modifier.empty()) return (value);
@@ -141,10 +218,10 @@
 			if (modifier.substr(0, 1) == "+") return (value.empty() ? "" : modifier.substr(1));
 
 			// ${VAR:*format}
-			if (modifier[0] == '*') return (apply_format(value, modifier));
+			if (modifier[0] == '*') return (environment_apply_format(value, modifier));
 
 			// ${VAR:substring}
-			if (std::isdigit(modifier[0]) || modifier[0] == ' ') return (apply_substring(value, modifier));
+			if (std::isdigit(modifier[0]) || modifier[0] == ' ') return (environment_apply_substring(value, modifier));
 
 			return (value);
 		}
@@ -188,7 +265,7 @@
 						while (end < str.length() && str[end] != '}') end++;
 
 						if (end < str.length()) {
-							std::string expanded = expand_variable(str.substr(start, end - start), env);
+							std::string expanded = environment_expand_variable(str.substr(start, end - start), env);
 							result += expanded; i = end;
 						} else result += c;
 					}
@@ -203,7 +280,7 @@
 							std::string var_name = str.substr(start, end - start);
 							auto it = env.find(var_name);
 							if (it != env.end()) result += it->second;
-							else if (var_name == "NUMPROCS" || var_name == "PROCESS_NUM") result += "$" + var_name;
+							else if (currentSection.substr(0, 8) == "program:" && (var_name == "NUMPROCS" || var_name == "PROCESS_NUM")) result += "$" + var_name;
 							i = end - 1;
 						} else result += c;
 					}
@@ -297,7 +374,6 @@
 	}
 
 #pragma endregion
-
 
 #pragma region "Print"
 

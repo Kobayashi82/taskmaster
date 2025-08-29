@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:03:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 14:31:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,8 +103,9 @@
 #pragma region "Default Values"
 
 	void ConfigParser::default_values() {
-		std::string	logfile = expand_path("taskmasterd.log");	// $CWD/taskmasterd.log
-		std::string	pidfile = expand_path("taskmasterd.pid");	// $CWD/taskmasterd.pid
+		std::string	logfile = expand_path("taskmasterd.log");		// $CWD/taskmasterd.log
+		std::string	pidfile = expand_path("taskmasterd.pid");		// $CWD/taskmasterd.pid
+
 		std::string	childlogdir = temp_path();
 		std::string	logfile_maxbytes = std::to_string(50 * 1024 * 1024);	// 50 MB
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 18:35:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 15:52:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,9 +236,47 @@
 			if (!fullpath.empty()) file = fullpath;
 		}
 
-		files = expand_globs(files);
+		files = globbing_expand(files);
 
  		return (files);
 	}
 
 #pragma endregion
+
+
+
+
+#include <sys/stat.h>
+
+std::string ConfigParser::extract_command(const std::string& line) const {
+    std::string out; bool inS=false, inD=false, esc=false;
+    for (char c : line) {
+        if (esc) { out.push_back(c); esc=false; }
+        else if (c=='\\') esc=true;
+        else if (c=='"' && !inS) inD=!inD;
+        else if (c=='\'' && !inD) inS=!inS;
+        else if (!inS && !inD && isspace((unsigned char)c)) break;
+        else out.push_back(c);
+    }
+    return out;
+}
+
+bool ConfigParser::is_exec(const std::string& path) const {
+    struct stat sb;
+    return stat(path.c_str(), &sb)==0 && S_ISREG(sb.st_mode) &&
+           access(path.c_str(), X_OK)==0;
+}
+
+bool ConfigParser::command_is_executable(const std::string& input, std::string& resolved) const {
+    std::string cmd = extract_command(input);
+    if (cmd.find('/') != std::string::npos) return is_exec(cmd) ? (resolved=cmd, true) : false;
+
+    if (const char* p = std::getenv("PATH")) {
+        std::istringstream ss(p); std::string dir;
+        while (std::getline(ss, dir, ':')) {
+            std::string cand = dir + "/" + cmd;
+            if (is_exec(cand)) { resolved=cand; return true; }
+        }
+    }
+    return false;
+}
