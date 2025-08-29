@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/28 18:40:28 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/29 19:13:57 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,16 +60,15 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp												\
-																		\
-			  Config/Options.cpp Config/Signals.cpp						\
-																		\
-			  Config/Parser/Parser.cpp Config/Parser/Initialize.cpp		\
-			  Config/Parser/Section.cpp Config/Parser/Keys.cpp			\
-			  Config/Parser/Include.cpp Config/Parser/Validation.cpp	\
-			  Config/Parser/Errors.cpp Config/Parser/Getters.cpp		\
-			  Config/Parser/Globbing.cpp Config/Parser/Utils.cpp		\
-			  Config/Parser/Environment.cpp
+SRCS		= Main/Main.cpp													\
+																			\
+			  Config/Options.cpp Config/Signals.cpp							\
+																			\
+			  Config/Parser/Initialize.cpp Config/Parser/Parser.cpp			\
+			  Config/Parser/Section.cpp Config/Parser/Keys.cpp				\
+			  Config/Parser/Globbing.cpp Config/Parser/Include.cpp			\
+			  Config/Parser/Environment.cpp Config/Parser/Validation.cpp	\
+			  Config/Parser/Getters.cpp Config/Parser/Utils.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

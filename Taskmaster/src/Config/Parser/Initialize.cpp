@@ -6,13 +6,29 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 14:31:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 21:03:09 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Parser.hpp"
+
+#pragma endregion
+
+#pragma region "Variables"
+
+	ConfigParser Parser;
+
+#pragma endregion
+
+#pragma region "Constructors"
+
+	ConfigParser::ConfigParser() {
+		section_on_error = true;
+		initialize();
+		default_values();
+	}
 
 #pragma endregion
 

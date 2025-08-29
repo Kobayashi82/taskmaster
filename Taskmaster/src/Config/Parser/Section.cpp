@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:56:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 21:00:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,96 +14,70 @@
 
 	#include "Config/Parser.hpp"
 
-	#include <stdexcept>														// std::runtime_error
+#pragma endregion
+
+#pragma region "Is Section"
+
+	bool ConfigParser::is_section(const std::string& line) const {
+		std::string trimmed = trim(line);
+		return (trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']');
+	}
 
 #pragma endregion
 
-#pragma region "Section"
+#pragma region "Type"
 
-	#pragma region "Type"
-
-		std::string ConfigParser::section_type(const std::string& section) const {
-			for (const auto& validSection : validSections) {
-				if (validSection.back() == ':') {
-					if (section.substr(0, validSection.length()) == validSection)	return (validSection);
-				} else if (section == validSection)									return (validSection);
-			}
-
-			return ("");
+	std::string ConfigParser::section_type(const std::string& section) const {
+		for (const auto& validSection : validSections) {
+			if (validSection.back() == ':') {
+				if (section.substr(0, validSection.length()) == validSection)	return (validSection);
+			} else if (section == validSection)									return (validSection);
 		}
 
-	#pragma endregion
+		return ("");
+	}
 
-	#pragma region "Is Valid"
+#pragma endregion
 
-		bool ConfigParser::valid_section(const std::string& section) const {
-			if (validSections.count(section)) return (true);
+#pragma region "Extract"
 
-			for (const auto& validSection : validSections) {
-				if (validSection.back() == ':' &&
-					section.substr(0, validSection.length()) == validSection &&
-					section.length() > validSection.length()) {
-					return (true);
-				}
-			}
+	std::string ConfigParser::section_extract(const std::string& line) const {
+		std::string trimmed = trim(line);
+		return (trimmed.substr(1, trimmed.length() - 2));
+	}
 
-			return (false);
+#pragma endregion
+
+#pragma region "Parse"
+
+	void ConfigParser::section_parse(const std::string& line) {
+		std::string section = section_extract(line);
+
+		if (section_type(section).empty())				{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
+		if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section:\t[" + section + "]"); }
+		if (section == "taskmasterctl")					{ currentSection = ""; throw std::runtime_error("Ignore section"); }
+
+		currentSection = section;
+
+		std::string sectionType = section_type(section);
+		if (!sectionType.empty()) {
+			auto defaultSectionIt = defaultValues.find(sectionType);
+			if (defaultSectionIt != defaultValues.end()) sections[currentSection] = defaultSectionIt->second;
+		} else {
+			sections[currentSection] = std::map<std::string, std::string>();
 		}
 
-	#pragma endregion
-
-	#pragma region "Is Section"
-
-		bool ConfigParser::is_section(const std::string& line) const {
-			std::string trimmed = trim(line);
-			return trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']';
+		if (currentSection.substr(0, 8) == "program:") {
+			std::string program_name = trim(currentSection.substr(8));
+			if (!program_name.empty()) environment_add(environment_config, "PROGRAM_NAME", program_name);
 		}
-
-	#pragma endregion
-
-	#pragma region "Extract"
-
-		std::string ConfigParser::extract_section(const std::string& line) const {
-			std::string trimmed = trim(line);
-			return (trimmed.substr(1, trimmed.length() - 2));
+		else if (currentSection.substr(0, 6) == "group:") {
+			std::string group_name = trim(currentSection.substr(7));
+			if (!group_name.empty()) environment_add(environment_config, "GROUP_NAME", group_name);
+		} else {
+			environment_del(environment_config, "PROGRAM_NAME");
+			environment_del(environment_config, "GROUP_NAME");
 		}
-
-	#pragma endregion
-
-	#pragma region "Parse"
-
-		void ConfigParser::parse_section(const std::string& line) {
-			std::string section = extract_section(line);
-
-			if (!valid_section(section))					{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
-			if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section:\t[" + section + "]"); }
-
-			currentSection = section;
-			if (currentSection == "taskmasterctl") { throw std::runtime_error("Ignore section"); }
-
-			std::string sectionType = section_type(section);
-			if (!sectionType.empty()) {
-				auto defaultSectionIt = defaultValues.find(sectionType);
-				if (defaultSectionIt != defaultValues.end()) sections[currentSection] = defaultSectionIt->second;
-			} else {
-				sections[currentSection] = std::map<std::string, std::string>();
-			}
-
-			if (currentSection == "include") in_include = true;
-
-			if (currentSection.substr(0, 8) == "program:") {
-				std::string program_name = trim(currentSection.substr(8));
-				if (!program_name.empty()) environment_add(temp_environment, "PROGRAM_NAME", program_name);
-			}
-			else if (currentSection.substr(0, 6) == "group:") {
-				std::string group_name = trim(currentSection.substr(7));
-				if (!group_name.empty()) environment_add(temp_environment, "GROUP_NAME", group_name);
-			} else {
-				environment_del(temp_environment, "PROGRAM_NAME");
-				environment_del(temp_environment, "GROUP_NAME");
-			}
-		}
-
-	#pragma endregion
+	}
 
 #pragma endregion

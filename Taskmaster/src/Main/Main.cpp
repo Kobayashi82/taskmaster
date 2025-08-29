@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/27 12:58:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 21:07:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,30 +16,6 @@
 	#include "Config/Parser.hpp"
 
 	#include <iostream>															// std::cerr()
-	#include <unistd.h>															// getuid()
-	#include <fcntl.h>															// open()
-	#include <sys/file.h>														// flock()
-	#include <filesystem>														// path(), absolute()
-
-#pragma endregion
-
-#pragma region "Resolve Path"
-
-	std::string resolve_path(const std::string &cmd) {
-		if (cmd.find('/') != std::string::npos) return (cmd);
-
-		const char *path_env = std::getenv("PATH");
-		if (!path_env) return (cmd);
-
-		std::stringstream ss(path_env);
-		std::string dir;
-		while (std::getline(ss, dir, ':')) {
-			std::filesystem::path candidate = std::filesystem::path(dir) / cmd;
-			if (::access(candidate.c_str(), X_OK) == 0) return (candidate.string());
-		}
-
-		return (cmd);
-	}
 
 #pragma endregion
 
@@ -51,8 +27,7 @@
 		try {
 			ConfigOptions Options;
 			if ((result = Options.parse(argc, argv))) return (result);
-			// Options::validate();
-			Parser.parse_file("../config/taskmasterd.conf");
+			Parser.parse("../config/taskmasterd.conf");
 			Parser.merge_options(Options);
 			Parser.print();
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 13:56:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 23:47:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,94 +21,62 @@
 
 #pragma endregion
 
-#pragma region "Variables"
+#pragma region "Parse"
 
-	ConfigParser Parser;
-
-#pragma endregion
-
-#pragma region "Constructors"
-
-	ConfigParser::ConfigParser() {
-		section_on_error = true;
-		initialize();
-		default_values();
-	}
-
-#pragma endregion
-
-#pragma region "File"
-
-	void ConfigParser::parse_file(const std::string& filePath) {
+	void ConfigParser::parse(const std::string& filePath) {
 		configPath = expand_path(filePath);
 		if (configPath.empty()) configPath = filePath;
 
 		std::ifstream file(configPath);
 		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
 
-		environment_initialize();
 		char hostname[255];
-		if (!gethostname(hostname, sizeof(hostname)))	environment_add(temp_environment, "HOST_NAME", std::string(hostname));
-		else											environment_add(temp_environment, "HOST_NAME", "unknown");
-		environment_add(temp_environment, "HERE", configPath.parent_path());
+		environment_add(environment_config, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+		environment_add(environment_config, "HERE", configPath.parent_path());
+		environment_initialize(environment);
 
 		currentSection.clear();
 		sections.clear();
 
-		std::string	line;
-		std::string	errors;
-		bool		invalid_section = false;
+		std::string	line, errors;
 		int			lineNumber = 0;
+		bool		invalid_section = false;
 
-		while (std::getline(file, line)) {
-			lineNumber++;
-			line = trim(remove_comments(line));
+		while (std::getline(file, line)) { lineNumber++;
+			line = trim(key_remove_comments(line));
 			if (line.empty()) continue;
 
 			try {
-				if (in_include && is_section(line)) {
-					std::string section = extract_section(line);
-					if (section != "include" && in_include) {
-						in_include = false; currentSection = "";
-						try { process_includes(); }
-						catch (const std::exception& e) {
-							errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
-							section_on_error = true;
-						}
-						invalid_section = false;
-						environment_add(temp_environment, "HERE", configPath.parent_path());
+				if (currentSection == "include" && is_section(line)) {
+					try { include_process(); }
+					catch (const std::exception& e) {
+						errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
+						section_on_error = true;
 					}
+					environment_add(environment_config, "HERE", configPath.parent_path());
 				}
-				if (is_section(line)) {		parse_section(line); invalid_section = false; }
-				else if (invalid_section)	continue;
-				else						parse_key(line);
+				if		(is_section(line))	{ section_parse(line); invalid_section = false; }
+				else if	(invalid_section)	  continue;
+				else						  key_parse(line);
 			}
 			catch (const std::exception& e) {
 				if (std::string(e.what()).substr(0, 14) == "Ignore section")	{ invalid_section = true; continue; }
+				if (std::string(e.what()).substr(0, 15) == "Invalid section")	  invalid_section = true;
+				if (std::string(e.what()).substr(0, 17) == "Duplicate section")	  invalid_section = true;
 				if (section_on_error) {
 					errors += ((errors.empty()) ? "" : "\n") + std::string("[" + configPath.string() + "]\n");
 					section_on_error = false;
 				}
 				errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
-				if (std::string(e.what()).substr(0, 15) == "Invalid section")	invalid_section = true;
-				if (std::string(e.what()).substr(0, 17) == "Duplicate section")	invalid_section = true;
 			}
 		}
 
-		if (in_include) {
-			in_include = false; currentSection = "";
-			try { process_includes(); }
-			catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
-			environment_add(temp_environment, "HERE", configPath.parent_path());
+		if (currentSection == "include") {
+			try { include_process(); }
+			catch (const std::exception& e) {
+				errors += ((errors.empty()) ? "" : "\n") + std::string(e.what());
+			}
 		}
-
-		std::map<std::string, std::string> program_env;
-		std::map<std::string, std::string> program_src;
-		environment_add(program_src, "KEY", "VALUE");
-		environment_clone(program_env, program_src);
-		environment_add_batch(program_env, get_value("taskmasterd", "environment"));
-		environment_print(program_env);
-		std::cerr << get_value("program:dummy1", "stderr_logfile") << "\n";
 
 		if (!errors.empty()) throw std::runtime_error(errors);
 	}

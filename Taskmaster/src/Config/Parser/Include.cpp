@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 20:46:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 19:13:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,33 +23,31 @@
 
 	#pragma region "File"
 
-		void ConfigParser::parse_include_file(const std::string& filePath) {
+		void ConfigParser::include_parse(const std::string& filePath) {
 			std::ifstream file(filePath);
 			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file\n");
 
 			std::string	configDir = std::filesystem::path(filePath).parent_path();
-			std::string	line;
-			std::string	errors;
-			bool		invalid_section = false;
+			std::string	line, errors;
 			int			lineNumber = 0;
+			bool		invalid_section = false;
 
-			environment_add(temp_environment, "HERE", std::filesystem::path(filePath).parent_path());
+			environment_add(environment_config, "HERE", std::filesystem::path(filePath).parent_path());
 
-			while (std::getline(file, line)) {
-				lineNumber++;
-				line = trim(remove_comments(line));
+			while (std::getline(file, line)) { lineNumber++;
+				line = trim(key_remove_comments(line));
 				if (line.empty()) continue;
 
 				try {
 					if (is_section(line)) {
-						std::string section = extract_section(line);
+						std::string section = section_extract(line);
 						if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:")
 							throw std::runtime_error("Invalid section:\t[" + section + "]");
-						parse_section(line);
+						section_parse(line);
 						invalid_section = false;
 					}
 					else if (invalid_section)	continue;
-					else						parse_key(line);
+					else						key_parse(line);
 				}
 				catch (const std::exception& e) {
 					if (std::string(e.what()).substr(0, 14) == "Ignore section") {
@@ -75,15 +73,17 @@
 
 	#pragma region "Process"
 
-		void ConfigParser::process_includes() {
+		void ConfigParser::include_process() {
 			std::vector<std::string> files = parse_files(get_value("include", "files"));
 			std::string errors;
+
+			currentSection = "";
 
 			for (const auto& file : files) {
 				try {
 					std::string fullpath = expand_path(file, configPath.parent_path());
 					if (fullpath.empty()) fullpath = file;
-					parse_include_file(fullpath);
+					include_parse(fullpath);
 				}
 				catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
 			}

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 15:49:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/29 23:43:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 
 			std::map<std::string, std::string>							environment;
-			std::map<std::string, std::string>							temp_environment;
+			std::map<std::string, std::string>							environment_config;
 			std::filesystem::path										configPath;
 			bool														in_include;
 			bool														section_on_error;
@@ -47,16 +47,41 @@
 			void						initialize();
 			void						default_values();
 
-			// Keys
-			bool						valid_key(const std::string& section, const std::string& key) const;
-			void						parse_key(const std::string& line);
-
 			// Section
-			std::string					section_type(const std::string& section) const;
-			bool						valid_section(const std::string& section) const;
 			bool						is_section(const std::string& line) const;
-			std::string					extract_section(const std::string& line) const;
-			void						parse_section(const std::string& line);
+			std::string					section_type(const std::string& section) const;
+			std::string					section_extract(const std::string& line) const;
+			void						section_parse(const std::string& line);
+
+			// Keys
+			std::string					key_remove_comments(const std::string& line) const;
+			bool						key_valid(const std::string& section, const std::string& key) const;
+			void						key_parse(const std::string& line);
+
+			// Globbing
+			bool						globbing_has_glob(const std::string& path);
+			bool						globbing_match_glob(const std::string& pattern, const std::string& text);
+			std::string					globbing_glob_to_regex(const std::string& glob);
+			std::vector<std::string>	globbing_expand_glob(const std::string& pattern);
+			std::vector<std::string>	globbing_expand(const std::vector<std::string>& patterns);
+
+			// Include
+			void						include_parse(const std::string& filePath);
+			void						include_process();
+
+			// Environment
+			std::string					environment_apply_format(const std::string& value, const std::string& format) const;
+			std::string					environment_apply_substring(const std::string& value, const std::string& substr_spec) const;
+			std::string					environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) const;
+			std::string					environment_expand(std::map<std::string, std::string>& env, const std::string& str, bool split_comma = false) const;
+			bool						environment_validate(const std::string& env_string) const;
+			void						environment_del(std::map<std::string, std::string>& env, const std::string& key);
+			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
+			void						environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite = false);
+			void						environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
+			void						environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
+			void						environment_initialize(std::map<std::string, std::string>& env);
+			void						environment_print(const std::map<std::string, std::string>& env) const;
 
 			// Validation
 			bool						valid_bool(const std::string& value) const;
@@ -75,36 +100,10 @@
 			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
 			void						validate(const std::string& section, std::string& key, std::string& value) const;
 
-			// Include
-			void						parse_include_file(const std::string& filePath);
-			void						process_includes();
-
-			// Environment
-			std::string					environment_apply_format(const std::string& value, const std::string& format);
-			std::string					environment_apply_substring(const std::string& value, const std::string& substr_spec);
-			std::string					environment_expand_variable(const std::string& var_expr, std::map<std::string, std::string>& env);
-			std::string					environment_expand(std::map<std::string, std::string>& env, std::string& str);
-			bool						environment_validate_variable(const std::string& var) const;
-			bool						environment_validate_quotes(const std::string& value) const;
-			bool						environment_validate(const std::string& env_string) const;
-			void						environment_del(std::map<std::string, std::string>& env, const std::string& key);
-			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
-			void						environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
-			void						environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
-			void						environment_initialize();
-			void						environment_print(const std::map<std::string, std::string>& env) const;
-			// Globbing
-			bool						globbing_has_glob(const std::string& path);
-			bool						globbing_match_glob(const std::string& pattern, const std::string& text);
-			std::string					globbing_glob_to_regex(const std::string& glob);
-			std::vector<std::string>	globbing_expand_glob(const std::string& pattern);
-			std::vector<std::string>	globbing_expand(const std::vector<std::string>& patterns);
-
 			// Utils
 			std::string					trim(const std::string& str) const;
 			std::string					toLower(const std::string& str) const;
 			std::string					toUpper(const std::string& str) const;
-			std::string					remove_comments(const std::string& line) const;
 
 			std::string					extract_command(const std::string& line) const;
 			bool						is_exec(const std::string& path) const;
@@ -121,7 +120,7 @@
 			ConfigParser& operator=(const ConfigParser&) = delete;
 
 			// Parser
-			void								parse_file(const std::string& filePath);
+			void								parse(const std::string& filePath);
 			void								merge_options(ConfigOptions& Options);
 			void								print() const;
 
