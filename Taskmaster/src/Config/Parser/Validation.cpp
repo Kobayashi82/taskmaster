@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 14:05:16 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 17:00:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,9 @@
 	#include <unistd.h>															// access()
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::is_directory(), std::filesystem::exists()
 	#include <pwd.h>															// struct passwd, getpwnam()
+	#include <grp.h>															// struct group, getgrnam()
 	#include <regex>															// 
+	#include <climits>															// 
 
 #pragma endregion
 
@@ -127,55 +129,9 @@
 	#pragma region "Umask"
 
 		bool ConfigParser::valid_umask(const std::string& value) const {
-			if (value.length() != 3 && value.length() != 4) return (false);
+			if (value.length() < 1 || value.length() > 4) return (false);
 
-			int start = 0;
-			if (value.length() == 4) {
-				if (value[0] != '0') return (false);
-				start = 1;
-			}
-
-			for (size_t i = start; i < value.length(); ++i) {
-				if (value[i] < '0' || value[i] > '7') return (false);
-			}
-
-			return (true);
-		}
-
-	#pragma endregion
-
-	#pragma region "Chmod"
-
-		bool ConfigParser::valid_chmod(const std::string& value) const {
-			if (value.length() != 3 && value.length() != 4) return (false);
-
-			int start = 0;
-			if (value.length() == 4) {
-				if (value[0] != '0') return (false);
-				start = 1;
-			}
-
-			for (size_t i = start; i < value.length(); ++i) {
-				if (value[i] < '0' || value[i] > '7') return (false);
-			}
-
-			return (true);
-		}
-
-	#pragma endregion
-
-	#pragma region "Chown"
-
-		bool ConfigParser::valid_chown(const std::string& value) const {
-			if (value.length() != 3 && value.length() != 4) return (false);
-
-			int start = 0;
-			if (value.length() == 4) {
-				if (value[0] != '0') return (false);
-				start = 1;
-			}
-
-			for (size_t i = start; i < value.length(); ++i) {
+			for (size_t i = 0; i < value.length(); ++i) {
 				if (value[i] < '0' || value[i] > '7') return (false);
 			}
 
@@ -190,26 +146,60 @@
 			if (value.empty())						return (false);
 			if (toLower(value) == "do not switch")	return (true);
 
-			struct passwd *pw = getpwnam(value.c_str());
-			if (!pw) return (false);
-			if (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos) return (false);
+			struct passwd *pw = nullptr;
+			char *endptr = nullptr; errno = 0;
+			long uid = std::strtol(value.c_str(), &endptr, 10);
+			if (!*endptr && errno == 0 && uid >= 0 && uid <= INT_MAX)		pw = getpwuid(static_cast<uid_t>(uid));
+			else															pw = getpwnam(value.c_str());
+
+			if (!pw || (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos)) return (false);
 
 			return (true);
 		}
 
 	#pragma endregion
 
-	#pragma region "Username"
+	#pragma region "Chown"
 
-		bool ConfigParser::valid_username(const std::string& value) const {
-			if (value.empty())						return (false);
-			if (toLower(value) == "do not switch")	return (true);
+		bool ConfigParser::valid_chown(const std::string& value) const {
+			if (value.empty()) return (false);
 
-			struct passwd *pw = getpwnam(value.c_str());
-			if (!pw) return (false);
-			if (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos) return (false);
+			size_t colon_pos = value.find(':');
 
-			return (true);
+			if (colon_pos == std::string::npos) {
+				if (toLower(value) == "do not switch")					return (false);
+				if (!valid_user(value))									return (false);
+
+				return (true);
+			}
+
+			std::string username = value.substr(0, colon_pos);
+			std::string group    = value.substr(colon_pos + 1);
+
+			if (toLower(value) == "do not switch")						return (false);
+			if (username.empty() || !valid_user(username))				return (false);
+			if (group.empty())											return (false);
+
+			struct passwd *pw = nullptr;
+			char *endptr = nullptr; errno = 0;
+			long uid = std::strtol(username.c_str(), &endptr, 10);
+			if (!*endptr && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
+			else														pw = getpwnam(username.c_str());
+			if (!pw)													return false;
+
+			struct group *gr = nullptr;
+			endptr = nullptr; errno = 0;
+			long gid = std::strtol(group.c_str(), &endptr, 10);
+			if (!*endptr && errno == 0 && gid >= 0 && gid <= INT_MAX)	gr = getgrgid(static_cast<gid_t>(gid));
+			else														gr = getgrnam(group.c_str());
+			if (!gr)													return (false);
+
+			if (pw->pw_gid == gr->gr_gid)								return (true);
+			for (char **member = gr->gr_mem; *member != nullptr; ++member) {
+				if (username == *member) return (true);
+			}
+
+			return (false);
 		}
 
 	#pragma endregion
@@ -217,12 +207,16 @@
 	#pragma region "Password"
 
 		bool ConfigParser::valid_password(const std::string& value) const {
-			if (value.empty())						return (false);
-			if (toLower(value) == "do not switch")	return (true);
+			if (value.empty()) return (false);
 
-			struct passwd *pw = getpwnam(value.c_str());
-			if (!pw) return (false);
-			if (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos) return (false);
+			if (toLower(value.substr(0, 5)) == "{sha}") {
+				std::string hash = value.substr(5);
+				if (hash.length() != 40) return (false);
+
+				for (char c : hash) {
+					if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) return (false);
+				}
+			}
 
 			return (true);
 		}
@@ -478,16 +472,12 @@
 				throw std::runtime_error("[" + section + "] chmod: must be in octal format");
 
 			// Chown validation
-			if (key == "chown" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] chown: must be in octal format");
-
-			// Username validation
-			if (key == "username" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] username: must be in octal format");
+			if (key == "chown" && !valid_chown(value))
+				throw std::runtime_error("[" + section + "] chown: invalid user or group");
 
 			// Password validation
-			if (key == "password" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] password: must be in octal format");
+			if (key == "password" && !valid_password(value))
+				throw std::runtime_error("[" + section + "] password: invalid SHA format");
 		}
 
 	#pragma endregion
@@ -499,13 +489,9 @@
 			if (key == "port" && !valid_umask(value))
 				throw std::runtime_error("[" + section + "] port: must be in octal format");
 
-			// Username validation
-			if (key == "username" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] username: must be in octal format");
-
 			// Password validation
-			if (key == "password" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] password: must be in octal format");
+			if (key == "password" && !valid_password(value))
+				throw std::runtime_error("[" + section + "] password: invalid SHA format");
 		}
 
 	#pragma endregion

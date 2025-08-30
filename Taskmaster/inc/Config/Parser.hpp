@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 14:17:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 16:16:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,10 +92,8 @@
 			bool						valid_loglevel(const std::string& value) const;
 			bool						valid_autorestart(const std::string& value) const;
 			bool						valid_umask(const std::string& value) const;
-			bool						valid_chmod(const std::string& value) const;
-			bool						valid_chown(const std::string& value) const;
 			bool						valid_user(const std::string& value) const;
-			bool						valid_username(const std::string& value) const;
+			bool						valid_chown(const std::string& value) const;
 			bool						valid_password(const std::string& value) const;
 			bool						valid_port(const std::string& value) const;
 			bool						valid_serverurl(const std::string &value) const;

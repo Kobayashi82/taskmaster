@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 14:01:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 17:03:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,25 +56,25 @@
 
 	void ConfigParser::key_parse(const std::string& line) {
 		if (trim(line).empty())									return;
-		if (currentSection.empty() && !trim(line).empty())		throw std::runtime_error("Key found outside of section: " + line);
+		if (currentSection.empty() && !trim(line).empty())		throw std::runtime_error("Key found outside of a section: " + line);
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)							throw std::runtime_error("Invalid key '" + line + "' in section [" + currentSection + "]");
+		if (pos == std::string::npos)							throw std::runtime_error("[" + currentSection + "] Invalid key '" + line + "'");
 
 		std::string key   = trim(toLower(line.substr(0, pos)));
 		std::string value = trim(line.substr(pos + 1));
 
-		if (key.empty())										throw std::runtime_error("Empty key in section [" + currentSection + "]");
-		if (!key_valid(currentSection, key))					throw std::runtime_error("Invalid key '" + key + "' in section [" + currentSection + "]");
+		if (key.empty())										throw std::runtime_error("[" + currentSection + "] Empty key");
+		if (!key_valid(currentSection, key))					throw std::runtime_error("[" + currentSection + "] Invalid key '" + key + "'");
 
-		if (value.empty())										throw std::runtime_error("Empty value for '" + key + "' in section [" + currentSection + "]");
+		if (value.empty())										throw std::runtime_error("[" + currentSection + "] Empty value for '" + key + "'");
 
 		std::string expanded_value;
 		std::map<std::string, std::string> temp = environment;
 		environment_add(temp, environment_config, true);
 		expanded_value = environment_expand(temp, value, key == "environment");
 
-		if (expanded_value.empty())								throw std::runtime_error("Empty value for '" + key + "' in section [" + currentSection + "]");
+		if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] Empty value for '" + key + "'");
 
 		validate(currentSection, key, expanded_value);
 		sections[currentSection][key] = expanded_value;
