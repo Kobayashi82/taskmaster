@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 13:49:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 18:05:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@
 
 #pragma region "Expand Path"
 
-	std::string ConfigParser::expand_path(const std::string& path, const std::string current_path, bool expand_symbolic) const {
+	std::string ConfigParser::expand_path(const std::string& path, const std::string current_path, bool expand_symbolic, bool weakly) const {
 		if (path.empty()) return ("");
 
 		std::filesystem::path p;
@@ -81,8 +81,13 @@
 
 		// resolve symbolic links
 		if (expand_symbolic) {
-			try { return (std::filesystem::weakly_canonical(p).string()); }
-			catch (const std::filesystem::filesystem_error&) { return (""); }
+			if (weakly) {
+				try { return (std::filesystem::weakly_canonical(p).string()); }
+				catch (const std::filesystem::filesystem_error&) { return (""); }
+			} else {
+				try { return (std::filesystem::canonical(p).string()); }
+				catch (const std::filesystem::filesystem_error&) { return (""); }
+			}
 		}
 
 		return (p);

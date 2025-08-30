@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 16:16:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 18:04:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,6 +128,9 @@
 			void								merge_options(ConfigOptions& Options);
 			void								print() const;
 
+			// Validation
+			int									validate_options(ConfigOptions& Options) const;
+
 			// Getters
 			std::string							get_value(const std::string& section, const std::string& key, const std::string& defaultValue = "") const;
 			bool								has_section(const std::string& section) const;
@@ -136,7 +139,7 @@
 			std::vector<std::string>			get_group() const;
 
 			// Utils
-			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true) const;
+			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
 			std::string							temp_path() const;
 			std::string							config_path() const;
 			std::vector<std::string>			parse_files(const std::string& fileString);
