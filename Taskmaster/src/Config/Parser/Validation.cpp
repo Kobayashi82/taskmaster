@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 17:00:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 17:26:22 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::is_directory(), std::filesystem::exists()
 	#include <pwd.h>															// struct passwd, getpwnam()
 	#include <grp.h>															// struct group, getgrnam()
-	#include <regex>															// 
-	#include <climits>															// 
+	#include <regex>															// std::regex_match()
+	#include <climits>															// INT_MAX
 
 #pragma endregion
 
@@ -226,14 +226,20 @@
 	#pragma region "Port"
 
 		bool ConfigParser::valid_port(const std::string& value) const {
-			if (value.empty())						return (false);
-			if (toLower(value) == "do not switch")	return (true);
+			size_t colon_pos = value.find(':');
+			if (colon_pos == std::string::npos)						return (false);
 
-			struct passwd *pw = getpwnam(value.c_str());
-			if (!pw) return (false);
-			if (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos) return (false);
+			std::string host = value.substr(0, colon_pos);
+			std::string port = value.substr(colon_pos + 1);
 
-			return (true);
+			if (port.empty())										return (false);
+
+			char *endptr = nullptr; errno = 0;
+			long nport = std::strtol(port.c_str(), &endptr, 10);
+			if (*endptr || errno || nport < 1 || nport > 65535)		return (false);
+
+			if (host.empty() || host == "*")						return (true);
+			return (std::regex_match(host, std::regex(R"(^[a-zA-Z0-9][a-zA-Z0-9\.-]*$)")));
 		}
 
 	#pragma endregion
@@ -486,8 +492,8 @@
 
 		void ConfigParser::validate_inet_server(const std::string& section, std::string& key, std::string& value) const {
 			// Port validation
-			if (key == "port" && !valid_umask(value))
-				throw std::runtime_error("[" + section + "] port: must be in octal format");
+			if (key == "port" && !valid_port(value))
+				throw std::runtime_error("[" + section + "] port: must be a valid TCP host:port");
 
 			// Password validation
 			if (key == "password" && !valid_password(value))
