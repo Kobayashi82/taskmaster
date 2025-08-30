@@ -15,13 +15,9 @@
 - username = user
 - password = 123
 
+## OTROS
 
 - en rotacion verificar si es un dispositivo especial y no rotar
+- validar user uid como valido
 - validar 'command' en program
 - validar 'programs' en group
-- validar user uid como valido
-- validar chmod
-- validar chown
-- validar username
-- validar password
-- validar opciones

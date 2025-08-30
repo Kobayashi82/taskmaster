@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 14:05:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 14:17:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@
 			ConfigParser& operator=(const ConfigParser&) = delete;
 
 			// Parser
-			void								parse(const std::string& filePath);
+			void								parse(const std::string& filePath = "");
 			void								merge_options(ConfigOptions& Options);
 			void								print() const;
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 12:47:19 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 14:19:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,11 +24,32 @@
 #pragma region "Parse"
 
 	void ConfigParser::parse(const std::string& filePath) {
-		configPath = expand_path(filePath);
-		if (configPath.empty()) configPath = filePath;
+		std::string ConfigFile = filePath;
+
+		if (ConfigFile.empty()) {
+			const std::string candidates[] = {
+				"../etc/taskmasterd.conf",
+				"../taskmasterd.conf",
+				"taskmasterd.conf",
+				"etc/taskmasterd.conf",
+				"/etc/taskmasterd.conf",
+				"/etc/taskmaster/taskmasterd.conf"
+			};
+
+			for (const auto& path : candidates) {
+				ConfigFile = expand_path(path, "", true);
+				if (!ConfigFile.empty() && std::filesystem::exists(ConfigFile)) break;
+				ConfigFile = "";
+			}
+		}
+
+		if (ConfigFile.empty()) throw std::runtime_error("No configuration file found\n");
+
+		configPath = expand_path(ConfigFile);
+		if (configPath.empty()) configPath = ConfigFile;
 
 		std::ifstream file(configPath);
-		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + filePath + "\n");
+		if (!file.is_open()) throw std::runtime_error("Cannot open config file: " + ConfigFile + "\n");
 
 		char hostname[255];
 		environment_add(environment_config, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
