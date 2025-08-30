@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 16:17:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 20:06:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,8 +86,12 @@
 				"user",
 				"redirect_stderr",
 				"stdout_logfile",
-				"stderr_logfile",
+				"stdout_logfile_maxbytes",
+				"stdout_logfile_backups",
 				"stdout_syslog",
+				"stderr_logfile",
+				"stderr_logfile_maxbytes",
+				"stderr_logfile_backups",
 				"stderr_syslog",
 				"serverurl",
 				"environment"
@@ -168,8 +172,12 @@
 				{"umask", "022"},
 				{"redirect_stderr", "false"},
 				{"stdout_logfile", "AUTO"},
-				{"stderr_logfile", "AUTO"},
+				{"stdout_logfile_maxbytes", logfile_maxbytes},
+				{"stdout_logfile_backups", "10"},
 				{"stdout_syslog", "false"},
+				{"stderr_logfile", "AUTO"},
+				{"stderr_logfile_maxbytes", logfile_maxbytes},
+				{"stderr_logfile_backups", "10"},
 				{"stderr_syslog", "false"},
 				{"serverurl", "AUTO"},
 				{"environment", ""},

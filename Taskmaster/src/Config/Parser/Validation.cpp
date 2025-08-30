@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 18:05:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 21:16:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,8 @@
 	#pragma region "Signal"
 
 		bool ConfigParser::valid_signal(const std::string& value) const {
-			std::set<std::string> validSignals = { "TERM", "HUP", "INT", "QUIT", "KILL", "USR1", "USR2" };
+			std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
+
 			return (validSignals.count(toUpper(value)) > 0);
 		}
 
@@ -109,10 +110,9 @@
 	#pragma region "Log Level"
 
 		bool ConfigParser::valid_loglevel(const std::string& value) const {
-			std::string lower = toLower(value);
+			std::set<std::string> validSignals = { "0", "DEBUG", "1", "INFO", "2", "WARN", "WARNING", "3", "ERROR", "4", "CRITICAL" };
 
-			if (lower == "debug" || lower == "info" || lower == "warn" || lower == "warning" || lower == "error" || lower == "critical") return (true);
-			return (valid_number(value, 0, 4));	// 0=DEBUG, 1=INFO, 2=WARN, 3=ERROR, 4=CRITICAL
+			return (validSignals.count(toUpper(value)) > 0);
 		}
 
 	#pragma endregion
@@ -251,7 +251,7 @@
 			if (value.empty())				return (false);
 			if (toLower(value) == "auto")	return (true);
 		
-			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix:///.+)$)", std::regex::icase);
+			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix:.+)$)", std::regex::icase);
 
 			std::smatch match;
 			if (!std::regex_match(value, match, pattern)) return (false);
@@ -304,7 +304,7 @@
 				throw std::runtime_error("[" + section + "] logfile_backups: must be a value between 0 and 1000");
 
 			if (key == "loglevel" && !valid_loglevel(value))
-				throw std::runtime_error("[" + section + "] loglevel: must be one of: DEBUG, INFO, WARN, ERROR, CRITICAL");
+				throw std::runtime_error("[" + section + "] loglevel: must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL");
 
 			if (key == "minfds") {
 				if (!valid_number(value, 1, 65535))
@@ -335,7 +335,7 @@
 
 			// User validation
 			if (key == "user" && !valid_user(value))
-				throw std::runtime_error("[" + section + "] user: Invalid username");
+				throw std::runtime_error("[" + section + "] user: invalid user");
 
 			// Umask validation
 			if (key == "umask" && !valid_umask(value))
@@ -359,8 +359,8 @@
 
 			if (key == "process_name") {
 				std::string numprocs = get_value(currentSection, "numprocs");
-				if (numprocs != "1" && value.find("${PROCESS_NAME") == std::string::npos && value.find("$PROCESS_NAME") == std::string::npos)
-					throw std::runtime_error("[" + section + "] process_name: must include $PROCESS_NAME when 'numprocs' is greater than 1");
+				if (numprocs != "1" && value.find("${PROCESS_NUM") == std::string::npos && value.find("$PROCESS_NUM") == std::string::npos)
+					throw std::runtime_error("[" + section + "] process_name: must include $PROCESS_NUM when 'numprocs' is greater than 1");
 			}
 
 			// Boolean values
@@ -403,8 +403,8 @@
 				throw std::runtime_error("[" + section + "] numprocs: must be a value between 1 and 1000");
 			if (key == "numprocs" && value != "1") {
 				std::string process_name = get_value(currentSection, "process_name");
-				if (process_name.empty() || (process_name.find("${PROCESS_NAME") == std::string::npos && process_name.find("$PROCESS_NAME") == std::string::npos))
-					throw std::runtime_error("[" + section + "] process_name: must include $PROCESS_NAME when 'numprocs' is greater than 1");
+				if (process_name.empty() || (process_name.find("${PROCESS_NUM") == std::string::npos && process_name.find("$PROCESS_NUM") == std::string::npos))
+					throw std::runtime_error("[" + section + "] numprocs: 'process_name' must include $PROCESS_NUM when 'numprocs' is greater than 1");
 			}
 
 			if (key == "priority" && !valid_number(value, 0, 999))
@@ -427,11 +427,11 @@
 				throw std::runtime_error("[" + section + "] exitcodes: must be comma-separated numbers between 0 and 255");
 
 			if (key == "stopsignal" && !valid_signal(value))
-				throw std::runtime_error("[" + section + "] stopsignal: must be a valid signal (TERM, HUP, INT, QUIT, KILL, USR1, USR2)");
+				throw std::runtime_error("[" + section + "] stopsignal: must be a valid signal (HUP, INT, QUIT, KILL, TERM, USR1, USR2)");
 
 			// User validation
 			if (key == "user" && !valid_user(value))
-				throw std::runtime_error("[" + section + "] user: Invalid user");
+				throw std::runtime_error("[" + section + "] user: invalid user");
 
 			// Path validation
 			if (key == "directory" && !valid_path(value, true))

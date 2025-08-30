@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 14:17:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 20:52:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 		try {
 			ConfigOptions Options;
 			if ((result = Options.parse(argc, argv))) return (result);
-			Parser.parse();
+			Parser.parse(Options.configuration);
 			Parser.merge_options(Options);
 			Parser.print();
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
@@ -48,17 +48,3 @@
 	}
 
 #pragma endregion
-
-// pkill -u $USER supervisord; supervisord -c ~/supervisord.conf
-
-// pkill -u $USER taskmasterd; taskmasterd -c ~/taskmasterd.conf
-
-// ./taskmasterd.conf					- En el directorio actual
-// ./etc/taskmasterd.conf				- En subdirectorio etc/ del directorio actual
-// /etc/taskmasterd.conf				- En el directorio global /etc/
-// /etc/taskmaster/taskmasterd.conf		- En el directorio global /etc/taskmasterd
-
-// Advertencia de seguridad:
-//	A warning is emitted when taskmaster is started as root without '-c' argument,
-//	porque alguien podría engañarte para ejecutartaskmaster desde un directorio que
-//	contiene un archivo taskmasterd.conf malicioso

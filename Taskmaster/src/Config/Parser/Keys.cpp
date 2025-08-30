@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 17:03:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 21:14:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,22 +59,22 @@
 		if (currentSection.empty() && !trim(line).empty())		throw std::runtime_error("Key found outside of a section: " + line);
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)							throw std::runtime_error("[" + currentSection + "] Invalid key '" + line + "'");
+		if (pos == std::string::npos)							throw std::runtime_error("[" + currentSection + "] " + line + ": invalid key");
 
 		std::string key   = trim(toLower(line.substr(0, pos)));
 		std::string value = trim(line.substr(pos + 1));
 
 		if (key.empty())										throw std::runtime_error("[" + currentSection + "] Empty key");
-		if (!key_valid(currentSection, key))					throw std::runtime_error("[" + currentSection + "] Invalid key '" + key + "'");
+		if (!key_valid(currentSection, key))					throw std::runtime_error("[" + currentSection + "] " + key + ": invalid key");
 
-		if (value.empty())										throw std::runtime_error("[" + currentSection + "] Empty value for '" + key + "'");
+		if (value.empty())										throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
 
 		std::string expanded_value;
 		std::map<std::string, std::string> temp = environment;
 		environment_add(temp, environment_config, true);
 		expanded_value = environment_expand(temp, value, key == "environment");
 
-		if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] Empty value for '" + key + "'");
+		if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
 
 		validate(currentSection, key, expanded_value);
 		sections[currentSection][key] = expanded_value;
