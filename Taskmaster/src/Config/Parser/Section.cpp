@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 21:00:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 12:46:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,9 +53,9 @@
 	void ConfigParser::section_parse(const std::string& line) {
 		std::string section = section_extract(line);
 
-		if (section_type(section).empty())				{ currentSection = ""; throw std::runtime_error("Invalid section:\t[" + section + "]"); }
-		if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("Duplicate section:\t[" + section + "]"); }
-		if (section == "taskmasterctl")					{ currentSection = ""; throw std::runtime_error("Ignore section"); }
+		if (section_type(section).empty())				{ currentSection = ""; throw std::runtime_error("[" + section + "] invalid section"); }
+		if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("[" + section + "] duplicate section"); }
+		if (section == "taskmasterctl")					{ currentSection = ""; throw std::runtime_error("ignore section"); }
 
 		currentSection = section;
 

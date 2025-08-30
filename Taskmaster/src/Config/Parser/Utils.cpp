@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 19:04:48 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 13:49:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,6 @@
 
 		if		(suffix.empty())	return (num);
 		else if	(suffix == "BYTES")	return (num);
-		else if	(suffix == "BYTE")	return (num);
 		else if	(suffix == "B" )	return (num);
 		else if (suffix == "KB")	return (num * 1024);
 		else if (suffix == "MB")	return (num * 1024 * 1024);

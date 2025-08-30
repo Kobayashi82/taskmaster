@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 23:43:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 14:05:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,14 +85,20 @@
 
 			// Validation
 			bool						valid_bool(const std::string& value) const;
-			bool						valid_number(const std::string& value, long min = 0, long max = 2147483647) const;
-			bool						valid_path(const std::string& value, bool is_directory = false, bool allow_auto = false, bool allow_none = false) const;
+			bool						valid_number(const std::string& value, long min = 0, long max = 1024 * 1024 * 1024) const;
+			bool						valid_path(const std::string& value, bool is_directory = false, bool allow_auto = false, bool allow_none = false, bool allow_syslog = false) const;
 			bool						valid_signal(const std::string& value) const;
 			bool						valid_code(const std::string& value) const;
 			bool						valid_loglevel(const std::string& value) const;
 			bool						valid_autorestart(const std::string& value) const;
 			bool						valid_umask(const std::string& value) const;
+			bool						valid_chmod(const std::string& value) const;
+			bool						valid_chown(const std::string& value) const;
 			bool						valid_user(const std::string& value) const;
+			bool						valid_username(const std::string& value) const;
+			bool						valid_password(const std::string& value) const;
+			bool						valid_port(const std::string& value) const;
+			bool						valid_serverurl(const std::string &value) const;
 			void						validate_taskmasterd(const std::string& section, const std::string& key, std::string& value) const;
 			void						validate_program(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_unix_server(const std::string& section, std::string& key, std::string& value) const;

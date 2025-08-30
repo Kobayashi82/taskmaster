@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 23:44:49 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 14:01:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,9 @@
 		std::map<std::string, std::string> temp = environment;
 		environment_add(temp, environment_config, true);
 		expanded_value = environment_expand(temp, value, key == "environment");
-		
+
+		if (expanded_value.empty())								throw std::runtime_error("Empty value for '" + key + "' in section [" + currentSection + "]");
+
 		validate(currentSection, key, expanded_value);
 		sections[currentSection][key] = expanded_value;
 	}

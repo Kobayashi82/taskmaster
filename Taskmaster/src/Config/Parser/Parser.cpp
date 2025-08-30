@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 23:47:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 12:47:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,9 @@
 				else						  key_parse(line);
 			}
 			catch (const std::exception& e) {
-				if (std::string(e.what()).substr(0, 14) == "Ignore section")	{ invalid_section = true; continue; }
-				if (std::string(e.what()).substr(0, 15) == "Invalid section")	  invalid_section = true;
-				if (std::string(e.what()).substr(0, 17) == "Duplicate section")	  invalid_section = true;
+				if (std::string(e.what()).find("ignore section") != std::string::npos)		{ invalid_section = true; continue; }
+				if (std::string(e.what()).find("invalid section") != std::string::npos)		  invalid_section = true;
+				if (std::string(e.what()).find("duplicate section") != std::string::npos)	  invalid_section = true;
 				if (section_on_error) {
 					errors += ((errors.empty()) ? "" : "\n") + std::string("[" + configPath.string() + "]\n");
 					section_on_error = false;
