@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 21:16:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 00:13:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -354,7 +354,7 @@
 			// Command
 			if (key == "command") {
 				std::string command;
-				if (!command_is_executable(value, command))	throw std::runtime_error("[" + section + "] command: must be a valid executable");
+				if (!command_executable(value, command))	throw std::runtime_error("[" + section + "] command: must be a valid executable");
 			}
 
 			if (key == "process_name") {
@@ -503,50 +503,77 @@
 
 	#pragma endregion
 
+	#pragma region "Options"
 
-	int ConfigParser::validate_options(ConfigOptions& Options) const {
-		std::string errors;
+		int ConfigParser::validate_options(ConfigOptions& Options) const {
+			std::string errors;
 
-		if (!Options.configuration.empty() && expand_path(Options.configuration, "", true, false).empty())
-			errors += "Error:\t [options] configuration: Cannot open config file\n";
+			if (Options.options.find_first_of('c') != std::string::npos) {
+				if (!Options.configuration.empty() && expand_path(Options.configuration, "", true, false).empty())
+					errors += "configuration: cannot open config file\n";
+			}
 
-		try { validate_taskmasterd("options", "user", Options.user); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('u') != std::string::npos) {
+				try { validate_taskmasterd("", "user", Options.user); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "umask", Options.umask); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('m') != std::string::npos) {
+				try { validate_taskmasterd("", "umask", Options.umask); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "directory", Options.directory); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('d') != std::string::npos) {
+				try { validate_taskmasterd("", "directory", Options.directory); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "logfile", Options.logfile); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('l') != std::string::npos) {
+				try { validate_taskmasterd("", "logfile", Options.logfile); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "logfile_maxbytes", Options.logfile_maxbytes); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('y') != std::string::npos) {
+				try { validate_taskmasterd("", "logfile_maxbytes", Options.logfile_maxbytes); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "logfile_backups", Options.logfile_backups); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('z') != std::string::npos) {
+				try { validate_taskmasterd("", "logfile_backups", Options.logfile_backups); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "loglevel", Options.loglevel); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('e') != std::string::npos) {
+				try { validate_taskmasterd("", "loglevel", Options.loglevel); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "pidfile", Options.pidfile); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('j') != std::string::npos) {
+				try { validate_taskmasterd("", "pidfile", Options.pidfile); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "childlogdir", Options.childlogdir); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('q') != std::string::npos) {
+				try { validate_taskmasterd("", "childlogdir", Options.childlogdir); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "minfds", Options.minfds); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('a') != std::string::npos) {
+				try { validate_taskmasterd("", "minfds", Options.minfds); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		try { validate_taskmasterd("options", "minprocs", Options.minprocs); }
-		catch (const std::exception& e) { errors += "Error:\t " + std::string(e.what()) + "\n"; }
+			if (Options.options.find_first_of('p') != std::string::npos) {
+				try { validate_taskmasterd("", "minprocs", Options.minprocs); }
+				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+			}
 
-		if (!errors.empty()) { std::cerr << errors; return (2); }
+			if (!errors.empty()) { std::cerr << Options.fullName << ": invalid options: \n\n" <<  errors; return (2); }
 
-		return (0);
-	}
+			return (0);
+		}
+
+	#pragma endregion
 
 #pragma endregion
 

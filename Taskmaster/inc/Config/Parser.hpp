@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 18:04:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 00:10:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@
 			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
 			void						environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite = false);
 			void						environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
+			std::string					environment_get(const std::map<std::string, std::string>& env, const std::string& key) const;
 			void						environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
 			void						environment_initialize(std::map<std::string, std::string>& env);
 			void						environment_print(const std::map<std::string, std::string>& env) const;
@@ -108,10 +109,14 @@
 			std::string					trim(const std::string& str) const;
 			std::string					toLower(const std::string& str) const;
 			std::string					toUpper(const std::string& str) const;
-
-			std::string					extract_command(const std::string& line) const;
-			bool						is_exec(const std::string& path) const;
-			bool						command_is_executable(const std::string& input, std::string& resolved) const;
+			std::string					expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
+			std::string					temp_path() const;
+			std::string					config_path() const;
+			std::vector<std::string>	parse_files(const std::string& fileString);
+			int							check_fd_limit(uint16_t minfds) const;
+			int							check_process_limit(uint16_t minprocs) const;
+			long						parse_size(const std::string &value) const;
+			bool						command_executable(const std::string& input, std::string& resolved) const;
 
 		public:
 
@@ -137,15 +142,6 @@
 			std::map<std::string, std::string>	get_section(const std::string& section, bool use_defaults = false) const;
 			std::vector<std::string>			get_program() const;
 			std::vector<std::string>			get_group() const;
-
-			// Utils
-			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
-			std::string							temp_path() const;
-			std::string							config_path() const;
-			std::vector<std::string>			parse_files(const std::string& fileString);
-			int									check_fd_limit(uint16_t minfds) const;
-			int									check_process_limit(uint16_t minprocs) const;
-			long								parse_size(const std::string &value) const;
 
 	};
 

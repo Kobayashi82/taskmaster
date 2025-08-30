@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/29 23:46:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 00:01:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,6 +258,17 @@
 					env[key] = value;
 				}
 			}
+		}
+
+	#pragma endregion
+
+	#pragma region "Get"
+
+		std::string ConfigParser::environment_get(const std::map<std::string, std::string>& env, const std::string& key) const {
+			if (key.empty()) return ("");
+
+			auto it = env.find(key);
+   			return ((it != env.end()) ? it->second : "");
 		}
 
 	#pragma endregion

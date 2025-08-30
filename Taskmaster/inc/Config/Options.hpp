@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/25 14:50:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 23:29:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,6 @@
 	class ConfigOptions {
 
 		private:
-
-			// Variables
-			std::string	_fullName;												// Name and path used to execute the program (same as argv[0])
 
 			// Methods
 			int	help();
@@ -53,6 +50,7 @@
 			std::string	minfds;													// Minimum number of file descriptors required											(default: 1024)
 			std::string	minprocs;												// Minimum number of processes available in the system									(default: 200)
 
+			std::string	fullName;												// Name and path used to execute the program (same as argv[0])
 			std::string	options;												// 
 			bool		is_root;												// 
 

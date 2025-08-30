@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 21:21:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/30 23:57:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 
 	#include <unistd.h>															// gethostname()
 	#include <fstream>															// std::ifstream
-	#include <iostream>															// std::cout
+	#include <iostream>															// std::cout()
+	#include <algorithm>														// std::replace()
 
 #pragma endregion
 
@@ -127,14 +128,15 @@
 
 #pragma endregion
 
-
 #pragma region "Print"
 
 	void ConfigParser::print() const {
 		for (const auto& section : sections) {
 			std::cout << "[" << section.first << "]" << std::endl;
 			for (const auto& kv : section.second) {
-				std::cout << kv.first << " = " << kv.second << std::endl;
+				std::string value = kv.second;
+				std::replace(value.begin(), value.end(), '\n', ',');
+				std::cout << kv.first << " = " << value << std::endl;
 			}
 			std::cout << std::endl;
 		}

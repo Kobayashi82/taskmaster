@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 18:05:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 00:05:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,40 +224,37 @@
 
 #pragma endregion
 
+#pragma region "Command Executable"
 
+	bool ConfigParser::command_executable(const std::string& input, std::string& resolved) const {
+		std::string	command;
+		char		quoteChar = 0;
+		bool		escaped = false;
 
+		for (char c : input) {
+			if (escaped)									{ command += c; escaped = false;	continue; }
+			if (c=='\\')									{ escaped = true;					continue; }
+			if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;					continue; }
+			if (quoteChar && c == quoteChar)				{ quoteChar = 0;					continue; }
+			if (!quoteChar && isspace((unsigned char)c))										break;
 
-#include <sys/stat.h>
+			command += c;
+		}
 
-std::string ConfigParser::extract_command(const std::string& line) const {
-    std::string out; bool inS=false, inD=false, esc=false;
-    for (char c : line) {
-        if (esc) { out.push_back(c); esc=false; }
-        else if (c=='\\') esc=true;
-        else if (c=='"' && !inS) inD=!inD;
-        else if (c=='\'' && !inD) inS=!inS;
-        else if (!inS && !inD && isspace((unsigned char)c)) break;
-        else out.push_back(c);
-    }
-    return out;
-}
+		auto check_exec = [](const std::string& path) -> bool { return (!access(path.c_str(), X_OK)); };
+		if (command.find('/') != std::string::npos) return (check_exec(command) ? (resolved=command, true) : false);
 
-bool ConfigParser::is_exec(const std::string& path) const {
-    struct stat sb;
-    return stat(path.c_str(), &sb)==0 && S_ISREG(sb.st_mode) &&
-           access(path.c_str(), X_OK)==0;
-}
+		std::string path = environment_get(environment, "PATH");
+		if (!path.empty()) {
+			std::istringstream ss(path); 
+			std::string dir;
+			while (std::getline(ss, dir, ':')) {
+				std::string candidate = dir + "/" + command;
+				if (check_exec(candidate)) { resolved = candidate; return (true); }
+			}
+		}
 
-bool ConfigParser::command_is_executable(const std::string& input, std::string& resolved) const {
-    std::string cmd = extract_command(input);
-    if (cmd.find('/') != std::string::npos) return is_exec(cmd) ? (resolved=cmd, true) : false;
+		return (false);
+	}
 
-    if (const char* p = std::getenv("PATH")) {
-        std::istringstream ss(p); std::string dir;
-        while (std::getline(ss, dir, ':')) {
-            std::string cand = dir + "/" + cmd;
-            if (is_exec(cand)) { resolved=cand; return true; }
-        }
-    }
-    return false;
-}
+#pragma endregion

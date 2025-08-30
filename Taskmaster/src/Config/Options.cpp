@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 17:52:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 00:10:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,24 +26,24 @@
 	#pragma region "Constructor"
 
 		ConfigOptions::ConfigOptions() :
-			_fullName			("taskmasterd"),								// Name and path used to execute the program (same as argv[0])
 			configuration		(""),											// Default path
-			nodaemon			("false"),										// Shows log and exits on signals
-			silent				("false"),										// Hides logs in stdout from debug to warning (only works with -n)
-			user				("do not switch"),								// Switch to this user after startup (privilege de-escalation) (requires root)
-			umask				("022"),										// Set the file creation permission mask												(default: 022)
-			directory			("do not change"),								// Set the initial working directory													(default: )
-			logfile				(Parser.expand_path("supervisord.log")),		// File where the daemon writes its logs												(default: )
-			logfile_maxbytes	("50 MB"),										// Maximum log file size before rotation												(default: 10MB)
-			logfile_backups		("10"),											// Number of backup files to keep during rotation										(default: 5)
-			loglevel			("info"),										// Logging level: debug, info, warning, error, critical									(default: info)
-			pidfile				(Parser.expand_path("supervisord.pid")),		// File where the taskmaster process PID is written
-			identifier			("taskmaster"),									// Unique identifier for this taskmaster instance (used in logs and communication)
-			childlogdir			(Parser.temp_path()),							// Directory where child processes write their logs by default
-			strip_ansi			("false"),										// Remove ANSI escape sequences from child process logs
-			nocleanup			("false"),										// Do not clean temporary files on exit
-			minfds				("1024"),										// Minimum number of file descriptors required											(default: 1024)
-			minprocs			("200"),										// Minimum number of processes available in the system									(default: 200)
+			nodaemon			(""),											// Shows log and exits on signals
+			silent				(""),											// Hides logs in stdout from debug to warning (only works with -n)
+			user				(""),											// Switch to this user after startup (privilege de-escalation) (requires root)
+			umask				(""),											// Set the file creation permission mask												(default: 022)
+			directory			(""),											// Set the initial working directory													(default: )
+			logfile				(""),											// File where the daemon writes its logs												(default: )
+			logfile_maxbytes	(""),											// Maximum log file size before rotation												(default: 10MB)
+			logfile_backups		(""),											// Number of backup files to keep during rotation										(default: 5)
+			loglevel			(""),											// Logging level: debug, info, warning, error, critical									(default: info)
+			pidfile				(""),											// File where the taskmaster process PID is written
+			identifier			(""),											// Unique identifier for this taskmaster instance (used in logs and communication)
+			childlogdir			(""),											// Directory where child processes write their logs by default
+			strip_ansi			(""),											// Remove ANSI escape sequences from child process logs
+			nocleanup			(""),											// Do not clean temporary files on exit
+			minfds				(""),											// Minimum number of file descriptors required											(default: 1024)
+			minprocs			(""),											// Minimum number of processes available in the system									(default: 200)
+			fullName			(""),											// Name and path used to execute the program (same as argv[0])
 			options				(""),											// 
 			is_root				(getuid() == 0)									// 
 		{}
@@ -53,7 +53,6 @@
 	#pragma region "Constructor (copy)"
 
 		ConfigOptions::ConfigOptions(const ConfigOptions& src) :
-			_fullName			(src._fullName),								// Name and path used to execute the program (same as argv[0])
 			configuration		(src.configuration),							// Default path
 			nodaemon			(src.nodaemon),									// Shows log and exits on signals
 			silent				(src.silent),									// Hides logs in stdout from debug to warning (only works with -n)
@@ -71,6 +70,7 @@
 			nocleanup			(src.nocleanup),								// Do not clean temporary files on exit
 			minfds				(src.minfds),									// Minimum number of file descriptors required											(default: 1024)
 			minprocs			(src.minprocs),									// Minimum number of processes available in the system									(default: 200)
+			fullName			(src.fullName),									// Name and path used to execute the program (same as argv[0])
 			options				(src.options),									// 
 			is_root				(src.is_root)									// 
 		{}
@@ -86,7 +86,6 @@
 		ConfigOptions& ConfigOptions::operator=(const ConfigOptions& rhs) {
 			if (this == &rhs) return (*this);
 
-			_fullName			= rhs._fullName;									// Name and path used to execute the program (same as argv[0])
 			configuration		= rhs.configuration;								// Default path
 			nodaemon			= rhs.nodaemon;										// Shows log and exits on signals
 			silent				= rhs.silent;										// Hides logs in stdout from debug to warning (only works with -n)
@@ -104,6 +103,7 @@
 			nocleanup			= rhs.nocleanup;									// Do not clean temporary files on exit
 			minfds				= rhs.minfds;										// Minimum number of file descriptors required											(default: 1024)
 			minprocs			= rhs.minprocs;										// Minimum number of processes available in the system									(default: 200)
+			fullName			= rhs.fullName;										// Name and path used to execute the program (same as argv[0])
 			options				= rhs.options;										// 
 			is_root				= rhs.is_root;										// 
 
@@ -132,7 +132,7 @@
 			std::cerr << "  -l,  --logfile=FILENAME         Use FILENAME as logfile path\n";
 			std::cerr << "  -y,  --logfile_maxbytes=BYTES   Use BYTES to limit the max size of logfile\n";
 			std::cerr << "  -z,  --logfile_backups=NUM      Number of backups to keep when max bytes reached\n";
-			std::cerr << "  -e,  --loglevel=LEVEL           Use LEVEL as log level (debug,info,warn,error,critical)\n";
+			std::cerr << "  -e,  --loglevel=LEVEL           Use LEVEL as log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)\n";
 			std::cerr << "  -j,  --pidfile=FILENAME         Write a pid file for the daemon process to FILENAME\n";
 			std::cerr << "  -i,  --identifier=STR           Identifier used for this instance of taskmasterd\n";
 			std::cerr << "  -q,  --childlogdir=DIRECTORY    The log directory for child process logs\n";
@@ -171,7 +171,7 @@
 	#pragma region "Invalid"
 
 		int ConfigOptions::invalid() {
-			std::cerr << "Try '" << _fullName << " --help' for more information.\n";
+			std::cerr << "Try '" << fullName << " --help' for more information.\n";
 			return (2);
 		}
 
@@ -182,7 +182,7 @@
 #pragma region "Parse"
 
 	int ConfigOptions::parse(int argc, char **argv) {
-		_fullName = argv[0];
+		fullName = argv[0];
 
 		struct option long_options[] = {
 			{"configuration",		required_argument,	0, 'c'},	// [-c, --configuration=FILENAME]				- Default path: /etc/taskmasterd.conf
@@ -208,7 +208,7 @@
 		};
 
 		int opt;
-		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:tka:p:hv", long_options, NULL)) != -1) {
+		while ((opt = getopt_long(argc, argv, "c:nsu:m:d:l:y:z:e:j:i:q:tka:p:h?v", long_options, NULL)) != -1) {
 			switch (opt) {
 				case 'c':	{ options += opt; configuration		= std::string(optarg);		break; }
 				case 'n':	{ options += opt; nodaemon			= "true";					break; }
@@ -239,7 +239,9 @@
 			invalid(); return (2);
 		}
 
-		return (Parser.validate_options(*this));
+		if (Parser.validate_options(*this)) { std::cerr << "\n"; invalid(); return (2); }
+
+		return (0);
 	}
 
 #pragma endregion
