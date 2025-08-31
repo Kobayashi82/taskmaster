@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 11:42:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:20:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,15 +50,14 @@
 
 	#pragma region "Path"
 
-		bool ConfigParser::valid_path(const std::string& value, bool is_directory, bool allow_auto, bool allow_none, bool allow_syslog) const {
+		bool ConfigParser::valid_path(const std::string& value, const std::string current_path, bool is_directory, bool allow_auto, bool allow_none) const {
 			std::string fullPath;
 
 			if (value.empty())											return (false);
 			if (allow_none && toLower(value) == "none")					return (true);
 			if (allow_auto && toLower(value) == "auto")					return (true);
-			if (allow_syslog && toLower(value) == "syslog")				return (true);
-			else if (is_directory && toLower(value) == "do not change")	fullPath = expand_path(".");
-			else														fullPath = expand_path(value);
+			else if (is_directory && toLower(value) == "do not change")	fullPath = expand_path(".", current_path);
+			else														fullPath = expand_path(value, current_path);
 			if (fullPath.empty())										return (false);
 
 			std::filesystem::path p(fullPath);
@@ -82,20 +81,9 @@
 	#pragma region "Signal"
 
 		bool ConfigParser::valid_signal(const std::string& value) const {
-			if (value.empty()) return (false);
-
 			std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
 
-			
-			std::istringstream	ss(value);
-			std::string			signal;
-
-			while (std::getline(ss, signal, ',')) {
-				signal = trim(signal);
-				if (!validSignals.count(toUpper(signal))) return (false);
-			}
-
-			return (true);
+			return (validSignals.count(toUpper(value)) > 0);
 		}
 
 	#pragma endregion
@@ -133,7 +121,7 @@
 		bool ConfigParser::valid_autorestart(const std::string& value) const {
 			std::string lower = toLower(value);
 
-			return (lower == "false" || lower == "unexpected" || lower == "true" || lower == "yes" || lower == "no" || lower == "0" || lower == "1");
+			return (lower == "true" || lower == "false" || lower == "unexpected" || lower == "yes" || lower == "no" || lower == "1" || lower == "0");
 		}
 
 	#pragma endregion
@@ -264,6 +252,8 @@
 		
 			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix://.+)$)", std::regex::icase);
 
+			if (value.substr(0, 7) == "unix://") return (valid_path(value.substr(7)));
+
 			std::smatch match;
 			if (!std::regex_match(value, match, pattern)) return (false);
 			
@@ -332,17 +322,17 @@
 			}
 
 			// Path validation
-			if (key == "directory" && !valid_path(value, true))
+			if (key == "directory" && !valid_path(value, "", true))
 				throw std::runtime_error("[" + section + "] directory: path is invalid");
 
-			if (key == "logfile" && !valid_path(value, false, false, true, true))
-				throw std::runtime_error("[" + section + "] logfile: path is invalid");
+			// if (key == "logfile" && !valid_path(value, false, false, true, true))
+			// 	throw std::runtime_error("[" + section + "] logfile: path is invalid");
 
-			if (key == "pidfile" && !valid_path(value))
-				throw std::runtime_error("[" + section + "] pidfile: path is invalid");
+			// if (key == "pidfile" && !valid_path(value))
+			// 	throw std::runtime_error("[" + section + "] pidfile: path is invalid");
 
-			if (key == "childlogdir" && !valid_path(value, true))
-				throw std::runtime_error("[" + section + "] childlogdir: path is invalid");
+			// if (key == "childlogdir" && !valid_path(value, true))
+			// 	throw std::runtime_error("[" + section + "] childlogdir: path is invalid");
 
 			// User validation
 			if (key == "user" && !valid_user(value))
@@ -448,14 +438,14 @@
 				throw std::runtime_error("[" + section + "] user: invalid user");
 
 			// Path validation
-			if (key == "directory" && !valid_path(value, true))
+			if (key == "directory" && !valid_path(value, "", true))
 				throw std::runtime_error("[" + section + "] directory: path is invalid");
 
-			if (key == "stdout_logfile" && !valid_path(value, false, true, true, true))
-				throw std::runtime_error("[" + section + "] stdout_logfile: path is invalid");
+			// if (key == "stdout_logfile" && !valid_path(value, false, true, true, true))
+			// 	throw std::runtime_error("[" + section + "] stdout_logfile: path is invalid");
 
-			if (key == "stderr_logfile" && !valid_path(value, false, true, true, true))
-				throw std::runtime_error("[" + section + "] stderr_logfile: path is invalid");
+			// if (key == "stderr_logfile" && !valid_path(value, false, true, true, true))
+			// 	throw std::runtime_error("[" + section + "] stderr_logfile: path is invalid");
 
 			// Umask validation
 			if (key == "umask" && !valid_umask(value))
@@ -485,7 +475,7 @@
 
 		void ConfigParser::validate_unix_server(const std::string& section, std::string& key, std::string& value) const {
 			// Path validation
-			if (key == "file" && !valid_path(value, false))
+			if (key == "file" && !valid_path(value))
 				throw std::runtime_error("[" + section + "] file: path is invalid");
 
 			// Chmod validation
@@ -520,7 +510,14 @@
 	#pragma region "Options"
 
 		int ConfigParser::validate_options(ConfigOptions& Options) const {
-			std::string errors;
+			static std::string	dir;
+			std::string			errors;
+
+			if (Options.options.find_first_of('d') != std::string::npos) {
+				if (!valid_path(Options.directory, dir, true))
+					errors += "directory: path is invalid\n";
+				dir = expand_path(Options.directory, "", true, false);
+			}
 
 			if (Options.options.find_first_of('c') != std::string::npos) {
 				if (!Options.configuration.empty() && expand_path(Options.configuration, "", true, false).empty())
@@ -537,14 +534,9 @@
 				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
 			}
 
-			if (Options.options.find_first_of('d') != std::string::npos) {
-				try { validate_taskmasterd("", "directory", Options.directory); }
-				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			}
-
 			if (Options.options.find_first_of('l') != std::string::npos) {
-				try { validate_taskmasterd("", "logfile", Options.logfile); }
-				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+				if (!valid_path(Options.logfile, dir, false, false, true))
+					errors += "logfile: path is invalid\n";
 			}
 
 			if (Options.options.find_first_of('y') != std::string::npos) {
@@ -563,13 +555,13 @@
 			}
 
 			if (Options.options.find_first_of('j') != std::string::npos) {
-				try { validate_taskmasterd("", "pidfile", Options.pidfile); }
-				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+				if (!valid_path(Options.pidfile, dir))
+					errors += "pidfile: path is invalid\n";
 			}
 
 			if (Options.options.find_first_of('q') != std::string::npos) {
-				try { validate_taskmasterd("", "childlogdir", Options.childlogdir); }
-				catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
+				if (!valid_path(Options.childlogdir, dir, true))
+					errors += "childlogdir: path is invalid\n";
 			}
 
 			if (Options.options.find_first_of('a') != std::string::npos) {

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 00:10:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:20:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@
 			// Validation
 			bool						valid_bool(const std::string& value) const;
 			bool						valid_number(const std::string& value, long min = 0, long max = 1024 * 1024 * 1024) const;
-			bool						valid_path(const std::string& value, bool is_directory = false, bool allow_auto = false, bool allow_none = false, bool allow_syslog = false) const;
+			bool						valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false) const;
 			bool						valid_signal(const std::string& value) const;
 			bool						valid_code(const std::string& value) const;
 			bool						valid_loglevel(const std::string& value) const;
