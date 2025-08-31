@@ -1,6 +1,7 @@
 # TODO
 
 - en rotacion verificar si es un dispositivo especial y no rotar
+- validar rutas al crear clases
 - validar 'command' en program
 - validar 'programs' en group
 

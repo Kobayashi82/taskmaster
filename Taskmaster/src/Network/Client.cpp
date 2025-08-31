@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/13 11:17:01 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 14:01:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:33:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Logging/Logging.hpp"
 
 	#include "Security/Encryption.hpp"
 

@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/14 23:07:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 13:57:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:33:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Logging/Logging.hpp"
 	#include "Config/Signals.hpp"
 
 	#include "Network/Client.hpp"

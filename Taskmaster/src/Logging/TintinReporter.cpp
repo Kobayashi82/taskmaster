@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Logging.cpp                                        :+:      :+:    :+:   */
+/*   Log.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 14:01:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:35:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Logging.hpp"
+	#include "Logging/Logging.hpp"
 
 	#include <cstring>															// strerror()
 	#include <filesystem>														// path(), absolute(), exists(), create_directories()

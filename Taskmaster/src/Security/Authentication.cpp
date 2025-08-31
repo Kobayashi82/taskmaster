@@ -6,13 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/18 13:39:47 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/20 13:58:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:33:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Logging.hpp"
+	#include "Logging/Logging.hpp"
 	#include "Security/Authentication.hpp"
 
 	#include <cstring>															// std::strcmp()
