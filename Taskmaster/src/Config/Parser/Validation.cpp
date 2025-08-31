@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 00:13:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 11:42:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,20 @@
 	#pragma region "Signal"
 
 		bool ConfigParser::valid_signal(const std::string& value) const {
+			if (value.empty()) return (false);
+
 			std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
 
-			return (validSignals.count(toUpper(value)) > 0);
+			
+			std::istringstream	ss(value);
+			std::string			signal;
+
+			while (std::getline(ss, signal, ',')) {
+				signal = trim(signal);
+				if (!validSignals.count(toUpper(signal))) return (false);
+			}
+
+			return (true);
 		}
 
 	#pragma endregion
@@ -92,10 +103,10 @@
 	#pragma region "Exit Code"
 
 		bool ConfigParser::valid_code(const std::string& value) const {
-			if (value.empty()) return (true);
+			if (value.empty()) return (false);
 
-			std::istringstream ss(value);
-			std::string code;
+			std::istringstream	ss(value);
+			std::string			code;
 
 			while (std::getline(ss, code, ',')) {
 				code = trim(code);
@@ -251,7 +262,7 @@
 			if (value.empty())				return (false);
 			if (toLower(value) == "auto")	return (true);
 		
-			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix:.+)$)", std::regex::icase);
+			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix://.+)$)", std::regex::icase);
 
 			std::smatch match;
 			if (!std::regex_match(value, match, pattern)) return (false);
@@ -364,6 +375,9 @@
 			}
 
 			// Boolean values
+			if (key == "tty_mode" && !valid_bool(value))
+				throw std::runtime_error("[" + section + "] tty_mode: must be true or false");
+
 			if (key == "autostart" && !valid_bool(value))
 				throw std::runtime_error("[" + section + "] autostart: must be true or false");
 
@@ -376,11 +390,11 @@
 			if (key == "redirect_stderr" && !valid_bool(value))
 				throw std::runtime_error("[" + section + "] redirect_stderr: must be true or false");
 
-			if (key == "stdout_syslog" && !valid_bool(value))
-				throw std::runtime_error("[" + section + "] stdout_syslog: must be true or false");
+			if (key == "stdout_logfile_syslog" && !valid_bool(value))
+				throw std::runtime_error("[" + section + "] stdout_logfile_syslog: must be true or false");
 
-			if (key == "stderr_syslog" && !valid_bool(value))
-				throw std::runtime_error("[" + section + "] stderr_syslog: must be true or false");
+			if (key == "stderr_logfile_syslog" && !valid_bool(value))
+				throw std::runtime_error("[" + section + "] stderr_logfile_syslog: must be true or false");
 
 			// Numeric values
 			if (key == "stdout_logfile_maxbytes") {
