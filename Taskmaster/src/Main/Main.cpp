@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 13:43:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 21:52:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 	#include "Config/Options.hpp"
 	#include "Config/Parser.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
 	#include <iostream>															// std::cerr()
 
@@ -26,10 +27,20 @@
 
 		try {
 			ConfigOptions Options;
+			Log.info("Iniciado carga");
 			if ((result = Options.parse(argc, argv))) return (result);
 			Parser.parse(Options.configuration);
 			Parser.merge_options(Options);
-			std::cout << "Configuration loaded succesfully\n";
+			Log.info("Mesaje de prueba");
+			Log.error("Mesaje de error");
+			Log.generic("Mensaje generico");
+			Log.debug("Mesaje de debug");
+			Log.set_logfile_stdout(true);
+			Log.set_logfile_ready(true);
+			Log.set_logfile("popo");
+			Log.open();
+			Log.generic("Configuration loaded succesfully");
+			Log.info("cerrando");
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
 
 		return (0);

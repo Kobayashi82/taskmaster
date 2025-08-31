@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/31 13:31:38 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/08/31 16:42:59 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,17 +60,18 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp														\
-																				\
-			  Config/Options.cpp Config/Signals.cpp								\
-																				\
-			  Config/Parser/Initialize.cpp Config/Parser/Parser.cpp				\
-			  Config/Parser/Section.cpp Config/Parser/Keys.cpp					\
-			  Config/Parser/Globbing.cpp Config/Parser/Include.cpp				\
-			  Config/Parser/Environment.cpp Config/Parser/Validation.cpp		\
-			  Config/Parser/Getters.cpp Config/Parser/Utils.cpp					\
-																				\
-			  Logging/Log.cpp Logging/LogRotate.cpp Logging/ProcessOutput.cpp
+SRCS		= Main/Main.cpp													\
+																			\
+			  Config/Options.cpp Config/Signals.cpp							\
+																			\
+			  Config/Parser/Initialize.cpp Config/Parser/Parser.cpp			\
+			  Config/Parser/Section.cpp Config/Parser/Keys.cpp				\
+			  Config/Parser/Globbing.cpp Config/Parser/Include.cpp			\
+			  Config/Parser/Environment.cpp Config/Parser/Validation.cpp	\
+			  Config/Parser/Getters.cpp Config/Parser/Utils.cpp				\
+																			\
+			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp				\
+			  Logging/ProcessOutput.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

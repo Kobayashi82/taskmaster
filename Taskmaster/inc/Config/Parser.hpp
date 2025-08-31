@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 13:20:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 16:40:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,16 +106,10 @@
 			void						validate(const std::string& section, std::string& key, std::string& value) const;
 
 			// Utils
-			std::string					trim(const std::string& str) const;
-			std::string					toLower(const std::string& str) const;
-			std::string					toUpper(const std::string& str) const;
-			std::string					expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
-			std::string					temp_path() const;
 			std::string					config_path() const;
 			std::vector<std::string>	parse_files(const std::string& fileString);
 			int							check_fd_limit(uint16_t minfds) const;
 			int							check_process_limit(uint16_t minprocs) const;
-			long						parse_size(const std::string &value) const;
 			bool						command_executable(const std::string& input, std::string& resolved) const;
 
 		public:
@@ -143,6 +137,15 @@
 			std::vector<std::string>			get_program() const;
 			std::vector<std::string>			get_group() const;
 
+			// Utils
+			std::string							trim(const std::string& str) const;
+			std::string							toLower(const std::string& str) const;
+			std::string							toUpper(const std::string& str) const;
+			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
+			std::string							temp_path() const;
+			long								parse_size(const std::string &value) const;
+			bool								parse_bool(const std::string &value) const;
+			uint8_t								parse_loglevel(const std::string &value) const;
 	};
 
 #pragma endregion

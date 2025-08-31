@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 11:40:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 16:41:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,6 +180,31 @@
 		else if (suffix == "MB")	return (num * 1024 * 1024);
 		else if (suffix == "GB")	return (num * 1024 * 1024 * 1024);
 		else						return (-1);
+	}
+
+#pragma endregion
+
+#pragma region "Parse Bool"
+
+	bool ConfigParser::parse_bool(const std::string &value) const {
+		std::string lower = toLower(value);
+		return (lower == "true" || lower == "1" || lower == "yes");
+	}
+
+#pragma endregion
+
+#pragma region "Parse Level"
+
+	uint8_t ConfigParser::parse_loglevel(const std::string &value) const {
+		std::string level = toUpper(value);
+
+		if (level == "0" || level == "DEBUG")						return (0);
+		if (level == "1" || level == "INFO")						return (1);
+		if (level == "2" || level == "WARNING" || level == "WARN")	return (2);
+		if (level == "3" || level == "ERROR")						return (3);
+		if (level == "4" || level == "CRITICAL")					return (4);
+
+		return (1);
 	}
 
 #pragma endregion
