@@ -4,8 +4,8 @@
 .vscode/launch.json
 .vscode/settings.json
 
-!config
-!config/**
+!etc/
+!etc/**
 
 !doc
 !doc/**

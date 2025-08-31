@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 20:52:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 13:43:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 #pragma endregion
 
-#pragma region "Validate Input"
+#pragma region "Load Configuration"
 
 	static int load_configuration(int argc, char **argv) {
 		int result = 0;
@@ -29,7 +29,7 @@
 			if ((result = Options.parse(argc, argv))) return (result);
 			Parser.parse(Options.configuration);
 			Parser.merge_options(Options);
-			Parser.print();
+			std::cout << "Configuration loaded succesfully\n";
 		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
 
 		return (0);
@@ -41,7 +41,6 @@
 
 	int main(int argc, char **argv) {
 		int result = 0;
-
 		if ((result = load_configuration(argc, argv))) return (result - 1);
 
 		return (result);
