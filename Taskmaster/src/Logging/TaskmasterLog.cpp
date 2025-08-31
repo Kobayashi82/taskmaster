@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 22:02:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/08/31 22:24:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,12 +128,12 @@
 	#pragma region "Logfile"
 
 		void TaskmasterLog::set_logfile(const std::string& logfile) {
-			std::string new_logfile = Parser.expand_path(logfile, Parser.get_value("taskmasterd", "directory"));
+			std::string new_logfile = Parser.expand_path(logfile, Parser.expand_path(Parser.get_value("taskmasterd", "directory"), "", true, false));
 			if (new_logfile.empty()) new_logfile = logfile;
 			if (_logfile == new_logfile) return;
 			_logfile = new_logfile;
 
-			if (_logfile_stream.is_open()) open();
+			open();
 		}
 
 	#pragma endregion
@@ -201,28 +201,7 @@
 	#pragma region "Ready"
 
 		void TaskmasterLog::set_logfile_ready(std::string logfile_ready) {
-			_logfile_ready = Parser.parse_bool(logfile_ready);
-
-			if (_logfile_ready == true && !_logfile_buffer.empty()) {
-				std::vector<std::string> levels = { "DEBU", "INFO", "WARN", "ERRO", "CRIT", "[GENERIC]" };
-				levels.erase(levels.begin(), levels.begin() + _logfile_level);
-
-				for (auto& log : _logfile_buffer) {
-					bool ignore = true;
-
-					for (const auto& level : levels) {
-						if (log.find(level) != std::string::npos) { ignore = false; break; }
-					}
-
-					if (!ignore) {
-						if (log.substr(0, 9) == "[GENERIC]") log = log.substr(9);
-						if (_logfile_stream.is_open())	_logfile_stream << log;
-						if (_logfile_stdout)			std::cout << log;
-					}
-				}
-
-				_logfile_buffer.clear();
-			}
+			set_logfile_ready(Parser.parse_bool(logfile_ready));
 		}
 
 		void TaskmasterLog::set_logfile_ready(bool logfile_ready) {
@@ -259,19 +238,15 @@
 	#pragma region "Log"
 
 		void TaskmasterLog::log(const std::string& msg, const std::string& level, bool add_level) {
-			if (!_logfile_ready) {
-				std::string log;
-				if (add_level)	log = getTimestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
-				else			log = "[GENERIC]" + msg + "\n";
-				_logfile_buffer.push_back(log);
-			} else {
-				std::string log;
-				if (add_level)	log = getTimestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
-				else			log = msg + "\n";
+			std::string log;
 
-				if (_logfile_stream.is_open())	_logfile_stream << log;
-				if (_logfile_stdout)			std::cout << log;
-			}
+			if (add_level)	log = getTimestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
+			else			log = ((_logfile_ready) ? "" : "[GENERIC]") + msg + "\n";
+
+			if (!_logfile_ready) { _logfile_buffer.push_back(log); return ; }
+
+			if (_logfile_stream.is_open())	_logfile_stream << log;
+			if (_logfile_stdout)			std::cout << log;
 		}
 
 	#pragma endregion
