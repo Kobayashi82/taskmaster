@@ -263,34 +263,54 @@ El archivo de configuración utiliza sintaxis similar a supervisor
 [taskmasterd]
 nodaemon=false
 silent=false
-user=taskmaster
+user=1000
 umask=077
-directory=$HERE
-logfile=/var/log/taskmaster/daemon.log
+directory=.
+logfile=logfile.log
 logfile_maxbytes=50MB
-logfile_backups=10
-loglevel=info
-pidfile=/var/run/taskmasterd.pid
-identifier=main
-childlogdir=/var/log/taskmaster/children
+logfile_backups=1000
+logfile_syslog=false
+loglevel=debug
+pidfile=pidfile.pid
+identifier=taskmaster
+childlogdir=.
 strip_ansi=true
 nocleanup=false
 minfds=512
 minprocs=100
-environment=KEY1=VALUE1, KEY2=VALUE2
-
-# Configuración de conectividad
-[unix_http_server]
-file=/var/run/taskmaster.sock
-chmod=0700
-chown=taskmaster:taskmaster
-
-[inet_http_server]
-port=127.0.0.1:9001
-username=admin
-password=secret
+environment=VAR1=VALUE1, VAR2="VALUE2 with variable \$USER = $USER"
 
 # Definición de programas
+[program:date]
+command=date
+process_name=${PROCESS_NAME}_${PROCESS_NUM:*02d}
+numprocs=3
+directory=$HERE
+tty_mode=false
+umask=077
+priority=500
+autostart=true
+autorestart=unexpected
+startsecs=5
+startretries=5
+exitcodes=0
+stopsignal=TERM
+stopwaitsecs=10
+stopasgroup=true
+killasgroup=true
+user=root
+redirect_stderr=false
+stdout_logfile=$HOME/${PROCESS_NAME}_${PROCESS_NUM:*02d}_stdout.log
+stdout_logfile_maxbytes=1MB
+stdout_logfile_backups=10
+stdout_logfile_syslog=true
+stderr_logfile=~/${PROCESS_NAME}_${PROCESS_NUM:*02d}_stderr.log
+stderr_logfile_maxbytes=1MB
+stderr_logfile_backups=10
+stderr_logfile_syslog=false
+environment=VAR1='VALUE1 with spaces', VAR2=VALUE2\ with \ spaces
+serverurl=unix://~/taskmaster.sock
+
 [program:nginx]
 command=/usr/local/bin/nginx -c /etc/nginx/test.conf
 numprocs=1
@@ -309,28 +329,21 @@ environment=STARTED_BY="taskmaster",ANSWER="42",PATH="/usr/bin:${PATH}"
 user=nginx
 priority=999
 
-[program:webapp]
-command=/usr/local/bin/webapp --config=${HERE}/webapp.conf
-numprocs=4
-process_name=$PROGRAM_NAME_${PROCESS_NUM:02d}
-directory=/opt/webapp
-umask=077
-autostart=true
-autorestart=true
-exitcodes=0
-startretries=5
-starttime=3
-stopsignal=TERM
-stoptime=15
-stdout_logfile=/var/log/webapp/%(process_name)s.out
-stderr_logfile=/var/log/webapp/%(process_name)s.err
-environment=WEBAPP_ENV="production", WEBAPP_PORT="800${PROCESS_NUM:d}", DB_HOST="${DB_HOST:-localhost}", WORKER_ID="${PROCESS_NUM:d}"
-user=webapp
-
 # Definición de grupos
 [group:mygroup]
-programs=nginx,webapp
+programs=date, nginx
 priority=999
+
+# Configuración de conectividad
+[unix_http_server]
+file=/var/run/taskmaster.sock
+chmod=0700
+chown=taskmaster:taskmaster
+
+[inet_http_server]
+port=127.0.0.1:9001
+username=admin
+password=secret
 ```
 
 ## 🔤 Variables
