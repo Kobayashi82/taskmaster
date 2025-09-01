@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 22:06:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,11 +127,7 @@
 #pragma region "Default Values"
 
 	void ConfigParser::default_values() {
-		std::string	logfile = expand_path("taskmasterd.log");		// $CWD/taskmasterd.log
-		std::string	pidfile = expand_path("taskmasterd.pid");		// $CWD/taskmasterd.pid
-
 		std::string	childlogdir = temp_path();
-		std::string	logfile_maxbytes = std::to_string(50 * 1024 * 1024);	// 50 MB
 
 		defaultValues = {
 			{"taskmasterd", {
@@ -140,12 +136,12 @@
 				{"user", "do not switch"},
 				{"umask", "022"},
 				{"directory", "do not change"},
-				{"logfile", logfile},
-				{"logfile_maxbytes", logfile_maxbytes},
+				{"logfile", "logfile.log"},
+				{"logfile_maxbytes", "50MB"},
 				{"logfile_backups", "10"},
 				{"logfile_syslog", "false"},
-				{"loglevel", "1"},
-				{"pidfile", pidfile},
+				{"loglevel", "DEBUG"},
+				{"pidfile", "taskmasterd.pid"},
 				{"identifier", "taskmaster"},
 				{"childlogdir", childlogdir},
 				{"strip_ansi", "false"},
@@ -170,14 +166,14 @@
 				{"killasgroup", "false"},
 				{"user", "do not switch"},
 				{"directory", "do not change"},
-				{"umask", "022"},
+				{"umask", "inherit"},
 				{"redirect_stderr", "false"},
 				{"stdout_logfile", "AUTO"},
-				{"stdout_logfile_maxbytes", logfile_maxbytes},
+				{"stdout_logfile_maxbytes", "50MB"},
 				{"stdout_logfile_backups", "10"},
 				{"stdout_logfile_syslog", "false"},
 				{"stderr_logfile", "AUTO"},
-				{"stderr_logfile_maxbytes", logfile_maxbytes},
+				{"stderr_logfile_maxbytes", "50MB"},
 				{"stderr_logfile_backups", "10"},
 				{"stderr_logfile_syslog", "false"},
 				{"serverurl", "AUTO"},

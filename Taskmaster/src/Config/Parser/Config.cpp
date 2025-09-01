@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:19:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 20:27:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@
 		int			lineNumber = 0;
 		bool		invalidSection = false;
 
-		while (std::getline(file, line)) { lineNumber++; order++;
+		while (std::getline(file, line)) { lineNumber++; order += 2;
 			line = trim(remove_comments(line));
 			if (line.empty()) continue;
 
@@ -118,11 +118,14 @@
 		parse(Options.configuration);
 		merge_options(Options);
 
-		result = validate("", "", "");
+		environment_initialize(environment);
+		validate();
+		error_print();
+
 		if (errors.size())	{
-			if (error_maxLevel == WARNING) Log.warning("configuration loaded with warnings. Review recommended");
-			if (error_maxLevel == ERROR) Log.error("configuration loaded with errors. Execution can continue");
-			if (error_maxLevel == CRITICAL) Log.critical("configuration loaded with critical errors. Execution aborted");
+			if (error_maxLevel == WARNING)	Log.warning		("configuration loaded with warnings. Review recommended");
+			if (error_maxLevel == ERROR)	Log.error		("configuration loaded with errors. Execution can continue");
+			if (error_maxLevel == CRITICAL)	Log.critical	("configuration loaded with critical errors. Execution aborted");
 		}
 		else Log.info("configuration loaded succesfully");
 

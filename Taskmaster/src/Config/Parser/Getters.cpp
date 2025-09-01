@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:37:28 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 19:44:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,30 +18,24 @@
 
 #pragma region "Value"
 
-	std::string ConfigParser::get_value(const std::string& section, const std::string& key, const std::string& defaultValue) const {
-		(void) defaultValue;
-
+	ConfigParser::ConfigEntry* ConfigParser::get_value_entry(const std::string& section, const std::string& key) {
 		auto sectionIt = sections.find(section);
-		std::string normalizedKey = toLower(key);
 
-		// Search in config loaded
 		if (sectionIt != sections.end()) {
-			auto keyIt = sectionIt->second.find(normalizedKey);
-			if (keyIt != sectionIt->second.end()) return (keyIt->second.value);
+			auto keyIt = sectionIt->second.find(toLower(key));
+			if (keyIt != sectionIt->second.end()) return (&keyIt->second);
 		}
 
-		// // Search in default config
-		// std::string sectionType = section_type(section);
-		// if (!sectionType.empty()) {
-		// 	auto defaultSectionIt = defaultValues.find(sectionType);
-		// 	if (defaultSectionIt != defaultValues.end()) {
-		// 		auto defaultKeyIt = defaultSectionIt->second.find(normalizedKey);
-		// 		if (defaultKeyIt != defaultSectionIt->second.end()) return (defaultKeyIt->second);
-		// 	}
-		// }
+		return (nullptr);
+	}
 
-		// Fallback to defaultValue
-		// return (defaultValue);
+	std::string ConfigParser::get_value(const std::string& section, const std::string& key) const {
+		auto sectionIt = sections.find(section);
+
+		if (sectionIt != sections.end()) {
+			auto keyIt = sectionIt->second.find(toLower(key));
+			if (keyIt != sectionIt->second.end()) return (keyIt->second.value);
+		}
 
 		return ("");
 	}

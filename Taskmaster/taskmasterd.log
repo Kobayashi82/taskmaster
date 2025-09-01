@@ -1,0 +1,18 @@
+2025-09-01 21:12:19,308 INFO Iniciado carga
+2025-09-01 21:12:19,309 ERRO /home/kobay/taskmaster/etc/taskmasterd.conf
+[ERRO] in line 8	[taskmasterd] logfile: invalid path - Permission denied
+[WARN] 			[taskmasterd] logfile: reset to default value: /home/kobay/taskmaster/Taskmaster/taskmasterd.log
+2025-09-01 21:12:19,309 ERRO configuration loaded with errors. Execution can continue
+2025-09-01 21:12:19,309 INFO cerrando
+2025-09-01 21:15:37,790 INFO Iniciado carga
+2025-09-01 21:15:37,791 ERRO /home/kobay/taskmaster/etc/taskmasterd.conf
+[ERRO] in line 8	[taskmasterd] logfile: invalid path - Permission denied
+[WARN] 			[taskmasterd] logfile: reset to default value: /home/kobay/taskmaster/Taskmaster/taskmasterd.log
+2025-09-01 21:15:37,791 ERRO configuration loaded with errors. Execution can continue
+2025-09-01 21:15:37,792 INFO cerrando
+2025-09-01 21:16:53,161 INFO Iniciado carga
+2025-09-01 21:16:53,163 ERRO /home/kobay/taskmaster/etc/taskmasterd.conf
+[ERRO] in line 8	[taskmasterd] logfile: invalid path - No such file or directory
+[WARN] 			[taskmasterd] logfile: reset to default value: /home/kobay/taskmaster/Taskmaster/taskmasterd.log
+2025-09-01 21:16:53,163 ERRO configuration loaded with errors. Execution can continue
+2025-09-01 21:16:53,163 INFO cerrando

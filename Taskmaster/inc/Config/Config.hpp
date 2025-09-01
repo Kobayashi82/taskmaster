@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Parser.hpp                                         :+:      :+:    :+:   */
+/*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:10:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 19:58:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,8 @@
 			int									validate_options(ConfigOptions& Options) const;
 
 			// Getters
-			std::string							get_value(const std::string& section, const std::string& key, const std::string& defaultValue = "") const;
+			ConfigEntry*						get_value_entry(const std::string& section, const std::string& key);
+			std::string							get_value(const std::string& section, const std::string& key) const;
 			bool								has_section(const std::string& section) const;
 			std::map<std::string, ConfigEntry>	get_section(const std::string& section, bool use_defaults = false) const;
 			std::vector<std::string>			get_program() const;
@@ -147,12 +148,16 @@
 			bool						valid_password(const std::string& value) const;
 			bool						valid_port(const std::string& value) const;
 			bool						valid_serverurl(const std::string &value) const;
-			void						validate_taskmasterd(const std::string& section, const std::string& key, std::string& value) const;
+
+			void						validate_taskmasterd();
 			void						validate_program(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_unix_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_inet_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
-			int							validate(const std::string& section, const std::string& key, const std::string& value);
+			void						validate();
+
+			// Error
+			void						error_print();
 			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 
 			// Parser

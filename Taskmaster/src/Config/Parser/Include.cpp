@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 19:56:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@
 			int			lineNumber = 0;
 			bool		invalidSection = false;
 
-			while (std::getline(file, line)) { lineNumber++; order++;
+			while (std::getline(file, line)) { lineNumber++; order += 2;
 				line = trim(remove_comments(line));
 				if (line.empty()) continue;
 
@@ -107,7 +107,10 @@
 			for (const auto& file : files) {
 				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (fullpath.empty()) fullpath = file;
-				if (include_parse(fullpath)) error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order++);
+				if (include_parse(fullpath)) {
+					error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order);
+					order += 2;
+				}
 			}
 		}
 
