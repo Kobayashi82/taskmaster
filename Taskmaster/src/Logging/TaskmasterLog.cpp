@@ -6,13 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:48:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:16:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <cstring>															// strerror()
@@ -128,7 +128,7 @@
 	#pragma region "Logfile"
 
 		void TaskmasterLog::set_logfile(const std::string& logfile) {
-			std::string new_logfile = Parser.expand_path(logfile, Parser.expand_path(Parser.get_value("taskmasterd", "directory"), "", true, false));
+			std::string new_logfile = Config.expand_path(logfile, Config.expand_path(Config.get_value("taskmasterd", "directory"), "", true, false));
 			if (new_logfile.empty()) new_logfile = logfile;
 			if (_logfile == new_logfile) return;
 			_logfile = new_logfile;
@@ -141,7 +141,7 @@
 	#pragma region "Max Bytes"
 
 		void TaskmasterLog::set_logfile_maxbytes(std::string logfile_maxbytes) {
-			_logfile_maxbytes = Parser.parse_size(logfile_maxbytes);
+			_logfile_maxbytes = Config.parse_size(logfile_maxbytes);
 		}
 
 		void TaskmasterLog::set_logfile_maxbytes(long logfile_maxbytes) {
@@ -165,7 +165,7 @@
 	#pragma region "Level"
 
 		void TaskmasterLog::set_logfile_level(std::string logfile_level) {
-			_logfile_level = Parser.parse_loglevel(logfile_level);
+			_logfile_level = Config.parse_loglevel(logfile_level);
 		}
 
 		void TaskmasterLog::set_logfile_level(uint8_t logfile_level) {
@@ -177,7 +177,7 @@
 	#pragma region "Syslog"
 
 		void TaskmasterLog::set_logfile_syslog(std::string logfile_syslog) {
-			_logfile_syslog = Parser.parse_bool(logfile_syslog);
+			_logfile_syslog = Config.parse_bool(logfile_syslog);
 		}
 
 		void TaskmasterLog::set_logfile_syslog(bool logfile_syslog) {
@@ -189,7 +189,7 @@
 	#pragma region "Stdout"
 
 		void TaskmasterLog::set_logfile_stdout(std::string logfile_stdout) {
-			_logfile_stdout = Parser.parse_bool(logfile_stdout);
+			_logfile_stdout = Config.parse_bool(logfile_stdout);
 		}
 
 		void TaskmasterLog::set_logfile_stdout(bool logfile_stdout) {
@@ -201,7 +201,7 @@
 	#pragma region "Ready"
 
 		void TaskmasterLog::set_logfile_ready(std::string logfile_ready) {
-			set_logfile_ready(Parser.parse_bool(logfile_ready));
+			set_logfile_ready(Config.parse_bool(logfile_ready));
 		}
 
 		void TaskmasterLog::set_logfile_ready(bool logfile_ready) {

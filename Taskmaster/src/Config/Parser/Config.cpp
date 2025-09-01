@@ -1,23 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Parser.cpp                                         :+:      :+:    :+:   */
+/*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 15:06:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:19:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <cstring>															// strerror()
-	#include <unistd.h>															// gethostname()
 	#include <fstream>															// std::ifstream
 	#include <iostream>															// std::cout()
 	#include <algorithm>														// std::replace()
@@ -26,7 +25,7 @@
 
 #pragma region "Parse"
 
-	int ConfigParser::parse(const std::string& filePath) {
+	void ConfigParser::parse(const std::string& filePath) {
 		std::string configFile = filePath;
 
 		if (configFile.empty()) {
@@ -48,19 +47,20 @@
 		if (configFile.empty()) {
 			Log.error("no configuration file found");
 			Log.warning("tasksmasterd is running without a configuration file");
-			return (0);
+			return ;
 		}
 
 		std::ifstream file(configFile);
 		if (!file.is_open()) {
 			Log.error("cannot open config file: " + configFile + " - " + strerror(errno));
 			Log.warning("tasksmasterd is running without a configuration file");
-			return (0);
+			return ;
 		}
 
 		currentSection.clear();
 		sections.clear();
 		errors.clear();
+		error_maxLevel = 0;
 		order = 0;
 
 		std::string	line;
@@ -78,16 +78,14 @@
 
 		if (currentSection == "include")								include_process(configFile);
 
-		Parser.validate("", "", "");
-
-		return (0);
+		return ;
 	}
 
 #pragma endregion
 
 #pragma region "Merged Options"
 
-	void ConfigParser::merge_options(ConfigOptions& Options) {
+	void ConfigParser::merge_options(const ConfigOptions& Options) {
 		if (Options.options.find_first_of('n') != std::string::npos) sections["taskmasterd"]["nodaemon"].value			= Options.nodaemon;
 		if (Options.options.find_first_of('s') != std::string::npos) sections["taskmasterd"]["silent"].value			= Options.silent;
 		if (Options.options.find_first_of('u') != std::string::npos) sections["taskmasterd"]["user"].value				= Options.user;
@@ -104,6 +102,35 @@
 		if (Options.options.find_first_of('k') != std::string::npos) sections["taskmasterd"]["nocleanup"].value			= Options.nocleanup;
 		if (Options.options.find_first_of('a') != std::string::npos) sections["taskmasterd"]["minfds"].value			= Options.minfds;
 		if (Options.options.find_first_of('p') != std::string::npos) sections["taskmasterd"]["minprocs"].value			= Options.minprocs;
+	}
+
+#pragma endregion
+
+#pragma region "Load"
+
+	int ConfigParser::load(int argc, char **argv) {
+		int result = 0;
+
+		Log.info("Iniciado carga");
+
+		ConfigOptions Options;
+		if ((result = Options.parse(argc, argv))) return (result);
+		parse(Options.configuration);
+		merge_options(Options);
+
+		result = validate("", "", "");
+		if (errors.size())	{
+			if (error_maxLevel == WARNING) Log.warning("configuration loaded with warnings. Review recommended");
+			if (error_maxLevel == ERROR) Log.error("configuration loaded with errors. Execution can continue");
+			if (error_maxLevel == CRITICAL) Log.critical("configuration loaded with critical errors. Execution aborted");
+		}
+		else Log.info("configuration loaded succesfully");
+
+		Log.set_logfile_stdout(true);
+		Log.set_logfile(Config.get_value("taskmasterd", "logfile"));
+		Log.set_logfile_ready(true);
+
+		return(result);
 	}
 
 #pragma endregion

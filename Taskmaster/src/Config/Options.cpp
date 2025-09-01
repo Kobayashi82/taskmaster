@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 00:10:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Options.hpp"
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 
 	#include <unistd.h>															// getuid()
 	#include <iostream>															// std::cerr()
@@ -239,7 +239,7 @@
 			invalid(); return (2);
 		}
 
-		if (Parser.validate_options(*this)) { std::cerr << "\n"; invalid(); return (2); }
+		if (Config.validate_options(*this)) { std::cerr << "\n"; invalid(); return (2); }
 
 		return (0);
 	}

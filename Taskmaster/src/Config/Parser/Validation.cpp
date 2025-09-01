@@ -6,15 +6,16 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 15:10:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:43:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
+	#include <cstring>															// strerror()
 	#include <unistd.h>															// access()
 	#include <iostream>															// std::cerr
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::is_directory(), std::filesystem::exists()
@@ -54,24 +55,33 @@
 		bool ConfigParser::valid_path(const std::string& value, const std::string current_path, bool is_directory, bool allow_auto, bool allow_none) const {
 			std::string fullPath;
 
-			if (value.empty())											return (false);
-			if (allow_none && toLower(value) == "none")					return (true);
-			if (allow_auto && toLower(value) == "auto")					return (true);
+			if (value.empty())											{ errno = EINVAL;	return (false); }
+			if (allow_none && toLower(value) == "none")										return (true);
+			if (allow_auto && toLower(value) == "auto")										return (true);
 			else if (is_directory && toLower(value) == "do not change")	fullPath = expand_path(".", current_path);
+			else if (is_directory)										fullPath = expand_path(value, current_path, true, false);
 			else														fullPath = expand_path(value, current_path);
-			if (fullPath.empty())										return (false);
 
+			if (fullPath.empty())										{ errno = EINVAL;	return (false); }
 			std::filesystem::path p(fullPath);
 
-			if (is_directory) return (std::filesystem::exists(p) && std::filesystem::is_directory(p) && !access(p.c_str(), W_OK | X_OK));
+			if (is_directory) {
+				if (!std::filesystem::exists(p))						{ errno = ENOENT;	return (false); }
+				if (!std::filesystem::is_directory(p))					{ errno = ENOTDIR;	return (false); }
+				if (access(p.c_str(), W_OK | X_OK))						{ errno = EACCES;	return (false); }
+
+				return (true);
+			}
 
 			std::filesystem::path dir = p.parent_path();
-			if (!std::filesystem::exists(dir) || !std::filesystem::is_directory(dir)) return (false);
-			if (access(dir.c_str(), W_OK)) return (false);
+			if (!std::filesystem::exists(dir))							{ errno = ENOENT;	return (false); }
+			if (!std::filesystem::is_directory(dir))					{ errno = ENOTDIR;	return (false); }
+			if (access(dir.c_str(), W_OK))								{ errno = EACCES;	return (false); }
+
 
 			if (std::filesystem::exists(p)) {
-				if (std::filesystem::is_directory(p)) return (false);
-				if (access(p.c_str(), W_OK)) return (false);
+				if (std::filesystem::is_directory(p))					{ errno = EISDIR;	return (false); }
+				if (access(p.c_str(), W_OK))							{ errno = EACCES;	return (false); }
 			}
 
 			return (true);
@@ -537,7 +547,7 @@
 
 			if (Options.options.find_first_of('l') != std::string::npos) {
 				if (!valid_path(Options.logfile, dir, false, false, true))
-					errors += "logfile: path is invalid\n";
+					errors += "logfile: path is invalid - " + std::string(strerror(errno)) + "\n";
 			}
 
 			if (Options.options.find_first_of('y') != std::string::npos) {
@@ -586,7 +596,7 @@
 
 #pragma region "Validate"
 
-	void ConfigParser::validate(const std::string& section, const std::string& key, const std::string& value) {
+	int ConfigParser::validate(const std::string& section, const std::string& key, const std::string& value) {
 		std::vector<std::string>						validLevels = { "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "GENERAL" };
 		std::map<std::string, std::vector<ErrorInfo>>	errorsByFile;
 		std::vector<std::string>						fileOrder;
@@ -608,6 +618,7 @@
 				all_errors += "[" + validLevels[error.level].substr(0, 4) + "] " + line + "\t" + error.msg + "\n";
 			}
 
+			if (maxLevel > error_maxLevel) error_maxLevel = maxLevel;
 			if (!all_errors.empty()) {
 				all_errors.pop_back();
 				switch (maxLevel) {
@@ -625,6 +636,8 @@
 		(void) section;
 		(void) key;
 		(void) value;
+
+		return (0);
 		// std::string				sectionType = section_type(section);
 		// if		(sectionType == "taskmasterd")			validate_taskmasterd(section, key, value);
 		// else if	(sectionType == "program:")				validate_program(section, key, value);
@@ -667,3 +680,4 @@
 		// if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
 
 		// validate(currentSection, key, expanded_value);
+	// #include <unistd.h>															// gethostname()

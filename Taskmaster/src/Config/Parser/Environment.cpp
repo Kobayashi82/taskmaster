@@ -6,13 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:39:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 
 	#include <algorithm>														// std::all_of()
 	#include <regex>															// regex_match()

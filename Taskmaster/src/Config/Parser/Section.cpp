@@ -6,13 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 15:17:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Parser.hpp"
+	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 #pragma endregion

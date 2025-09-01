@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 15:06:26 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 17:10:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,7 @@
 			ConfigParser& operator=(const ConfigParser&) = delete;
 
 			// Parser
-			int									parse(const std::string& filePath = "");
-			void								merge_options(ConfigOptions& Options);
+			int									load(int argc, char **argv);
 			void								print() const;
 
 			// Validation
@@ -89,6 +88,7 @@
 			std::map<std::string, std::string>							environment;
 			std::map<std::string, std::string>							environmentConfig;
 			std::vector<ErrorInfo>										errors;
+			uint16_t													error_maxLevel;
 			uint16_t													order;															
 
 			// Initialize
@@ -152,8 +152,12 @@
 			void						validate_unix_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_inet_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
-			void						validate(const std::string& section, const std::string& key, const std::string& value);
+			int							validate(const std::string& section, const std::string& key, const std::string& value);
 			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
+
+			// Parser
+			void						parse(const std::string& filePath = "");
+			void						merge_options(const ConfigOptions& Options);
 
 			// Utils
 			std::string					config_path() const;
@@ -167,6 +171,6 @@
 	
 #pragma region "Variables"
 
-	extern ConfigParser Parser;
+	extern ConfigParser Config;
 
 #pragma endregion
