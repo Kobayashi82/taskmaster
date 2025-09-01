@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:43:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 15:20:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@
 				if (is_section(line)) {
 					std::string section = section_extract(line);
 					if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:") {
-						error_add(configFile, "[" + section + "] invalid section", WARNING, lineNumber, order);
+						if (section_type(section).empty())	error_add(configFile, "[" + section + "] unkown section", WARNING, lineNumber, order);
+						else								error_add(configFile, "[" + section + "] invalid section", ERROR, lineNumber, order);
 						invalidSection = true; continue;
 					}
 					invalidSection = section_parse(line, lineNumber, configFile);
@@ -98,7 +99,7 @@
 
 	#pragma region "Process"
 
-		void ConfigParser::include_process(std::string& configFile, int lineNumber) {
+		void ConfigParser::include_process(std::string& configFile) {
 			std::vector<std::string> files = include_parse_files(get_value("include", "files"), configFile);
 
 			currentSection = "";
@@ -106,7 +107,7 @@
 			for (const auto& file : files) {
 				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (fullpath.empty()) fullpath = file;
-				if (include_parse(fullpath)) error_add(configFile, "cannot open config file in include section: " + fullpath + " - " + strerror(errno), ERROR, lineNumber, order++);
+				if (include_parse(fullpath)) error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order++);
 			}
 		}
 

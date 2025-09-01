@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 21:53:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:58:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 #pragma region "Enumarators"
 
-	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL };
+	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL, GENERIC };
 
 #pragma endregion
 
@@ -46,7 +46,6 @@
 			std::ofstream			_logfile_stream;
 
 			std::string	getTimestamp() const;
-			void		log(const std::string& msg, const std::string& level, bool add_level = true);
 
 		public:
 
@@ -85,6 +84,7 @@
 			void			set_logfile_ready(bool logfile_ready);
 
 			// Log
+			void			log(const std::string& msg, const std::string& level, bool add_level = true);
 			void			generic(const std::string& msg);
 			void			debug(const std::string& msg);
     		void			info(const std::string& msg);

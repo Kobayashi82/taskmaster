@@ -1,5 +1,6 @@
 # TODO
 
+- expandir variables en include_parse_files()
 - en rotacion verificar si es un dispositivo especial y no rotar
 - validar rutas al crear clases
 - validar 'command' en program

@@ -6,13 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:08:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 15:10:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Parser.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
 	#include <unistd.h>															// access()
 	#include <iostream>															// std::cerr
@@ -109,9 +110,9 @@
 	#pragma region "Log Level"
 
 		bool ConfigParser::valid_loglevel(const std::string& value) const {
-			std::set<std::string> validSignals = { "0", "DEBUG", "1", "INFO", "2", "WARN", "WARNING", "3", "ERROR", "4", "CRITICAL" };
+			std::set<std::string> validLevels = { "0", "DEBUG", "1", "INFO", "2", "WARN", "WARNING", "3", "ERROR", "4", "CRITICAL" };
 
-			return (validSignals.count(toUpper(value)) > 0);
+			return (validLevels.count(toUpper(value)) > 0);
 		}
 
 	#pragma endregion
@@ -585,14 +586,51 @@
 
 #pragma region "Validate"
 
-	void ConfigParser::validate(const std::string& section, std::string& key, std::string& value) const {
-		std::string sectionType = section_type(section);
+	void ConfigParser::validate(const std::string& section, const std::string& key, const std::string& value) {
+		std::vector<std::string>						validLevels = { "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "GENERAL" };
+		std::map<std::string, std::vector<ErrorInfo>>	errorsByFile;
+		std::vector<std::string>						fileOrder;
 
-		if		(sectionType == "taskmasterd")			validate_taskmasterd(section, key, value);
-		else if	(sectionType == "program:")				validate_program(section, key, value);
-		else if	(sectionType == "group:")				validate_group(section, key, value);
-		else if	(sectionType == "unix_http_server")		validate_unix_server(section, key, value);
-		else if	(sectionType == "inet_http_server")		validate_inet_server(section, key, value);
+		std::sort(errors.begin(), errors.end(), [](const ErrorInfo& a, const ErrorInfo& b) { return (a.order < b.order); });
+
+		for (const auto& error : errors) {
+			if (errorsByFile.find(error.filename) == errorsByFile.end()) fileOrder.push_back(error.filename);
+			errorsByFile[error.filename].push_back(error);
+		}
+
+		for (const std::string& filename : fileOrder) {
+			std::string	all_errors;
+			int			maxLevel = DEBUG;
+
+			for (const auto& error : errorsByFile[filename]) {
+				if (error.level > maxLevel) maxLevel = error.level;
+				std::string line = (error.line) ? "in line " + std::to_string(error.line) : "\t\t";
+				all_errors += "[" + validLevels[error.level].substr(0, 4) + "] " + line + "\t" + error.msg + "\n";
+			}
+
+			if (!all_errors.empty()) {
+				all_errors.pop_back();
+				switch (maxLevel) {
+					case DEBUG:		Log.debug	(filename + "\n" + all_errors);	break;
+					case INFO:		Log.info	(filename + "\n" + all_errors);	break;
+					case WARNING:	Log.warning	(filename + "\n" + all_errors);	break;
+					case ERROR:		Log.error	(filename + "\n" + all_errors);	break;
+					case CRITICAL:	Log.critical(filename + "\n" + all_errors);	break;
+					case GENERIC:	Log.generic	(filename + "\n" + all_errors);	break;
+					default:		Log.generic	(filename + "\n" + all_errors);	break;
+				}
+			}
+		}
+
+		(void) section;
+		(void) key;
+		(void) value;
+		// std::string				sectionType = section_type(section);
+		// if		(sectionType == "taskmasterd")			validate_taskmasterd(section, key, value);
+		// else if	(sectionType == "program:")				validate_program(section, key, value);
+		// else if	(sectionType == "group:")				validate_group(section, key, value);
+		// else if	(sectionType == "unix_http_server")		validate_unix_server(section, key, value);
+		// else if	(sectionType == "inet_http_server")		validate_inet_server(section, key, value);
 	}
 
 #pragma endregion

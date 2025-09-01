@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:47:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 14:00:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@
 		if (Parser.parse(Options.configuration))	return (2);
 		Parser.merge_options(Options);
 		Parser.print();
-
 		Log.info("Mesaje de prueba");
 		Log.error("Mesaje de error");
 		Log.generic("Mensaje generico");

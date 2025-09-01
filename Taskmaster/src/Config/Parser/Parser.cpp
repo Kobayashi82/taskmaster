@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:43:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 15:06:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,12 +71,14 @@
 			line = trim(remove_comments(line));
 			if (line.empty()) continue;
 
-			if		(currentSection == "include" && is_section(line))	include_process(configFile, lineNumber);
+			if		(currentSection == "include" && is_section(line))	include_process(configFile);
 			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
 			else if	(!invalidSection)									key_parse(line, lineNumber, configFile);
 		}
 
-		if (currentSection == "include")								include_process(configFile, lineNumber);
+		if (currentSection == "include")								include_process(configFile);
+
+		Parser.validate("", "", "");
 
 		return (0);
 	}

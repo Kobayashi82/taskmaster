@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:01:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 15:17:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@
 
 	std::string ConfigParser::section_extract(const std::string& line) const {
 		std::string trimmed = trim(line);
-		return (trimmed.substr(1, trimmed.length() - 2));
+		return (trim(trimmed.substr(1, trimmed.length() - 2)));
 	}
 
 #pragma endregion
@@ -54,8 +54,18 @@
 	int ConfigParser::section_parse(const std::string& line, int line_number, std::string& filename) {
 		std::string section = section_extract(line);
 
-		if (section_type(section).empty())				{ currentSection = ""; error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order); return (1); }
-		if (section == "taskmasterctl")					{ currentSection = ""; return (1); }
+		if (section_type(section).empty()) {
+			error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);
+			currentSection = ""; return (1);
+		}
+		if (section == "include" && sections.find(section) != sections.end()) {
+			error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);
+			currentSection = ""; return (1);
+		}
+		if (section == "taskmasterctl") { currentSection = ""; return (1); }
+
+		if (trim(section) == "program:")	{ currentSection = ""; error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order); return (1); }
+		if (trim(section) == "group:")		{ currentSection = ""; error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order); return (1); }
 
 		currentSection = section;
 

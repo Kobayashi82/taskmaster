@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:42:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 15:06:26 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,7 +116,7 @@
 			// Include
 			int							include_parse(const std::string& filePath);
 			std::vector<std::string>	include_parse_files(const std::string& fileString, std::string& ConfigFile);
-			void						include_process(std::string& ConfigFile, int line_number);
+			void						include_process(std::string& ConfigFile);
 
 			// Environment
 			std::string					environment_apply_format(const std::string& value, const std::string& format) const;
@@ -152,7 +152,7 @@
 			void						validate_unix_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_inet_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
-			void						validate(const std::string& section, std::string& key, std::string& value) const;
+			void						validate(const std::string& section, const std::string& key, const std::string& value);
 			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 
 			// Utils
