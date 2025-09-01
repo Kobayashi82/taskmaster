@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 13:20:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:08:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -596,3 +596,36 @@
 	}
 
 #pragma endregion
+
+	void ConfigParser::error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order) {
+		errors.push_back({filename, msg, level, line, order});
+	}
+
+
+		// char hostname[255];
+		// environment_add(environment_config, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+		// environment_add(environment_config, "HERE", configPath.parent_path());
+		// environment_initialize(environment);
+// environment_add(environment_config, "HERE", configPath.parent_path());
+
+		// if (currentSection.substr(0, 8) == "program:") {
+		// 	std::string program_name = trim(currentSection.substr(8));
+		// 	if (!program_name.empty()) environment_add(environment_config, "PROGRAM_NAME", program_name);
+		// }
+		// else if (currentSection.substr(0, 6) == "group:") {
+		// 	std::string group_name = trim(currentSection.substr(7));
+		// 	if (!group_name.empty()) environment_add(environment_config, "GROUP_NAME", group_name);
+		// } else {
+		// 	environment_del(environment_config, "PROGRAM_NAME");
+		// 	environment_del(environment_config, "GROUP_NAME");
+		// }
+
+		
+		// std::string expanded_value;
+		// std::map<std::string, std::string> temp = environment;
+		// environment_add(temp, environment_config, true);
+		// expanded_value = environment_expand(temp, value, key == "environment");
+
+		// if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
+
+		// validate(currentSection, key, expanded_value);

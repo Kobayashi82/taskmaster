@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 22:19:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:47:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,23 +25,22 @@
 	static int load_configuration(int argc, char **argv) {
 		int result = 0;
 
-		try {
-			ConfigOptions Options;
-			Log.info("Iniciado carga");
-			if ((result = Options.parse(argc, argv))) return (result);
-			Parser.parse(Options.configuration);
-			Parser.merge_options(Options);
-			Log.info("Mesaje de prueba");
-			Log.error("Mesaje de error");
-			Log.generic("Mensaje generico");
-			Log.debug("Mesaje de debug");
-			Log.set_logfile_stdout(true);
-			Log.set_logfile(Parser.get_value("taskmasterd", "logfile"));
-			Log.set_logfile_ready(true);
-			Log.generic("Configuration loaded succesfully");
-			Log.info("cerrando");
-		} catch (const std::exception& e) { std::cerr << e.what(); return (2); }
+		ConfigOptions Options;
+		Log.info("Iniciado carga");
+		if ((result = Options.parse(argc, argv)))	return (result);
+		if (Parser.parse(Options.configuration))	return (2);
+		Parser.merge_options(Options);
+		Parser.print();
 
+		Log.info("Mesaje de prueba");
+		Log.error("Mesaje de error");
+		Log.generic("Mensaje generico");
+		Log.debug("Mesaje de debug");
+		Log.set_logfile_stdout(true);
+		Log.set_logfile(Parser.get_value("taskmasterd", "logfile"));
+		Log.set_logfile_ready(true);
+		Log.generic("Configuration loaded succesfully");
+		Log.info("cerrando");
 		return (0);
 	}
 

@@ -6,19 +6,20 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 21:14:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:10:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Parser.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
 #pragma endregion
 
 #pragma region "Remove Comments"
 
-	std::string ConfigParser::key_remove_comments(const std::string& line) const {
+	std::string ConfigParser::remove_comments(const std::string& line) const {
 		char	quoteChar = 0;
 		bool	escaped = false;
 
@@ -54,30 +55,27 @@
 
 #pragma region "Parse"
 
-	void ConfigParser::key_parse(const std::string& line) {
-		if (trim(line).empty())									return;
-		if (currentSection.empty() && !trim(line).empty())		throw std::runtime_error("Key found outside of a section: " + line);
+	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename) {
+		if (currentSection.empty())				{ error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order); return (1); }
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)							throw std::runtime_error("[" + currentSection + "] " + line + ": invalid key");
+		if (pos == std::string::npos)			{ error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order); return (1); }
 
 		std::string key   = trim(toLower(line.substr(0, pos)));
 		std::string value = trim(line.substr(pos + 1));
 
-		if (key.empty())										throw std::runtime_error("[" + currentSection + "] Empty key");
-		if (!key_valid(currentSection, key))					throw std::runtime_error("[" + currentSection + "] " + key + ": invalid key");
+		if (key.empty())						{ error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order); return (1); }
+		if (!key_valid(currentSection, key))	{ error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order); return (1); }
+		if (value.empty())						{ error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order); return (1); }
 
-		if (value.empty())										throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
+		ConfigEntry entry;
+		entry.value = value;
+		entry.filename = filename;
+		entry.line = line_number;
+		entry.order = order;
+		sections[currentSection][key] = entry;
 
-		std::string expanded_value;
-		std::map<std::string, std::string> temp = environment;
-		environment_add(temp, environment_config, true);
-		expanded_value = environment_expand(temp, value, key == "environment");
-
-		if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
-
-		validate(currentSection, key, expanded_value);
-		sections[currentSection][key] = expanded_value;
+		return (0);
 	}
 
 #pragma endregion

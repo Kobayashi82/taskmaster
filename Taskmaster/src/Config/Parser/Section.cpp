@@ -6,13 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 12:46:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:01:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Parser.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
 #pragma endregion
 
@@ -50,34 +51,30 @@
 
 #pragma region "Parse"
 
-	void ConfigParser::section_parse(const std::string& line) {
+	int ConfigParser::section_parse(const std::string& line, int line_number, std::string& filename) {
 		std::string section = section_extract(line);
 
-		if (section_type(section).empty())				{ currentSection = ""; throw std::runtime_error("[" + section + "] invalid section"); }
-		if (sections.find(section) != sections.end())	{ currentSection = ""; throw std::runtime_error("[" + section + "] duplicate section"); }
-		if (section == "taskmasterctl")					{ currentSection = ""; throw std::runtime_error("ignore section"); }
+		if (section_type(section).empty())				{ currentSection = ""; error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order); return (1); }
+		if (section == "taskmasterctl")					{ currentSection = ""; return (1); }
 
 		currentSection = section;
 
 		std::string sectionType = section_type(section);
 		if (!sectionType.empty()) {
 			auto defaultSectionIt = defaultValues.find(sectionType);
-			if (defaultSectionIt != defaultValues.end()) sections[currentSection] = defaultSectionIt->second;
-		} else {
-			sections[currentSection] = std::map<std::string, std::string>();
-		}
+			if (defaultSectionIt != defaultValues.end()) {
+				for (const auto& kv : defaultSectionIt->second) {
+					ConfigEntry entry;
+					entry.value = kv.second;
+					entry.filename = filename;
+					entry.line = line_number;
+					entry.order = order;
+					sections[currentSection][kv.first] = entry;
+				}
+			}
+		} else sections[currentSection] = std::map<std::string, ConfigEntry>();
 
-		if (currentSection.substr(0, 8) == "program:") {
-			std::string program_name = trim(currentSection.substr(8));
-			if (!program_name.empty()) environment_add(environment_config, "PROGRAM_NAME", program_name);
-		}
-		else if (currentSection.substr(0, 6) == "group:") {
-			std::string group_name = trim(currentSection.substr(7));
-			if (!group_name.empty()) environment_add(environment_config, "GROUP_NAME", group_name);
-		} else {
-			environment_del(environment_config, "PROGRAM_NAME");
-			environment_del(environment_config, "GROUP_NAME");
-		}
+		return (0);
 	}
 
 #pragma endregion

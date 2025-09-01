@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 16:41:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:35:57 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,47 +205,6 @@
 		if (level == "4" || level == "CRITICAL")					return (4);
 
 		return (1);
-	}
-
-#pragma endregion
-
-#pragma region "Parse Files"
-
-	std::vector<std::string> ConfigParser::parse_files(const std::string& fileString) {
-		std::vector<std::string>	files;
-		std::string					current;
-		bool						inQuotes = false;
-		bool						quotedToken = false;
-		char						quoteChar = 0;
-
-		auto pushToken = [&](bool wasQuoted) {
-			if (!current.empty()) {
-				std::string token = wasQuoted ? current : trim(current);
-				if (!token.empty()) files.push_back(token);
-				current.clear();
-			}
-		};
-
-		for (size_t i = 0; i < fileString.size(); ++i) {
-			char c = fileString[i];
-
-			if		(c == '\\' && i + 1 < fileString.size())			  current.push_back(fileString[++i]);
-			else if	((c == '"' || c == '\'') && !inQuotes)				{ inQuotes = quotedToken = true; quoteChar = c; }
-			else if	(inQuotes && c == quoteChar)						  inQuotes = false;
-			else if	(!inQuotes && (c == ' ' || c == ',' || c == '\t'))	{ pushToken(quotedToken); quotedToken = false; }
-			else														  current.push_back(c);
-		}
-
-		pushToken(quotedToken);
-
-		for (auto& file : files) {
-			std::string fullpath = expand_path(file, configPath.parent_path(), false);
-			if (!fullpath.empty()) file = fullpath;
-		}
-
-		files = globbing_expand(files);
-
- 		return (files);
 	}
 
 #pragma endregion

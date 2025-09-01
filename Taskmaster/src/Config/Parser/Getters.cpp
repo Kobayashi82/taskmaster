@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:37:28 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/28 18:46:01 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 12:20:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,27 +19,31 @@
 #pragma region "Value"
 
 	std::string ConfigParser::get_value(const std::string& section, const std::string& key, const std::string& defaultValue) const {
+		(void) defaultValue;
+
 		auto sectionIt = sections.find(section);
 		std::string normalizedKey = toLower(key);
 
-		// Buscar en configuración parseada
+		// Search in config loaded
 		if (sectionIt != sections.end()) {
 			auto keyIt = sectionIt->second.find(normalizedKey);
-			if (keyIt != sectionIt->second.end()) return (keyIt->second);
+			if (keyIt != sectionIt->second.end()) return (keyIt->second.value);
 		}
 
-		// Buscar en defaults
-		std::string sectionType = section_type(section);
-		if (!sectionType.empty()) {
-			auto defaultSectionIt = defaultValues.find(sectionType);
-			if (defaultSectionIt != defaultValues.end()) {
-				auto defaultKeyIt = defaultSectionIt->second.find(normalizedKey);
-				if (defaultKeyIt != defaultSectionIt->second.end()) return (defaultKeyIt->second);
-			}
-		}
+		// // Search in default config
+		// std::string sectionType = section_type(section);
+		// if (!sectionType.empty()) {
+		// 	auto defaultSectionIt = defaultValues.find(sectionType);
+		// 	if (defaultSectionIt != defaultValues.end()) {
+		// 		auto defaultKeyIt = defaultSectionIt->second.find(normalizedKey);
+		// 		if (defaultKeyIt != defaultSectionIt->second.end()) return (defaultKeyIt->second);
+		// 	}
+		// }
 
-		// Fallback a defaultValue
-		return (defaultValue);
+		// Fallback to defaultValue
+		// return (defaultValue);
+
+		return ("");
 	}
 
 #pragma endregion
@@ -56,24 +60,32 @@
 
 	#pragma region "Section"
 
-		std::map<std::string, std::string> ConfigParser::get_section(const std::string& section, bool use_defaults) const {
+		std::map<std::string, ConfigParser::ConfigEntry> ConfigParser::get_section(const std::string& section, bool use_defaults) const {
 			if (!use_defaults) {
 				auto it = sections.find(section);
 				if (it != sections.end()) return (it->second);
-
-				return (std::map<std::string, std::string>());
+				
+				return (std::map<std::string, ConfigParser::ConfigEntry>());
 			}
 
-			std::map<std::string, std::string> result;
+			std::map<std::string, ConfigParser::ConfigEntry> result;
 
-			// Empezar con los defaults
+			// Defaults
 			std::string sectionType = section_type(section);
 			if (!sectionType.empty()) {
 				auto defaultSectionIt = defaultValues.find(sectionType);
-				if (defaultSectionIt != defaultValues.end()) result = defaultSectionIt->second;
+				if (defaultSectionIt != defaultValues.end()) {
+					for (const auto& kv : defaultSectionIt->second) {
+						ConfigEntry entry;
+						entry.value = kv.second;
+						entry.filename = "defaults";
+						entry.line = 0;
+						entry.order = 0;
+						result[kv.first] = entry;
+					}
+				}
 			}
 
-			// Sobrescribir con valores del archivo
 			auto sectionIt = sections.find(section);
 			if (sectionIt != sections.end()) {
 				for (const auto& kv : sectionIt->second) result[kv.first] = kv.second;

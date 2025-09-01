@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 11:42:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:27:57 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 #pragma region "Constructors"
 
 	ConfigParser::ConfigParser() {
-		section_on_error = true;
 		initialize();
 		default_values();
 	}

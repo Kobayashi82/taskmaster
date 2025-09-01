@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/31 16:40:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:42:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
-	#include <filesystem>														// std::filesystem::path()
 
 #pragma endregion
 
@@ -28,20 +27,69 @@
 
 	class ConfigParser {
 
+		public:
+
+			typedef struct {
+				std::string	value;
+				std::string	filename;
+				uint16_t	line;
+				uint16_t	order;
+			} ConfigEntry;
+
+			typedef struct {
+				std::string	filename;
+				std::string	msg;
+				uint8_t		level;
+				uint16_t	line;
+				uint16_t	order;
+			}	ErrorInfo;
+
+			// Constructors
+			ConfigParser();
+			ConfigParser(const ConfigParser&) = delete;
+			~ConfigParser() = default;
+
+			// Overloads
+			ConfigParser& operator=(const ConfigParser&) = delete;
+
+			// Parser
+			int									parse(const std::string& filePath = "");
+			void								merge_options(ConfigOptions& Options);
+			void								print() const;
+
+			// Validation
+			int									validate_options(ConfigOptions& Options) const;
+
+			// Getters
+			std::string							get_value(const std::string& section, const std::string& key, const std::string& defaultValue = "") const;
+			bool								has_section(const std::string& section) const;
+			std::map<std::string, ConfigEntry>	get_section(const std::string& section, bool use_defaults = false) const;
+			std::vector<std::string>			get_program() const;
+			std::vector<std::string>			get_group() const;
+
+			// Utils
+			std::string							trim(const std::string& str) const;
+			std::string							toLower(const std::string& str) const;
+			std::string							toUpper(const std::string& str) const;
+			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
+			std::string							temp_path() const;
+			long								parse_size(const std::string &value) const;
+			bool								parse_bool(const std::string &value) const;
+			uint8_t								parse_loglevel(const std::string &value) const;
+
 		private:
 
 			// Variables
-			std::string													currentSection;
-			std::map<std::string, std::map<std::string, std::string>>	sections;
 			std::set<std::string>										validSections;
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
+			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
+			std::string													currentSection;
 
 			std::map<std::string, std::string>							environment;
-			std::map<std::string, std::string>							environment_config;
-			std::filesystem::path										configPath;
-			bool														in_include;
-			bool														section_on_error;
+			std::map<std::string, std::string>							environmentConfig;
+			std::vector<ErrorInfo>										errors;
+			uint16_t													order;															
 
 			// Initialize
 			void						initialize();
@@ -51,12 +99,12 @@
 			bool						is_section(const std::string& line) const;
 			std::string					section_type(const std::string& section) const;
 			std::string					section_extract(const std::string& line) const;
-			void						section_parse(const std::string& line);
+			int							section_parse(const std::string& line, int line_number, std::string& filename);
 
 			// Keys
-			std::string					key_remove_comments(const std::string& line) const;
+			std::string					remove_comments(const std::string& line) const;
 			bool						key_valid(const std::string& section, const std::string& key) const;
-			void						key_parse(const std::string& line);
+			int							key_parse(const std::string& line, int line_number, std::string& filename);
 
 			// Globbing
 			bool						globbing_has_glob(const std::string& path);
@@ -66,8 +114,9 @@
 			std::vector<std::string>	globbing_expand(const std::vector<std::string>& patterns);
 
 			// Include
-			void						include_parse(const std::string& filePath);
-			void						include_process();
+			int							include_parse(const std::string& filePath);
+			std::vector<std::string>	include_parse_files(const std::string& fileString, std::string& ConfigFile);
+			void						include_process(std::string& ConfigFile, int line_number);
 
 			// Environment
 			std::string					environment_apply_format(const std::string& value, const std::string& format) const;
@@ -104,48 +153,14 @@
 			void						validate_inet_server(const std::string& section, std::string& key, std::string& value) const;
 			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
 			void						validate(const std::string& section, std::string& key, std::string& value) const;
+			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 
 			// Utils
 			std::string					config_path() const;
-			std::vector<std::string>	parse_files(const std::string& fileString);
 			int							check_fd_limit(uint16_t minfds) const;
 			int							check_process_limit(uint16_t minprocs) const;
 			bool						command_executable(const std::string& input, std::string& resolved) const;
 
-		public:
-
-			// Constructors
-			ConfigParser();
-			ConfigParser(const ConfigParser&) = delete;
-			~ConfigParser() = default;
-
-			// Overloads
-			ConfigParser& operator=(const ConfigParser&) = delete;
-
-			// Parser
-			void								parse(const std::string& filePath = "");
-			void								merge_options(ConfigOptions& Options);
-			void								print() const;
-
-			// Validation
-			int									validate_options(ConfigOptions& Options) const;
-
-			// Getters
-			std::string							get_value(const std::string& section, const std::string& key, const std::string& defaultValue = "") const;
-			bool								has_section(const std::string& section) const;
-			std::map<std::string, std::string>	get_section(const std::string& section, bool use_defaults = false) const;
-			std::vector<std::string>			get_program() const;
-			std::vector<std::string>			get_group() const;
-
-			// Utils
-			std::string							trim(const std::string& str) const;
-			std::string							toLower(const std::string& str) const;
-			std::string							toUpper(const std::string& str) const;
-			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
-			std::string							temp_path() const;
-			long								parse_size(const std::string &value) const;
-			bool								parse_bool(const std::string &value) const;
-			uint8_t								parse_loglevel(const std::string &value) const;
 	};
 
 #pragma endregion

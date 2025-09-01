@@ -6,14 +6,16 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 12:47:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 13:43:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Parser.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
+	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
 	#include <filesystem>														// std::filesystem::path()
 
@@ -23,72 +25,89 @@
 
 	#pragma region "File"
 
-		void ConfigParser::include_parse(const std::string& filePath) {
-			std::ifstream file(filePath);
-			if (!file.is_open()) throw std::runtime_error("[" + filePath + "]\nError:\t\t\tCannot open config file\n");
+		int ConfigParser::include_parse(const std::string& filePath) {
+			std::string configFile = filePath;
 
-			std::string	configDir = std::filesystem::path(filePath).parent_path();
-			std::string	line, errors;
+			std::ifstream file(configFile);
+			if (!file.is_open()) return (1);
+
+			std::string	line, configDir = std::filesystem::path(configFile).parent_path();
 			int			lineNumber = 0;
-			bool		invalid_section = false;
+			bool		invalidSection = false;
 
-			environment_add(environment_config, "HERE", std::filesystem::path(filePath).parent_path());
-
-			while (std::getline(file, line)) { lineNumber++;
-				line = trim(key_remove_comments(line));
+			while (std::getline(file, line)) { lineNumber++; order++;
+				line = trim(remove_comments(line));
 				if (line.empty()) continue;
 
-				try {
-					if (is_section(line)) {
-						std::string section = section_extract(line);
-						if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:")
-							throw std::runtime_error("[" + section + "] invalid section");
-						section_parse(line);
-						invalid_section = false;
+				if (is_section(line)) {
+					std::string section = section_extract(line);
+					if (!section.empty() && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:") {
+						error_add(configFile, "[" + section + "] invalid section", WARNING, lineNumber, order);
+						invalidSection = true; continue;
 					}
-					else if (invalid_section)	continue;
-					else						key_parse(line);
+					invalidSection = section_parse(line, lineNumber, configFile);
 				}
-				catch (const std::exception& e) {
-					if (std::string(e.what()).find("Ignore section") != std::string::npos) {
-						errors += "Error at line " + std::to_string(lineNumber) + ":\t[" + currentSection + "] invalid section\n";
-						invalid_section = true; continue;
-					}
-					if	(line == "[include]" && std::string(e.what()).find("duplicate section") != std::string::npos) {
-						errors += "Error at line " + std::to_string(lineNumber) + ":\t[include] invalid section\n";
-						invalid_section = true; continue;
-					}
-					if (std::string(e.what()).find("invalid section") != std::string::npos)		invalid_section = true;
-					if (std::string(e.what()).find("duplicate section") != std::string::npos)	invalid_section = true;
-					errors += "Error at line " + std::to_string(lineNumber) + ":\t" + e.what() + "\n";
-				}
+				else if (!invalidSection) key_parse(line, lineNumber, configFile);
 			}
-			in_include = false;
-			invalid_section = true;
 
-			if (!errors.empty()) throw std::runtime_error("[" + filePath + "]\n" + errors);
+			return (0);
+		}
+
+	#pragma endregion
+
+	#pragma region "Parse Files"
+
+		std::vector<std::string> ConfigParser::include_parse_files(const std::string& fileString, std::string& configFile) {
+			std::vector<std::string>	files;
+			std::string					current;
+			bool						inQuotes = false;
+			bool						quotedToken = false;
+			char						quoteChar = 0;
+
+			auto pushToken = [&](bool wasQuoted) {
+				if (!current.empty()) {
+					std::string token = wasQuoted ? current : trim(current);
+					if (!token.empty()) files.push_back(token);
+					current.clear();
+				}
+			};
+
+			for (size_t i = 0; i < fileString.size(); ++i) {
+				char c = fileString[i];
+
+				if		(c == '\\' && i + 1 < fileString.size())			  current.push_back(fileString[++i]);
+				else if	((c == '"' || c == '\'') && !inQuotes)				{ inQuotes = quotedToken = true; quoteChar = c; }
+				else if	(inQuotes && c == quoteChar)						  inQuotes = false;
+				else if	(!inQuotes && (c == ' ' || c == ',' || c == '\t'))	{ pushToken(quotedToken); quotedToken = false; }
+				else														  current.push_back(c);
+			}
+
+			pushToken(quotedToken);
+
+			for (auto& file : files) {
+				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path(), false);
+				if (!fullpath.empty()) file = fullpath;
+			}
+
+			files = globbing_expand(files);
+
+			return (files);
 		}
 
 	#pragma endregion
 
 	#pragma region "Process"
 
-		void ConfigParser::include_process() {
-			std::vector<std::string> files = parse_files(get_value("include", "files"));
-			std::string errors;
+		void ConfigParser::include_process(std::string& configFile, int lineNumber) {
+			std::vector<std::string> files = include_parse_files(get_value("include", "files"), configFile);
 
 			currentSection = "";
 
 			for (const auto& file : files) {
-				try {
-					std::string fullpath = expand_path(file, configPath.parent_path());
-					if (fullpath.empty()) fullpath = file;
-					include_parse(fullpath);
-				}
-				catch (const std::exception& e) { errors += ((errors.empty()) ? "" : "\n") + std::string(e.what()); }
+				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path());
+				if (fullpath.empty()) fullpath = file;
+				if (include_parse(fullpath)) error_add(configFile, "cannot open config file in include section: " + fullpath + " - " + strerror(errno), ERROR, lineNumber, order++);
 			}
-
-			if (!errors.empty()) throw std::runtime_error(errors);
 		}
 
 	#pragma endregion
