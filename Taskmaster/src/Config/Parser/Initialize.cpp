@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 22:06:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 23:10:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,7 +186,7 @@
 
 			{"unix_http_server", {
 				{"chmod", "0700"},
-				{"chown", ""},
+				{"chown", "do not switch"},
 				{"username", ""},
 				{"password", ""}
 			}},

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 19:58:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/01 23:04:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,10 +150,10 @@
 			bool						valid_serverurl(const std::string &value) const;
 
 			void						validate_taskmasterd();
-			void						validate_program(const std::string& section, std::string& key, std::string& value) const;
-			void						validate_unix_server(const std::string& section, std::string& key, std::string& value) const;
-			void						validate_inet_server(const std::string& section, std::string& key, std::string& value) const;
-			void						validate_group(const std::string& section, std::string& key, std::string& value) const;
+			void						validate_program();
+			void						validate_group();
+			void						validate_unix_server();
+			void						validate_inet_server();
 			void						validate();
 
 			// Error
