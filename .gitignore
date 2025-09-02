@@ -15,6 +15,7 @@ doc/taskmaster\ 3.1.pdf
 !Taskmaster/**
 build/
 taskmasterd
+logfile.log
 
 !TaskmasterCTL
 !TaskmasterCTL/**

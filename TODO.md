@@ -1,7 +1,5 @@
 # TODO
 
-- en rotacion verificar si es un dispositivo especial y no rotar
-
 - Load file
 - Validar keys
 - Merge options
@@ -19,6 +17,7 @@ Grupos
 ---
 - Crear grupo
 
+- en rotacion verificar si es un dispositivo especial y no rotar
 
 ### Advertencia de seguridad
 Supervisord is running as root and it is searching for its configuration file in default locations (including its current working directory); you probably want to specify a "-c" argument specifying an absolute path to a configuration file for improved security.

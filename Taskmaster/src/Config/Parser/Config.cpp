@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 13:06:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 17:02:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,14 +122,14 @@
 		error_print();
 
 		if (errors.size())	{
-			if (error_maxLevel == WARNING)	Log.warning		("configuration loaded with warnings. Review recommended");
-			if (error_maxLevel == ERROR)	Log.error		("configuration loaded with errors. Execution can continue");
-			if (error_maxLevel == CRITICAL)	Log.critical	("configuration loaded with critical errors. Execution aborted");
+			if (error_maxLevel == WARNING)	  Log.warning	("configuration loaded with warnings. Review recommended");
+			if (error_maxLevel == ERROR)	  Log.error		("configuration loaded with errors. Execution can continue");
+			if (error_maxLevel == CRITICAL)	{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
 		}
 		else Log.info("configuration loaded succesfully");
 
-		Log.set_logfile_stdout(true);
-		Log.set_logfile(Config.get_value("taskmasterd", "logfile"));
+		Log.set_logfile_stdout(parse_bool(get_value("taskmasterd", "nodaemon")) && !parse_bool(get_value("taskmasterd", "silent")));
+		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
 
 		return(result);

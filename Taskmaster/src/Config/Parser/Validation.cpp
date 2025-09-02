@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 14:55:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 17:07:21 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -413,7 +413,7 @@
 								} else entry.value = "NONE";
 							}
 						}
-						if (entry.value != "NONE") entry.value = expand_path(entry.value, dir);
+						if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
 					}
 
 					if (key == "pidfile") {
@@ -779,7 +779,7 @@
 									} else entry.value = "NONE";
 								}
 							}
-							if (entry.value != "NONE") entry.value = expand_path(entry.value, dir);
+							if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
 						}
 
 						if (key == "stderr_logfile") {
@@ -803,7 +803,7 @@
 									} else entry.value = "NONE";
 								}
 							}
-							if (entry.value != "NONE") entry.value = expand_path(entry.value, dir);
+							if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
 						}
 
 						if (key == "serverurl") {
@@ -1087,64 +1087,65 @@
 
 			if (Options.options.find_first_of('d') != std::string::npos) {
 				if (!valid_path(Options.directory, dir, true))
-					errors += "directory: path is invalid\n";
+					errors += "directory:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
 				dir = expand_path(Options.directory, "", true, false);
 			}
 
 			if (Options.options.find_first_of('c') != std::string::npos) {
-				if (!Options.configuration.empty() && expand_path(Options.configuration, "", true, false).empty())
-					errors += "configuration: cannot open config file\n";
+				if (!valid_path(Options.configuration, dir) || expand_path(Options.configuration, dir, true, false).empty())
+					errors += "configuration:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
 			}
 
-			// if (Options.options.find_first_of('u') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "user", Options.user); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('u') != std::string::npos) {
+				if (!valid_user(Options.user))
+					errors += "user:\t\t\tinvalid user\n";
+			}
 
-			// if (Options.options.find_first_of('m') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "umask", Options.umask); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('m') != std::string::npos) {
+				if (!valid_umask(Options.umask))
+					errors += "umask:\t\t\tmust be in octal format\n";
+			}
 
-			// if (Options.options.find_first_of('l') != std::string::npos) {
-			// 	if (!valid_path(Options.logfile, dir, false, false, true))
-			// 		errors += "logfile: path is invalid - " + std::string(strerror(errno)) + "\n";
-			// }
+			if (Options.options.find_first_of('l') != std::string::npos) {
+				if (!valid_path(Options.logfile, dir, false, false, true) || expand_path(Options.logfile, dir).empty())
+					errors += "logfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+			}
 
-			// if (Options.options.find_first_of('y') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "logfile_maxbytes", Options.logfile_maxbytes); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('y') != std::string::npos) {
+				long bytes = parse_size(Options.logfile_maxbytes);
+				if (bytes == -1 || !valid_number(std::to_string(bytes), 0, 1024 * 1024 * 1024))
+					errors += "logfile_maxbytes:\tmust be a value between 0 bytes and 1024 MB\n";
+			}
 
-			// if (Options.options.find_first_of('z') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "logfile_backups", Options.logfile_backups); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('z') != std::string::npos) {
+				if (!valid_number(Options.logfile_backups, 0, 1000))
+					errors += "logfile_backups:\tmust be a value between 0 and 1000\n";
+			}
 
-			// if (Options.options.find_first_of('e') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "loglevel", Options.loglevel); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('e') != std::string::npos) {
+				if (!valid_loglevel(Options.loglevel))
+					errors += "loglevel:\t\tmust be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL\n";
+			}
 
-			// if (Options.options.find_first_of('j') != std::string::npos) {
-			// 	if (!valid_path(Options.pidfile, dir))
-			// 		errors += "pidfile: path is invalid\n";
-			// }
+			if (Options.options.find_first_of('j') != std::string::npos) {
+				if (!valid_path(Options.pidfile, dir, false, false, true) || expand_path(Options.pidfile, dir).empty())
+					errors += "pidfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+			}
 
-			// if (Options.options.find_first_of('q') != std::string::npos) {
-			// 	if (!valid_path(Options.childlogdir, dir, true))
-			// 		errors += "childlogdir: path is invalid\n";
-			// }
+			if (Options.options.find_first_of('q') != std::string::npos) {
+				if (!valid_path(Options.childlogdir, dir, true))
+					errors += "childlogdir:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+			}
 
-			// if (Options.options.find_first_of('a') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "minfds", Options.minfds); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('a') != std::string::npos) {
+				if (!valid_number(Options.minfds, 1, 65535))
+					errors += "minfds:\t\t\tmust be a value between 1 and 65535\n";
+			}
 
-			// if (Options.options.find_first_of('p') != std::string::npos) {
-			// 	try { validate_taskmasterd("", "minprocs", Options.minprocs); }
-			// 	catch (const std::exception& e) { errors += std::string(e.what()).substr(3) + "\n"; }
-			// }
+			if (Options.options.find_first_of('p') != std::string::npos) {
+				if (!valid_number(Options.minprocs, 1, 65535))
+					errors += "minprocs:\t\tmust be a value between 1 and 10000\n";
+			}
 
 			if (!errors.empty()) { std::cerr << Options.fullName << ": invalid options: \n\n" <<  errors; return (2); }
 
@@ -1228,32 +1229,3 @@
 	#pragma endregion
 
 #pragma endregion
-
-		// char hostname[255];
-		// environment_add(environment_config, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
-		// environment_add(environment_config, "HERE", configPath.parent_path());
-		// environment_initialize(environment);
-// environment_add(environment_config, "HERE", configPath.parent_path());
-
-		// if (currentSection.substr(0, 8) == "program:") {
-		// 	std::string program_name = trim(currentSection.substr(8));
-		// 	if (!program_name.empty()) environment_add(environment_config, "PROGRAM_NAME", program_name);
-		// }
-		// else if (currentSection.substr(0, 6) == "group:") {
-		// 	std::string group_name = trim(currentSection.substr(7));
-		// 	if (!group_name.empty()) environment_add(environment_config, "GROUP_NAME", group_name);
-		// } else {
-		// 	environment_del(environment_config, "PROGRAM_NAME");
-		// 	environment_del(environment_config, "GROUP_NAME");
-		// }
-
-		
-		// std::string expanded_value;
-		// std::map<std::string, std::string> temp = environment;
-		// environment_add(temp, environment_config, true);
-		// expanded_value = environment_expand(temp, value, key == "environment");
-
-		// if (expanded_value.empty())								throw std::runtime_error("[" + currentSection + "] " + key + ": empty value");
-
-		// validate(currentSection, key, expanded_value);
-	// #include <unistd.h>															// gethostname()

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 17:07:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@
 #pragma region "Open"
 
 	int TaskmasterLog::open() {
-		if (_logfile.empty()) return (0);
+		if (_logfile.empty() || Config.toUpper(_logfile) == "NONE") return (0);
 		if (_logfile_stream.is_open()) _logfile_stream.close();
 
 		_logfile_stream.open(_logfile, std::ios::app);
@@ -128,11 +128,8 @@
 	#pragma region "Logfile"
 
 		void TaskmasterLog::set_logfile(const std::string& logfile) {
-			std::string new_logfile = Config.expand_path(logfile, Config.expand_path(Config.get_value("taskmasterd", "directory"), "", true, false));
-			if (new_logfile.empty()) new_logfile = logfile;
-			if (_logfile == new_logfile) return;
-			_logfile = new_logfile;
-
+			if (_logfile == logfile) return;
+			_logfile = logfile;
 			open();
 		}
 
