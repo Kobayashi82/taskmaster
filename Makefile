@@ -6,13 +6,13 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/02 22:08:39 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/02 22:17:11 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 all:taskmasterd taskmasterctl
 
-taskmaster: daemon
+taskmasterd: daemon
 server: daemon
 daemon:
 	@mkdir -p bin
