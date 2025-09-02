@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 14:53:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 20:56:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,13 +29,13 @@
 
 		public:
 
+			// Structures
 			typedef struct {
 				std::string	value;
 				std::string	filename;
 				uint16_t	line;
 				uint16_t	order;
 			} ConfigEntry;
-
 			typedef struct {
 				std::string	filename;
 				std::string	msg;
@@ -43,6 +43,9 @@
 				uint16_t	line;
 				uint16_t	order;
 			}	ErrorInfo;
+
+			// Variables
+			bool	is_root;
 
 			// Constructors
 			ConfigParser();

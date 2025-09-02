@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 17:07:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 21:46:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -448,9 +448,17 @@
 						if (entry.value != "NONE") entry.value = expand_path(entry.value, dir, true, false);
 					}
 
-					if (key == "user" && !valid_user(entry.value)) {
-						error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
-						entry.value = "";
+					if (key == "user") {
+						if (!valid_user(entry.value)) {
+							error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
+							entry.value = "";
+						} else {
+							if (!is_root && toLower(entry.value) != "do not switch") {
+								struct passwd* pw = getpwuid(getuid());
+								if (pw && pw->pw_name != entry.value && entry.value != std::to_string(getuid()))
+									error_add(entry.filename, "[" + sectionName + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry.line, entry.order);
+							}
+						}
 					}
 
 					if (key == "umask" && !valid_umask(entry.value)) {
@@ -515,6 +523,11 @@
 			}
 
 			if (!HERE.empty()) environment_add(environment, "HERE", HERE);
+
+			std::string user = get_value("taskmasterd", "user");
+			if (is_root && (user.empty() || toLower(user) == "do not switch")) {
+				Log.warning("taskmasterd is running as root. Privileges were not dropped because no user is specified in the config file. If you intend to run as root, you can set user=root in the config file to avoid this message.");
+			}
 		}
 
 	#pragma endregion
@@ -744,9 +757,17 @@
 							entry.value = defaultValues[sectionName.substr(0, 8)][key];
 						}
 
-						if (key == "user" && !valid_user(entry.value)) {
-							error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
-							entry.value = "";
+						if (key == "user") {
+							if (!valid_user(entry.value)) {
+								error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
+								entry.value = "";
+							} else {
+								if (!is_root && toLower(entry.value) != "do not switch") {
+									struct passwd* pw = getpwuid(getuid());
+									if (pw && pw->pw_name != entry.value && entry.value != std::to_string(getuid()))
+										error_add(entry.filename, "[" + sectionName + "] " + key + ": cannot switch user, not running as root", CRITICAL, entry.line, entry.order);
+								}
+							}
 						}
 
 						if (key == "umask") {

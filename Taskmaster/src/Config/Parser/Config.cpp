@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 17:02:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 21:09:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
+	#include <unistd.h>															// getuid()
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
 	#include <iostream>															// std::cout()
@@ -111,10 +112,14 @@
 	int ConfigParser::load(int argc, char **argv) {
 		int result = 0;
 
-		Log.info("Iniciado carga");
+		is_root = getuid() == 0;
 
 		ConfigOptions Options;
 		if ((result = Options.parse(argc, argv))) return (result);
+
+		if (Options.configuration.empty() && is_root) {
+			Log.warning("taskmasterd is running as root and it is searching for its configuration file in default locations (including its current working directory). You probably want to specify a \"-c\" argument specifying an absolute path to a configuration file for improved security.");
+		}
 		parse(Options.configuration);
 		merge_options(Options);
 
