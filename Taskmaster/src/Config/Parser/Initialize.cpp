@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 23:10:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 13:54:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,6 +128,9 @@
 
 	void ConfigParser::default_values() {
 		std::string	childlogdir = temp_path();
+		if (childlogdir.empty()) childlogdir = "/tmp";
+		std::string	unix_file = expand_path("taskmaster.sock", temp_path());
+		if (unix_file.empty()) unix_file = "taskmaster.sock";
 
 		defaultValues = {
 			{"taskmasterd", {
@@ -185,6 +188,7 @@
 			}},
 
 			{"unix_http_server", {
+				{"file", unix_file},
 				{"chmod", "0700"},
 				{"chown", "do not switch"},
 				{"username", ""},

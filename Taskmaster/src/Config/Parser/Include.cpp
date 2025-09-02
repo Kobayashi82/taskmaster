@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 19:56:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 14:49:48 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@
 				if		(c == '\\' && i + 1 < fileString.size())			  current.push_back(fileString[++i]);
 				else if	((c == '"' || c == '\'') && !inQuotes)				{ inQuotes = quotedToken = true; quoteChar = c; }
 				else if	(inQuotes && c == quoteChar)						  inQuotes = false;
-				else if	(!inQuotes && (c == ' ' || c == ',' || c == '\t'))	{ pushToken(quotedToken); quotedToken = false; }
+				else if	(!inQuotes && (c == '\n'))	{ pushToken(quotedToken); quotedToken = false; }
 				else														  current.push_back(c);
 			}
 
@@ -101,7 +101,6 @@
 
 		void ConfigParser::include_process(std::string& configFile) {
 			std::vector<std::string> files = include_parse_files(get_value("include", "files"), configFile);
-
 			currentSection = "";
 
 			for (const auto& file : files) {

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 14:53:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@
 
 			// Do not expand to "" if NUMPROCS or PROCESS_NUM are not set in the environment (they will be expanded later during program instance creation)
 			if (it != env.end()) value = it->second;
-			else if	(section_type(currentSection) == "program:" && (var_name == "NUMPROCS" || var_name == "PROCESS_NUM")) return "${" + var_expr + "}";
+			else if	(section_type(currentSection) == "program:" && var_name == "PROCESS_NUM") return "${" + var_expr + "}";
 			else value = "";
 
 			if (modifier.empty()) 									return (value);												// No modifier
@@ -118,7 +118,7 @@
 
 	#pragma region "Expand"
 
-		std::string ConfigParser::environment_expand(std::map<std::string, std::string>& env, const std::string& line, bool split_comma) const {
+		std::string ConfigParser::environment_expand(std::map<std::string, std::string>& env, const std::string& line, std::string split) const {
 			std::string	result;
 			char		quoteChar = 0;
 			bool		escaped = false;
@@ -153,14 +153,14 @@
 							std::string var_name = line.substr(start, end - start);
 							auto it = env.find(var_name);
 							if (it != env.end()) result += it->second;
-							else if (section_type(currentSection) == "program:" && (var_name == "NUMPROCS" || var_name == "PROCESS_NUM")) result += "$" + var_name;
+							else if (section_type(currentSection) == "program:" && var_name == "PROCESS_NUM") result += "$" + var_name;
 							i = end - 1;														continue;
 						}
 					}
 				}
 
-				if (!quoteChar && c == ',' && split_comma)	result +='\n';
-				else										result += c;
+				if (!quoteChar && !split.empty() && split.find(c) != std::string::npos)	result +='\n';
+				else																	result += c;
 			}
 
 			if (quoteChar || escaped) throw std::runtime_error("[" + currentSection + "] unclosed quote or unfinished escape sequence");

@@ -396,12 +396,12 @@ El sistema de variables de Taskmaster permite una configuración dinámica y fle
 
 | Variable                    | Descripción                                                                           |
 |-----------------------------|---------------------------------------------------------------------------------------|
+| **HERE**                    | Directorio del archivo de configuración                                               |
 | **HOST_NAME**               | Nombre del host del sistema                                                           |
 | **GROUP_NAME**              | Nombre del grupo actual                                                               |
 | **PROGRAM_NAME**            | Nombre del programa                                                                   |
 | **NUMPROCS**                | Número total de procesos                                                              |
 | **PROCESS_NUM**             | Número de proceso (0, 1, 2...)                                                        |
-| **HERE**                    | Directorio del archivo de configuración                                               |
 |
 
 ## 🧪 Testing

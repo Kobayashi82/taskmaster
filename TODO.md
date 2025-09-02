@@ -1,10 +1,6 @@
 # TODO
 
-- expandir variables en include_parse_files()
 - en rotacion verificar si es un dispositivo especial y no rotar
-- validar rutas al crear clases
-- validar 'command' en program
-- validar 'programs' en group
 
 - Load file
 - Validar keys
@@ -16,10 +12,8 @@
 
 Programas
 ---
-- Crear variables de entorno 
-- Crear variables de taskmaster
-- Expandir $PROGRAM_NUMS y $PROGRAM_NUM (incrementado)
-- Crear clase completa 
+- Crear variables de taskmaster al crear clase
+- Expandir $PROGRAM_NUM (incrementado) al crear clase
 
 Grupos
 ---

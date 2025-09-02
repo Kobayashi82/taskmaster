@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 20:27:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 13:06:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,6 @@
 		parse(Options.configuration);
 		merge_options(Options);
 
-		environment_initialize(environment);
 		validate();
 		error_print();
 

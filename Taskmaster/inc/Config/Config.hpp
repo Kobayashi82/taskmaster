@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 23:04:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 14:53:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@
 			std::string					environment_apply_format(const std::string& value, const std::string& format) const;
 			std::string					environment_apply_substring(const std::string& value, const std::string& substr_spec) const;
 			std::string					environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) const;
-			std::string					environment_expand(std::map<std::string, std::string>& env, const std::string& str, bool split_comma = false) const;
+			std::string					environment_expand(std::map<std::string, std::string>& env, const std::string& str, std::string split = "") const;
 			bool						environment_validate(const std::string& env_string) const;
 			void						environment_del(std::map<std::string, std::string>& env, const std::string& key);
 			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
