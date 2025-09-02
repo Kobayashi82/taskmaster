@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 21:09:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 21:55:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,9 @@
 
 		if (Options.configuration.empty() && is_root) {
 			Log.warning("taskmasterd is running as root and it is searching for its configuration file in default locations (including its current working directory). You probably want to specify a \"-c\" argument specifying an absolute path to a configuration file for improved security.");
+			error_maxLevel = WARNING;
 		}
+
 		parse(Options.configuration);
 		merge_options(Options);
 

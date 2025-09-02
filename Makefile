@@ -6,43 +6,43 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/08/21 12:46:49 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/02 22:08:39 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-all:taskmaster taskmasterctl
+all:taskmasterd taskmasterctl
 
 taskmaster: daemon
 server: daemon
 daemon:
 	@mkdir -p bin
-	@$(MAKE) -s -C Taskmaster all
-	@-rm -f bin/taskmaster
-	@cp Taskmaster/taskmasterd bin/
+	@$(MAKE) -s -C Taskmasterd all
+	@-rm -f bin/taskmasterd
+	@cp Taskmasterd/taskmasterd bin/
 
 taskmasterctl: client
 client:
 	@mkdir -p bin
-	@$(MAKE) -s -C TaskmasterCTL all
+	@$(MAKE) -s -C Taskmasterctl all
 	@-rm -f bin/taskmasterctl
-	@cp TaskmasterCTL/taskmasterctl bin/
+	@cp Taskmasterctl/taskmasterctl bin/
 
 re:
-	@$(MAKE) -s -C Taskmaster re
-	@$(MAKE) -s -C TaskmasterCTL re
+	@$(MAKE) -s -C Taskmasterd re
+	@$(MAKE) -s -C Taskmasterctl re
 
 clean:
-	@$(MAKE) -s -C Taskmaster clean
-	@$(MAKE) -s -C TaskmasterCTL clean
+	@$(MAKE) -s -C Taskmasterd clean
+	@$(MAKE) -s -C Taskmasterctl clean
 
 fclean:
-	@$(MAKE) -s -C Taskmaster fclean
-	@$(MAKE) -s -C TaskmasterCTL fclean
+	@$(MAKE) -s -C Taskmasterd fclean
+	@$(MAKE) -s -C Taskmasterctl fclean
 	@rm -rf bin
 
 wipe:
-	@$(MAKE) -s -C Taskmaster wipe
-	@$(MAKE) -s -C TaskmasterCTL wipe
+	@$(MAKE) -s -C Taskmasterd wipe
+	@$(MAKE) -s -C Taskmasterctl wipe
 	@rm -rf bin
 
-.PHONY: all taskmaster daemon server taskmasterctl client fclean wipe re
+.PHONY: all taskmasterd daemon server taskmasterctl client fclean wipe re

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 21:46:34 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/02 21:55:57 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -527,6 +527,7 @@
 			std::string user = get_value("taskmasterd", "user");
 			if (is_root && (user.empty() || toLower(user) == "do not switch")) {
 				Log.warning("taskmasterd is running as root. Privileges were not dropped because no user is specified in the config file. If you intend to run as root, you can set user=root in the config file to avoid this message.");
+				error_maxLevel = WARNING;
 			}
 		}
 
@@ -869,7 +870,6 @@
 					if (!NUMPROCS.empty())		environment_add(environment, "NUMPROCS", NUMPROCS);
 				}
 			}
-			
 		}
 
 	#pragma endregion

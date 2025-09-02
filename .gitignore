@@ -11,14 +11,16 @@
 !doc/**
 doc/taskmaster\ 3.1.pdf
 
-!Taskmaster
-!Taskmaster/**
+!Taskmasterd
+!Taskmasterd/**
 build/
 taskmasterd
-logfile.log
+*.log
+*.pid
+*.sock
 
-!TaskmasterCTL
-!TaskmasterCTL/**
+!Taskmasterctl
+!Taskmasterctl/**
 build
 taskmasterctl
 
