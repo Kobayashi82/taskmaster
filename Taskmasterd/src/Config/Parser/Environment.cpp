@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 14:53:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:05:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@
 
 			// Do not expand to "" if NUMPROCS or PROCESS_NUM are not set in the environment (they will be expanded later during program instance creation)
 			if (it != env.end()) value = it->second;
-			else if	(section_type(currentSection) == "program:" && var_name == "PROCESS_NUM") return "${" + var_expr + "}";
+			else if	(section_type(currentSection) == "program:" && (var_name == "PROCESS_NUM" || var_name == "EX_PROCESS_NUM")) return "${EX_" + var_expr + "}";
 			else value = "";
 
 			if (modifier.empty()) 									return (value);												// No modifier
@@ -153,8 +153,8 @@
 							std::string var_name = line.substr(start, end - start);
 							auto it = env.find(var_name);
 							if (it != env.end()) result += it->second;
-							else if (section_type(currentSection) == "program:" && var_name == "PROCESS_NUM") result += "$" + var_name;
-							i = end - 1;														continue;
+							else if (section_type(currentSection) == "program:" && (var_name == "PROCESS_NUM" || var_name == "EX_PROCESS_NUM")) result += "$EX_PROCESS_NUM";
+							i = end - 1; continue;
 						}
 					}
 				}

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 13:29:25 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:08:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -723,7 +723,8 @@
 							std::string numprocs;
 							try { numprocs =  environment_expand(environment, get_value(sectionName, "numprocs")); }
 							catch (const std::exception& e) { numprocs = "0"; }
-							if (numprocs != "1" && entry.value.find("${PROCESS_NUM:") == std::string::npos && entry.value.find("${PROCESS_NUM}") == std::string::npos && entry.value.find("$PROCESS_NUM") == std::string::npos) {
+							if (numprocs != "1" && entry.value.find("${PROCESS_NUM:") == std::string::npos && entry.value.find("${PROCESS_NUM}") == std::string::npos && entry.value.find("$PROCESS_NUM") == std::string::npos
+								&& entry.value.find("${EX_PROCESS_NUM:") == std::string::npos && entry.value.find("${EX_PROCESS_NUM}") == std::string::npos && entry.value.find("$EX_PROCESS_NUM") == std::string::npos) {
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": must include $PROCESS_NUM when 'numprocs' is greater than 1", ERROR, entry.line, entry.order);
 							}
 						}
@@ -735,7 +736,8 @@
 								std::string process_name;
 								try { process_name = environment_expand(environment, get_value(sectionName, "process_name")); }
 								catch (const std::exception& e) { process_name = ""; }
-								if (process_name.empty() || (process_name.find("${PROCESS_NUM:") == std::string::npos && process_name.find("${PROCESS_NUM}") == std::string::npos && process_name.find("$PROCESS_NUM") == std::string::npos))
+								if (process_name.empty() || (process_name.find("${PROCESS_NUM:") == std::string::npos && process_name.find("${PROCESS_NUM}") == std::string::npos && process_name.find("$PROCESS_NUM") == std::string::npos
+									&& process_name.find("${EX_PROCESS_NUM:") == std::string::npos && process_name.find("${EX_PROCESS_NUM}") == std::string::npos && process_name.find("$EX_PROCESS_NUM") == std::string::npos))
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": 'process_name' must include $PROCESS_NUM when 'numprocs' is greater than 1", ERROR, entry.line, entry.order);
 							}
 						}

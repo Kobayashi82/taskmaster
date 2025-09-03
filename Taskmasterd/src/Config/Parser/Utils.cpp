@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:14 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 18:25:57 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,10 +184,36 @@
 
 #pragma endregion
 
+#pragma region "Parse Signal"
+
+	uint8_t ConfigParser::parse_signal(const std::string& value) const {
+		static const std::map<std::string, int> sigMap = {
+			{"HUP", 1}, {"SIGHUP", 1},
+			{"INT", 2}, {"SIGINT", 2},
+			{"QUIT", 3}, {"SIGQUIT", 3},
+			{"KILL", 9}, {"SIGKILL", 9},
+			{"TERM", 15}, {"SIGTERM", 15},
+			{"USR1", 10}, {"SIGUSR1", 10},
+			{"USR2", 12}, {"SIGUSR2", 12}
+		};
+
+		std::string val = toUpper(value);
+
+		if (std::all_of(val.begin(), val.end(), ::isdigit)) return (std::stoi(val));
+
+		auto it = sigMap.find(val);
+		if (it != sigMap.end()) return (it->second);
+
+		return (15);
+	}
+
+#pragma endregion
+
 #pragma region "Parse Bool"
 
-	bool ConfigParser::parse_bool(const std::string &value) const {
+	int ConfigParser::parse_bool(const std::string &value, bool unexpected) const {
 		std::string lower = toLower(value);
+		if (unexpected && lower == "unexpected") return (2);
 		return (lower == "true" || lower == "1" || lower == "yes");
 	}
 

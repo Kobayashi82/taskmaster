@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 13:48:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:17:22 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #pragma region "Includes"
 
 	#include "Programs/Program.hpp"
+	#include "Programs/Group.hpp"
 
 	#include <vector>															// std::vector
 
@@ -28,14 +29,17 @@
 
 			// Variables
 			std::vector<Program>	Programs;
+			std::vector<Group>		Groups;
 
 			// Constructors
-			ProgramManager();
+			ProgramManager() = default;
 			ProgramManager(const ProgramManager&) = delete;
 			~ProgramManager() = default;
 
 			// Overloads
 			ProgramManager& operator=(const ProgramManager&) = delete;
+
+			void	initialize();
 
 		private:
 

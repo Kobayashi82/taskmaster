@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:41:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
+	#include "Programs/Manager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <iostream>															// std::cerr()
@@ -26,6 +27,8 @@
 		int result = 0;
 
 		if ((result = Config.load(argc, argv))) return (result) - 1;
+		std::cout << Manager.Programs[0].process[0].command << "\n";
+		std::cout << Manager.Programs[0].groups[0]->name << "\n";
 
 		Log.info("cerrando");
 

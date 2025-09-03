@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 13:50:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 18:25:29 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,22 +30,23 @@
 		public:
 
 			// Structures
-			typedef struct {
+			struct ConfigEntry {
 				std::string	value;
 				std::string	filename;
 				uint16_t	line;
 				uint16_t	order;
-			} ConfigEntry;
-			typedef struct {
+			};
+			struct ErrorInfo {
 				std::string	filename;
 				std::string	msg;
 				uint8_t		level;
 				uint16_t	line;
 				uint16_t	order;
-			}	ErrorInfo;
+			};
 
 			// Variables
-			bool	is_root;
+			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
+			bool														is_root;
 
 			// Constructors
 			ConfigParser();
@@ -62,6 +63,16 @@
 			// Validation
 			int									validate_options(ConfigOptions& Options) const;
 
+			//Environment
+			void								environment_del(std::map<std::string, std::string>& env, const std::string& key);
+			void								environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
+			void								environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite = false);
+			void								environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
+			std::string							environment_get(const std::map<std::string, std::string>& env, const std::string& key) const;
+			void								environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
+			void								environment_initialize(std::map<std::string, std::string>& env);
+			void								environment_print(const std::map<std::string, std::string>& env) const;
+
 			// Getters
 			ConfigEntry*						get_value_entry(const std::string& section, const std::string& key);
 			std::string							get_value(const std::string& section, const std::string& key) const;
@@ -77,7 +88,8 @@
 			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
 			std::string							temp_path() const;
 			long								parse_size(const std::string &value) const;
-			bool								parse_bool(const std::string &value) const;
+			uint8_t								parse_signal(const std::string& value) const;
+			int									parse_bool(const std::string &value, bool unexpected = false) const;
 			uint8_t								parse_loglevel(const std::string &value) const;
 
 		private:
@@ -86,7 +98,6 @@
 			std::set<std::string>										validSections;
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
-			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
 			std::string													currentSection;
 
 			std::map<std::string, std::string>							environment;
@@ -128,14 +139,6 @@
 			std::string					environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) const;
 			std::string					environment_expand(std::map<std::string, std::string>& env, const std::string& str, std::string split = "") const;
 			bool						environment_validate(const std::string& env_string) const;
-			void						environment_del(std::map<std::string, std::string>& env, const std::string& key);
-			void						environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
-			void						environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite = false);
-			void						environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
-			std::string					environment_get(const std::map<std::string, std::string>& env, const std::string& key) const;
-			void						environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src);
-			void						environment_initialize(std::map<std::string, std::string>& env);
-			void						environment_print(const std::map<std::string, std::string>& env) const;
 
 			// Validation
 			bool						valid_bool(const std::string& value) const;

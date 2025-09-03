@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 13:48:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:40:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,30 +24,32 @@
 
 #pragma region "Program"
 
+	class Group;
 	class Program {
 
 		public:
 
 			// Variables
+			std::string		section;
 			std::string		name;
 			uint16_t        numprocs;
 			uint16_t        numprocs_start;
-			std::string		group_name;
+			bool			disabled;
 
 			std::vector<Process> process;
-
-			// std::string	numprocs;
-			// std::string	serverurl;
+			std::vector<Group *> groups;
 
 			// Constructors
-			Program();
-			Program(const Program&) = delete;
+			Program(const std::string _name);
+			Program(const Program&) = default;
 			~Program() = default;
 
 			// Overloads
-			Program& operator=(const Program&) = delete;
+			Program& operator=(const Program&) = default;
 
 		private:
+		
+			void	add_process();
 
 	};
 

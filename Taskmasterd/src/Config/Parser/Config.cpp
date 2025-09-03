@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 21:55:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 19:16:44 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
+	#include "Programs/Manager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <unistd.h>															// getuid()
@@ -138,6 +139,8 @@
 		Log.set_logfile_stdout(parse_bool(get_value("taskmasterd", "nodaemon")) && !parse_bool(get_value("taskmasterd", "silent")));
 		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
+
+		if (!result) Manager.initialize();
 
 		return(result);
 	}
