@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 13:54:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 13:23:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@
 				"process_name",
 				"tty_mode",
 				"numprocs",
+				"numprocs_start",
 				"directory",
 				"umask",
 				"priority",
@@ -157,6 +158,7 @@
 			{"program:", {
 				{"tty_mode", "false"},
 				{"numprocs", "1"},
+				{"numprocs_start", "0"},
 				{"priority", "999"},
 				{"autostart", "true"},
 				{"autorestart", "unexpected"},

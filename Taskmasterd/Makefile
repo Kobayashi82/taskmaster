@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/02 17:26:03 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/03 12:23:59 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,7 +73,8 @@ SRCS		= Main/Main.cpp													\
 			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp				\
 			  Logging/ProcessOutput.cpp										\
 																			\
-			  Programs/Process.cpp Programs/Program.cpp Programs/Group.cpp
+			  Programs/Manager.cpp Programs/Program.cpp						\
+			  Programs/Process.cpp Programs/Group.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

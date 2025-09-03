@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 21:55:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 13:29:25 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -738,6 +738,12 @@
 								if (process_name.empty() || (process_name.find("${PROCESS_NUM:") == std::string::npos && process_name.find("${PROCESS_NUM}") == std::string::npos && process_name.find("$PROCESS_NUM") == std::string::npos))
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": 'process_name' must include $PROCESS_NUM when 'numprocs' is greater than 1", ERROR, entry.line, entry.order);
 							}
+						}
+
+						if (key == "numprocs_start" && !valid_number(entry.value, 0, 65535)) {
+							error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 0 and 65535", ERROR, entry.line, entry.order);
+							error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName.substr(0, 8)][key], WARNING, 0, entry.order + 1);
+							entry.value = defaultValues[sectionName.substr(0, 8)][key];
 						}
 
 						if (key == "autorestart" && !valid_autorestart(entry.value)) {

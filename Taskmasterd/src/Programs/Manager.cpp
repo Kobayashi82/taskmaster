@@ -1,25 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Program.cpp                                        :+:      :+:    :+:   */
+/*   Manager.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 12:11:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 12:43:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Programs/Program.hpp"
+	#include "Programs/Manager.hpp"
+
+#pragma endregion
+
+#pragma region "Variables"
+
+	ProgramManager Manager;
 
 #pragma endregion
 
 #pragma region "Constructors"
 
-	Program::Program() {
-
+	ProgramManager::ProgramManager() {
+		
 	}
 
 #pragma endregion

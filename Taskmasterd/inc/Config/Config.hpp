@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 20:56:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 13:50:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include "Config/Options.hpp"
 
-	#include <cstdint>															// uint16_t
+	#include <cstdint>															// uint8_t, uint16_t
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
@@ -93,7 +93,7 @@
 			std::map<std::string, std::string>							environmentConfig;
 			std::vector<ErrorInfo>										errors;
 			uint16_t													error_maxLevel;
-			uint16_t													order;															
+			uint16_t													order;
 
 			// Initialize
 			void						initialize();

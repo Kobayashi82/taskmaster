@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Program.hpp                                        :+:      :+:    :+:   */
+/*   Manager.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 13:48:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 13:48:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,41 +14,37 @@
 
 #pragma region "Includes"
 
-	#include "Programs/Process.hpp"
+	#include "Programs/Program.hpp"
 
-	#include <cstdint>															// uint16_t
-	#include <string>															// std::string
 	#include <vector>															// std::vector
 
 #pragma endregion
 
-#pragma region "Program"
+#pragma region "ProgramManager"
 
-	class Program {
+	class ProgramManager {
 
 		public:
 
 			// Variables
-			std::string		name;
-			uint16_t        numprocs;
-			uint16_t        numprocs_start;
-			std::string		group_name;
-
-			std::vector<Process> process;
-
-			// std::string	numprocs;
-			// std::string	serverurl;
+			std::vector<Program>	Programs;
 
 			// Constructors
-			Program();
-			Program(const Program&) = delete;
-			~Program() = default;
+			ProgramManager();
+			ProgramManager(const ProgramManager&) = delete;
+			~ProgramManager() = default;
 
 			// Overloads
-			Program& operator=(const Program&) = delete;
+			ProgramManager& operator=(const ProgramManager&) = delete;
 
 		private:
 
 	};
+
+#pragma endregion
+	
+#pragma region "Variables"
+
+	extern ProgramManager Manager;
 
 #pragma endregion
