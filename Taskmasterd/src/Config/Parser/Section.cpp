@@ -6,21 +6,21 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 23:41:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
-	#include "Logging/TaskmasterLog.hpp"
 
 #pragma endregion
 
 #pragma region "Is Section"
 
 	bool ConfigParser::is_section(const std::string& line) const {
-		std::string trimmed = trim(line);
+		std::string trimmed = Utils::trim(line);
 		return (trimmed.size() >= 2 && trimmed[0] == '[' && trimmed.back() == ']');
 	}
 
@@ -35,7 +35,7 @@
 			} else if (section == validSection)									return (validSection);
 		}
 
-		return ("");
+		return {};
 	}
 
 #pragma endregion
@@ -43,8 +43,8 @@
 #pragma region "Extract"
 
 	std::string ConfigParser::section_extract(const std::string& line) const {
-		std::string trimmed = trim(line);
-		return (trim(trimmed.substr(1, trimmed.length() - 2)));
+		std::string trimmed = Utils::trim(line);
+		return (Utils::trim(trimmed.substr(1, trimmed.length() - 2)));
 	}
 
 #pragma endregion
@@ -52,24 +52,17 @@
 #pragma region "Parse"
 
 	int ConfigParser::section_parse(const std::string& line, int line_number, std::string& filename) {
-		std::string section = section_extract(line);
+		std::string section		= section_extract(line);
+		std::string sectionType	= section_type(section);
 
-		if (section_type(section).empty()) {
-			error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);
-			currentSection = ""; return (1);
-		}
-		if (section == "include" && sections.find(section) != sections.end()) {
-			error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);
-			currentSection = ""; return (1);
-		}
-		if (section == "taskmasterctl") { currentSection = ""; return (1); }
-
-		if (trim(section) == "program:")	{ currentSection = ""; error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order); return (1); }
-		if (trim(section) == "group:")		{ currentSection = ""; error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order); return (1); }
+		if (section.empty())													{ currentSection = ""; error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);		return (1); }
+		if (section == "include" && sections.find(section) != sections.end())	{ currentSection = ""; error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);		return (1); }
+		if (section == "program:")												{ currentSection = ""; error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);	return (1); }
+		if (section == "group:")												{ currentSection = ""; error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);	return (1); }
+		if (section == "taskmasterctl") 										{ currentSection = "";																								return (1); }
 
 		currentSection = section;
-
-		std::string sectionType = section_type(section);
+		
 		if (!sectionType.empty()) {
 			auto defaultSectionIt = defaultValues.find(sectionType);
 			if (defaultSectionIt != defaultValues.end()) {
@@ -78,7 +71,7 @@
 					entry.value = kv.second;
 					entry.filename = filename;
 					entry.line = line_number;
-					entry.order = order;
+					entry.order = order++;
 					sections[currentSection][kv.first] = entry;
 				}
 			}

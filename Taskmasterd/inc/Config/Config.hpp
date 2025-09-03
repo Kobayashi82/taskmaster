@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 18:25:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 00:02:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,17 @@
 
 	#include "Config/Options.hpp"
 
+	#include <climits>
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
+
+#pragma endregion
+
+#pragma region "Enumarators"
+
+	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL, GENERIC };
 
 #pragma endregion
 
@@ -77,20 +84,16 @@
 			ConfigEntry*						get_value_entry(const std::string& section, const std::string& key);
 			std::string							get_value(const std::string& section, const std::string& key) const;
 			bool								has_section(const std::string& section) const;
-			std::map<std::string, ConfigEntry>	get_section(const std::string& section, bool use_defaults = false) const;
-			std::vector<std::string>			get_program() const;
-			std::vector<std::string>			get_group() const;
 
-			// Utils
-			std::string							trim(const std::string& str) const;
-			std::string							toLower(const std::string& str) const;
-			std::string							toUpper(const std::string& str) const;
-			std::string							expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true) const;
-			std::string							temp_path() const;
+			// Parser
+			int									parse_fd_limit(uint16_t minfds) const;
+			int									parse_process_limit(uint16_t minprocs) const;
 			long								parse_size(const std::string &value) const;
+			long								parse_number(const std::string& value, long min = LONG_MIN, long max = LONG_MAX, long default_value = 0) const;
 			uint8_t								parse_signal(const std::string& value) const;
 			int									parse_bool(const std::string &value, bool unexpected = false) const;
 			uint8_t								parse_loglevel(const std::string &value) const;
+			std::string 						parse_executable(const std::string& value) const;
 
 		private:
 
@@ -142,7 +145,7 @@
 
 			// Validation
 			bool						valid_bool(const std::string& value) const;
-			bool						valid_number(const std::string& value, long min = 0, long max = 1024 * 1024 * 1024) const;
+			bool						valid_number(const std::string& value, long min = 0, long max = LONG_MAX) const;
 			bool						valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false) const;
 			bool						valid_signal(const std::string& value) const;
 			bool						valid_code(const std::string& value) const;
@@ -167,14 +170,8 @@
 			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 
 			// Parser
-			void						parse(const std::string& filePath = "");
 			void						merge_options(const ConfigOptions& Options);
-
-			// Utils
-			std::string					config_path() const;
-			int							check_fd_limit(uint16_t minfds) const;
-			int							check_process_limit(uint16_t minprocs) const;
-			bool						command_executable(const std::string& input, std::string& resolved) const;
+			void						parse(const std::string& filePath = "");
 
 	};
 

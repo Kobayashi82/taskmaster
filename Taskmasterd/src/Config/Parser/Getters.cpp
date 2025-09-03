@@ -6,13 +6,17 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:37:28 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 19:44:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 00:02:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
+
+	#include <iostream>															// std::cout()
+	#include <algorithm>														// std::replace()
 
 #pragma endregion
 
@@ -22,98 +26,46 @@
 		auto sectionIt = sections.find(section);
 
 		if (sectionIt != sections.end()) {
-			auto keyIt = sectionIt->second.find(toLower(key));
+			auto keyIt = sectionIt->second.find(Utils::toLower(key));
 			if (keyIt != sectionIt->second.end()) return (&keyIt->second);
 		}
 
-		return (nullptr);
+		return {};
 	}
 
 	std::string ConfigParser::get_value(const std::string& section, const std::string& key) const {
 		auto sectionIt = sections.find(section);
 
 		if (sectionIt != sections.end()) {
-			auto keyIt = sectionIt->second.find(toLower(key));
+			auto keyIt = sectionIt->second.find(Utils::toLower(key));
 			if (keyIt != sectionIt->second.end()) return (keyIt->second.value);
 		}
 
-		return ("");
+		return {};
 	}
 
 #pragma endregion
 
-#pragma region "Section"
+#pragma region "Has Section"
 
-	#pragma region "Has Section"
-
-		bool ConfigParser::has_section(const std::string& section) const {
-			return (sections.find(section) != sections.end());
-		}
-
-	#pragma endregion
-
-	#pragma region "Section"
-
-		std::map<std::string, ConfigParser::ConfigEntry> ConfigParser::get_section(const std::string& section, bool use_defaults) const {
-			if (!use_defaults) {
-				auto it = sections.find(section);
-				if (it != sections.end()) return (it->second);
-				
-				return (std::map<std::string, ConfigParser::ConfigEntry>());
-			}
-
-			std::map<std::string, ConfigParser::ConfigEntry> result;
-
-			// Defaults
-			std::string sectionType = section_type(section);
-			if (!sectionType.empty()) {
-				auto defaultSectionIt = defaultValues.find(sectionType);
-				if (defaultSectionIt != defaultValues.end()) {
-					for (const auto& kv : defaultSectionIt->second) {
-						ConfigEntry entry;
-						entry.value = kv.second;
-						entry.filename = "defaults";
-						entry.line = 0;
-						entry.order = 0;
-						result[kv.first] = entry;
-					}
-				}
-			}
-
-			auto sectionIt = sections.find(section);
-			if (sectionIt != sections.end()) {
-				for (const auto& kv : sectionIt->second) result[kv.first] = kv.second;
-			}
-
-			return (result);
-		}
-
-	#pragma endregion
-
-#pragma endregion
-
-#pragma region "Program"
-
-	std::vector<std::string> ConfigParser::get_program() const {
-		std::vector<std::string> programs;
-		for (const auto& section : sections) {
-			if (section.first.substr(0, 8) == "program:") programs.push_back(section.first);
-		}
-
-		return (programs);
+	bool ConfigParser::has_section(const std::string& section) const {
+		return (sections.find(section) != sections.end());
 	}
 
 #pragma endregion
 
-#pragma region "Group"
+#pragma region "Print"
 
-	std::vector<std::string> ConfigParser::get_group() const {
-		std::vector<std::string> groups;
+	void ConfigParser::print() const {
 		for (const auto& section : sections) {
-			if (section.first.substr(0, 6) == "group:") groups.push_back(section.first);
+			std::cout << "[" << section.first << "]" << std::endl;
+			for (const auto& kv : section.second) {
+				std::string value = kv.second.value;
+				std::replace(value.begin(), value.end(), '\n', ',');
+				std::cout << kv.first << " = " << value << std::endl;
+			}
+			std::cout << std::endl;
 		}
-
-		return (groups);
 	}
 
 #pragma endregion

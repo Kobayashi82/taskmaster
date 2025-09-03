@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 23:54:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 	#include "Config/Config.hpp"
 
 	#include <regex>															// std::regex_match()
-	#include <filesystem>														// std::filesystem::path(), std::filesystem::parent_path(), std::filesystem::current_path(), std::filesystem::temp_directory_path(), std::filesystem::weakly_canonical(), std::filesystem::exists()
+	#include <filesystem>														// std::filesystem::path()
 
 #pragma endregion
 
@@ -35,7 +35,7 @@
 			std::regex r(regex_pattern, std::regex_constants::nosubs);
 
 			return (std::regex_match(text, r));
-		} catch (const std::regex_error&) { return (false); }
+		} catch (const std::regex_error&) { return {}; }
 	}
 
 #pragma endregion
@@ -59,7 +59,6 @@
 						else regex += glob[i];
 						++i;
 					}
-
 					if (i < glob.size()) regex += "]";	break;
 				}
 				case '.': case '^': case '$': case '+': case '{': case '}': case '|': case '(': case ')': case '\\':

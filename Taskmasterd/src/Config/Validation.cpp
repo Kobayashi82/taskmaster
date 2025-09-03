@@ -6,12 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:08:11 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 23:08:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
@@ -31,7 +32,7 @@
 	#pragma region "Bool"
 
 		bool ConfigParser::valid_bool(const std::string& value) const {
-			std::string lower = toLower(value);
+			std::string lower = Utils::toLower(value);
 			return (lower == "true" || lower == "false" || lower == "1" || lower == "0" || lower == "yes" || lower == "no");
 		}
 
@@ -56,11 +57,11 @@
 			std::string fullPath;
 
 			if (value.empty())											{ errno = EINVAL;	return (false); }
-			if (allow_none && toLower(value) == "none")										return (true);
-			if (allow_auto && toLower(value) == "auto")										return (true);
-			else if (is_directory && toLower(value) == "do not change")	fullPath = expand_path(".", current_path);
-			else if (is_directory)										fullPath = expand_path(value, current_path, true, false);
-			else														fullPath = expand_path(value, current_path);
+			if (allow_none && Utils::toLower(value) == "none")										return (true);
+			if (allow_auto && Utils::toLower(value) == "auto")										return (true);
+			else if (is_directory && Utils::toLower(value) == "do not change")	fullPath = Utils::expand_path(".", current_path);
+			else if (is_directory)										fullPath = Utils::expand_path(value, current_path, true, false);
+			else														fullPath = Utils::expand_path(value, current_path);
 
 			if (fullPath.empty())										{ errno = ENOENT;	return (false); }
 			std::filesystem::path p(fullPath);
@@ -99,7 +100,7 @@
 		bool ConfigParser::valid_signal(const std::string& value) const {
 			std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
 
-			return (validSignals.count(toUpper(value)) > 0);
+			return (validSignals.count(Utils::toUpper(value)) > 0);
 		}
 
 	#pragma endregion
@@ -113,7 +114,7 @@
 			std::string			code;
 
 			while (std::getline(ss, code, ',')) {
-				code = trim(code);
+				code = Utils::trim(code);
 				if (!valid_number(code, 0, 255)) return (false);
 			}
 
@@ -127,7 +128,7 @@
 		bool ConfigParser::valid_loglevel(const std::string& value) const {
 			std::set<std::string> validLevels = { "0", "DEBUG", "1", "INFO", "2", "WARN", "WARNING", "3", "ERROR", "4", "CRITICAL" };
 
-			return (validLevels.count(toUpper(value)) > 0);
+			return (validLevels.count(Utils::toUpper(value)) > 0);
 		}
 
 	#pragma endregion
@@ -135,7 +136,7 @@
 	#pragma region "Auto Restart"
 
 		bool ConfigParser::valid_autorestart(const std::string& value) const {
-			std::string lower = toLower(value);
+			std::string lower = Utils::toLower(value);
 
 			return (lower == "true" || lower == "false" || lower == "unexpected" || lower == "yes" || lower == "no" || lower == "1" || lower == "0");
 		}
@@ -160,7 +161,7 @@
 
 		bool ConfigParser::valid_user(const std::string& value) const {
 			if (value.empty())						return (false);
-			if (toLower(value) == "do not switch")	return (true);
+			if (Utils::toLower(value) == "do not switch")	return (true);
 
 			struct passwd *pw = nullptr;
 			char *endptr = nullptr; errno = 0;
@@ -183,7 +184,7 @@
 			size_t colon_pos = value.find(':');
 
 			if (colon_pos == std::string::npos) {
-				if (toLower(value) == "do not switch")					return (false);
+				if (Utils::toLower(value) == "do not switch")					return (false);
 				if (!valid_user(value))									return (false);
 
 				return (true);
@@ -192,7 +193,7 @@
 			std::string username = value.substr(0, colon_pos);
 			std::string group    = value.substr(colon_pos + 1);
 
-			if (toLower(value) == "do not switch")						return (false);
+			if (Utils::toLower(value) == "do not switch")						return (false);
 			if (username.empty() || !valid_user(username))				return (false);
 			if (group.empty())											return (false);
 
@@ -225,7 +226,7 @@
 		bool ConfigParser::valid_password(const std::string& value) const {
 			if (value.empty()) return (true);
 
-			if (toLower(value.substr(0, 5)) == "{sha}") {
+			if (Utils::toLower(value.substr(0, 5)) == "{sha}") {
 				std::string hash = value.substr(5);
 				if (hash.length() != 40) return (false);
 
@@ -264,7 +265,7 @@
 
 		bool ConfigParser::valid_serverurl(const std::string &value) const {
 			if (value.empty())				return (false);
-			if (toLower(value) == "auto")	return (true);
+			if (Utils::toLower(value) == "auto")	return (true);
 		
 			static const std::regex pattern(R"(^(https?://[^\s/:]+(:\d+)?(/[^\s]*)?|unix://.+)$)", std::regex::icase);
 
@@ -299,7 +300,7 @@
 			currentSection = sectionName;
 
 			std::string HERE = environment_get(environment, "HERE");
-			environment_add(environment, "HERE", expand_path(".", "", true, false));
+			environment_add(environment, "HERE", Utils::expand_path(".", "", true, false));
 
 			entry = get_value_entry(sectionName, "directory");
 			if (entry) {
@@ -316,15 +317,15 @@
 						error_add(entry->filename, "[" + sectionName + "] directory: invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order);
 						if (!valid_path(default_dir, "", true))	error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
 						else {
-							entry->value = expand_path(default_dir, "", true, false);
+							entry->value = Utils::expand_path(default_dir, "", true, false);
 							dir = entry->value;
 							error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + defaultValues[sectionName]["directory"], WARNING, 0, entry->order + 1);
 						}
-					} else dir = expand_path(entry->value, "", true, false);
+					} else dir = Utils::expand_path(entry->value, "", true, false);
 				} else {
 					if (!valid_path(default_dir, "", true))	error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
 					else {
-						entry->value = expand_path(default_dir, "", true, false);
+						entry->value = Utils::expand_path(default_dir, "", true, false);
 						dir = entry->value;
 					}
 				}
@@ -400,7 +401,7 @@
 					}
 
 					if (key == "logfile") {
-						if (toUpper(entry.value) != "NONE") {
+						if (Utils::toUpper(entry.value) != "NONE") {
 							if (!valid_path(entry.value, dir, false)) {
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
 								if (entry.value != defaultValues[sectionName][key]) {
@@ -413,7 +414,7 @@
 								} else entry.value = "NONE";
 							}
 						}
-						if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
+						if (Utils::toUpper(entry.value) != "NONE") entry.value = Utils::expand_path(entry.value, dir);
 					}
 
 					if (key == "pidfile") {
@@ -427,7 +428,7 @@
 								}
 							} else error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), CRITICAL, entry.line, entry.order);
 						}
-						entry.value = expand_path(entry.value, dir);
+						entry.value = Utils::expand_path(entry.value, dir);
 					}
 
 					if (key == "childlogdir") {
@@ -445,7 +446,7 @@
 								entry.value = "NONE";
 							}
 						}
-						if (entry.value != "NONE") entry.value = expand_path(entry.value, dir, true, false);
+						if (entry.value != "NONE") entry.value = Utils::expand_path(entry.value, dir, true, false);
 					}
 
 					if (key == "user") {
@@ -453,7 +454,7 @@
 							error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
 							entry.value = "";
 						} else {
-							if (!is_root && toLower(entry.value) != "do not switch") {
+							if (!is_root && Utils::toLower(entry.value) != "do not switch") {
 								struct passwd* pw = getpwuid(getuid());
 								if (pw && pw->pw_name != entry.value && entry.value != std::to_string(getuid()))
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry.line, entry.order);
@@ -473,12 +474,12 @@
 							error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
 							entry.value = defaultValues[sectionName][key];
 						}
-						if (check_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
+						if (parse_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
 							if (std::stoul(entry.value) > std::stoul(defaultValues[sectionName][key])) {
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry.line, entry.order);
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
 								entry.value = defaultValues[sectionName][key];
-								if (check_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
+								if (parse_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
 								}
 							} else error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
@@ -491,12 +492,12 @@
 							error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
 							entry.value = defaultValues[sectionName][key];
 						}
-						if (check_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
+						if (parse_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
 							if (std::stoul(entry.value) > std::stoul(defaultValues[sectionName][key])) {
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry.line, entry.order);
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
 								entry.value = defaultValues[sectionName][key];
-								if (check_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
+								if (parse_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
 								}
 							} else error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
@@ -525,7 +526,7 @@
 			if (!HERE.empty()) environment_add(environment, "HERE", HERE);
 
 			std::string user = get_value("taskmasterd", "user");
-			if (is_root && (user.empty() || toLower(user) == "do not switch")) {
+			if (is_root && (user.empty() || Utils::toLower(user) == "do not switch")) {
 				Log.warning("taskmasterd is running as root. Privileges were not dropped because no user is specified in the config file. If you intend to run as root, you can set user=root in the config file to avoid this message.");
 				error_maxLevel = WARNING;
 			}
@@ -595,15 +596,15 @@
 								error_add(entry->filename, "[" + sectionName + "] directory: invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order);
 								if (!valid_path(default_dir, "", true))	error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
 								else {
-									entry->value = expand_path(default_dir, dir, true, false);
+									entry->value = Utils::expand_path(default_dir, dir, true, false);
 									dir = entry->value;
 									error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + defaultValues[sectionName.substr(0, 8)]["directory"], WARNING, 0, entry->order + 1);
 								}
-							} else dir = expand_path(entry->value, dir, true, false);
+							} else dir = Utils::expand_path(entry->value, dir, true, false);
 						} else {
 							if (!valid_path(default_dir, dir, true))	error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
 							else {
-								entry->value = expand_path(default_dir, dir, true, false);
+								entry->value = Utils::expand_path(default_dir, dir, true, false);
 								dir = entry->value;
 							}
 						}
@@ -771,7 +772,7 @@
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
 								entry.value = "";
 							} else {
-								if (!is_root && toLower(entry.value) != "do not switch") {
+								if (!is_root && Utils::toLower(entry.value) != "do not switch") {
 									struct passwd* pw = getpwuid(getuid());
 									if (pw && pw->pw_name != entry.value && entry.value != std::to_string(getuid()))
 										error_add(entry.filename, "[" + sectionName + "] " + key + ": cannot switch user, not running as root", CRITICAL, entry.line, entry.order);
@@ -789,14 +790,14 @@
 						}
 
 						if (key == "stdout_logfile") {
-							if (toUpper(entry.value) == "AUTO") {
+							if (Utils::toUpper(entry.value) == "AUTO") {
 								std::string childlogdir = get_value("taskmasterd", "childlogdir");
 								entry.value = sectionName.substr(8) + "_stdout.log";
 								if (!valid_path(entry.value, childlogdir)) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
 									entry.value = "NONE";
 								}
-							} else if (toUpper(entry.value) != "NONE") {
+							} else if (Utils::toUpper(entry.value) != "NONE") {
 								if (!valid_path(entry.value, dir)) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
 									if (entry.value != defaultValues[sectionName.substr(0, 8)][key]) {
@@ -809,18 +810,18 @@
 									} else entry.value = "NONE";
 								}
 							}
-							if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
+							if (Utils::toUpper(entry.value) != "NONE") entry.value = Utils::expand_path(entry.value, dir);
 						}
 
 						if (key == "stderr_logfile") {
-							if (toUpper(entry.value) == "AUTO") {
+							if (Utils::toUpper(entry.value) == "AUTO") {
 								std::string childlogdir = get_value("taskmasterd", "childlogdir");
 								entry.value = sectionName.substr(8) + "_stdout.log";
 								if (!valid_path(entry.value, childlogdir)) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
 									entry.value = "NONE";
 								}
-							} else if (toUpper(entry.value) != "NONE") {
+							} else if (Utils::toUpper(entry.value) != "NONE") {
 								if (!valid_path(entry.value, dir)) {
 									error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
 									if (entry.value != defaultValues[sectionName.substr(0, 8)][key]) {
@@ -833,16 +834,16 @@
 									} else entry.value = "NONE";
 								}
 							}
-							if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
+							if (Utils::toUpper(entry.value) != "NONE") entry.value = Utils::expand_path(entry.value, dir);
 						}
 
 						if (key == "serverurl") {
-							if (toUpper(entry.value) != "AUTO" && !valid_serverurl(entry.value)) {
+							if (Utils::toUpper(entry.value) != "AUTO" && !valid_serverurl(entry.value)) {
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid format", ERROR, entry.line, entry.order);
 								error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName.substr(0, 8)][key], WARNING, 0, entry.order + 1);
 								entry.value = defaultValues[sectionName.substr(0, 8)][key];
 							}
-							if (toUpper(entry.value) == "AUTO") {
+							if (Utils::toUpper(entry.value) == "AUTO") {
 								std::string url;
 								if (has_section("unix_http_server")) {
 									url = get_value("unix_http_server", "file");
@@ -868,7 +869,7 @@
 
 						if (entry->value.empty()) {
 							error_add(entry->filename, "[" + sectionName + "] command: empty value", ERROR, entry->line, entry->order);
-						} else if (!command_executable(entry->value, entry->value)) {
+						} else if ((entry->value = parse_executable(entry->value)).empty()) {
 							error_add(entry->filename, "[" + sectionName + "] command: must be a valid executable", ERROR, entry->line, entry->order);
 						}
 					} else error_add(filename, "[" + sectionName + "] command: required", ERROR, 0, last_order);
@@ -937,7 +938,7 @@
 							std::string name;
 							std::istringstream cm_stream(entry.value);
 							while (std::getline(cm_stream, name, ',')) {
-								if (!programs.count(trim(name))) error_add(entry.filename, "[" + sectionName + "] " + key + ": " + trim(name) + " does not exist or is not configured correctly", ERROR, entry.line, entry.order);
+								if (!programs.count(Utils::trim(name))) error_add(entry.filename, "[" + sectionName + "] " + key + ": " + Utils::trim(name) + " does not exist or is not configured correctly", ERROR, entry.line, entry.order);
 							}
 						}
 
@@ -1015,7 +1016,7 @@
 								entry.value = "NONE";
 							}
 						}
-						if (toUpper(entry.value) != "NONE") entry.value = expand_path(entry.value, dir);
+						if (Utils::toUpper(entry.value) != "NONE") entry.value = Utils::expand_path(entry.value, dir);
 					}
 
 					if (key == "chmod" && !valid_umask(entry.value)) {
@@ -1117,11 +1118,11 @@
 			if (Options.options.find_first_of('d') != std::string::npos) {
 				if (!valid_path(Options.directory, dir, true))
 					errors += "directory:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
-				dir = expand_path(Options.directory, "", true, false);
+				dir = Utils::expand_path(Options.directory, "", true, false);
 			}
 
 			if (Options.options.find_first_of('c') != std::string::npos) {
-				if (!valid_path(Options.configuration, dir) || expand_path(Options.configuration, dir, true, false).empty())
+				if (!valid_path(Options.configuration, dir) || Utils::expand_path(Options.configuration, dir, true, false).empty())
 					errors += "configuration:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
 			}
 
@@ -1136,7 +1137,7 @@
 			}
 
 			if (Options.options.find_first_of('l') != std::string::npos) {
-				if (!valid_path(Options.logfile, dir, false, false, true) || expand_path(Options.logfile, dir).empty())
+				if (!valid_path(Options.logfile, dir, false, false, true) || Utils::expand_path(Options.logfile, dir).empty())
 					errors += "logfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
 			}
 
@@ -1157,7 +1158,7 @@
 			}
 
 			if (Options.options.find_first_of('j') != std::string::npos) {
-				if (!valid_path(Options.pidfile, dir, false, false, true) || expand_path(Options.pidfile, dir).empty())
+				if (!valid_path(Options.pidfile, dir, false, false, true) || Utils::expand_path(Options.pidfile, dir).empty())
 					errors += "pidfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
 			}
 

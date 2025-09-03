@@ -6,12 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:38:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 00:27:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 	#include "Programs/Program.hpp"
 
@@ -44,7 +45,7 @@
 		Config.environment_add(environment, "SUPERVISOR_PROCESS_GROUP", "");
 
 		std::string	serverulr		= Config.get_value(section, "serverulr");
-		if (!serverulr.empty() && Config.toUpper(serverulr) != "AUTO")	Config.environment_add(environment, "SUPERVISOR_SERVER_URL", serverulr);
+		if (!serverulr.empty() && Utils::toUpper(serverulr) != "AUTO")	Config.environment_add(environment, "SUPERVISOR_SERVER_URL", serverulr);
 		else															Config.environment_del(environment, "SUPERVISOR_SERVER_URL");
 
 		uint16_t current_process = 0;
@@ -62,7 +63,11 @@
 				proc.name = Config.get_value(section, "process_name");
 				proc.command = Config.get_value(section, "command");
 				proc.directory = Config.get_value(section, "directory");
-				proc.umask = static_cast<uint16_t>(std::stoi(Config.get_value(section, "umask"), nullptr, 8));
+
+				std::string umask = Config.get_value(section, "umask");
+				if (umask.empty() || umask == "inherit") umask = Config.get_value("taskmasterd", "umask");
+
+				proc.umask = static_cast<uint16_t>(std::stoi(umask, nullptr, 8));
 				proc.priority = static_cast<uint16_t>(std::atoi(Config.get_value(section, "priority").c_str()));
 				proc.autostart = Config.parse_bool(Config.get_value(section, "autostart"));
 				proc.autorestart = Config.parse_bool(Config.get_value(section, "autorestart"), true);

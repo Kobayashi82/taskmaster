@@ -6,12 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 17:07:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 22:59:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
@@ -48,7 +49,7 @@
 #pragma region "Open"
 
 	int TaskmasterLog::open() {
-		if (_logfile.empty() || Config.toUpper(_logfile) == "NONE") return (0);
+		if (_logfile.empty() || Utils::toUpper(_logfile) == "NONE") return (0);
 		if (_logfile_stream.is_open()) _logfile_stream.close();
 
 		_logfile_stream.open(_logfile, std::ios::app);

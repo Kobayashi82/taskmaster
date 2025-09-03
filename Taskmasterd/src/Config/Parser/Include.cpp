@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/02 14:49:48 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 00:34:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
-	#include "Logging/TaskmasterLog.hpp"
 
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
@@ -31,13 +31,12 @@
 			std::ifstream file(configFile);
 			if (!file.is_open()) return (1);
 
-			std::string	line, configDir = std::filesystem::path(configFile).parent_path();
+			std::string	line;
 			int			lineNumber = 0;
 			bool		invalidSection = false;
 
 			while (std::getline(file, line)) { lineNumber++; order += 2;
-				line = trim(remove_comments(line));
-				if (line.empty()) continue;
+				if ((line = Utils::trim(remove_comments(line))).empty()) continue;
 
 				if (is_section(line)) {
 					std::string section = section_extract(line);
@@ -61,38 +60,34 @@
 		std::vector<std::string> ConfigParser::include_parse_files(const std::string& fileString, std::string& configFile) {
 			std::vector<std::string>	files;
 			std::string					current;
-			bool						inQuotes = false;
-			bool						quotedToken = false;
 			char						quoteChar = 0;
+			bool						quotedToken = false;
+			bool						escaped = false;
 
 			auto pushToken = [&](bool wasQuoted) {
 				if (!current.empty()) {
-					std::string token = wasQuoted ? current : trim(current);
+					std::string token = wasQuoted ? current : Utils::trim(current);
 					if (!token.empty()) files.push_back(token);
 					current.clear();
 				}
 			};
 
-			for (size_t i = 0; i < fileString.size(); ++i) {
-				char c = fileString[i];
-
-				if		(c == '\\' && i + 1 < fileString.size())			  current.push_back(fileString[++i]);
-				else if	((c == '"' || c == '\'') && !inQuotes)				{ inQuotes = quotedToken = true; quoteChar = c; }
-				else if	(inQuotes && c == quoteChar)						  inQuotes = false;
-				else if	(!inQuotes && (c == '\n'))	{ pushToken(quotedToken); quotedToken = false; }
-				else														  current.push_back(c);
+			for (char c : fileString) {
+				if (escaped)									{ escaped = false;			current.push_back(c);		continue; }
+				if (c == '\\')									{ escaped = true;										continue; }
+				if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;			quotedToken = true; 		continue; }
+				if (quoteChar && c == quoteChar)				{ quoteChar = 0;										continue; }
+				if (!quoteChar && c == '\n')					{ pushToken(quotedToken);	quotedToken = false;		continue; }
+				current.push_back(c);
 			}
-
 			pushToken(quotedToken);
 
 			for (auto& file : files) {
-				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path(), false);
+				std::string fullpath = Utils::expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (!fullpath.empty()) file = fullpath;
 			}
 
-			files = globbing_expand(files);
-
-			return (files);
+			return (globbing_expand(files));
 		}
 
 	#pragma endregion
@@ -104,7 +99,7 @@
 			currentSection = "";
 
 			for (const auto& file : files) {
-				std::string fullpath = expand_path(file, std::filesystem::path(configFile).parent_path());
+				std::string fullpath = Utils::expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (fullpath.empty()) fullpath = file;
 				if (include_parse(fullpath)) {
 					error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order);

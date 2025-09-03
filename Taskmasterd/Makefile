@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/03 12:23:59 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/03 23:55:13 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,14 +67,17 @@ SRCS		= Main/Main.cpp													\
 			  Config/Parser/Initialize.cpp Config/Parser/Config.cpp			\
 			  Config/Parser/Section.cpp Config/Parser/Keys.cpp				\
 			  Config/Parser/Globbing.cpp Config/Parser/Include.cpp			\
-			  Config/Parser/Environment.cpp Config/Parser/Validation.cpp	\
-			  Config/Parser/Getters.cpp Config/Parser/Utils.cpp				\
+			  Config/Parser/Getters.cpp Config/Parser/Parser.cpp			\
+																			\
+			  Config/Environment.cpp Config/Validation.cpp					\
 																			\
 			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp				\
 			  Logging/ProcessOutput.cpp										\
 																			\
 			  Programs/Manager.cpp Programs/Program.cpp						\
-			  Programs/Process.cpp Programs/Group.cpp
+			  Programs/Process.cpp Programs/Group.cpp						\
+																			\
+			  Utils/String.cpp Utils/Path.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

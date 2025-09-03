@@ -6,12 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:05:34 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 22:56:51 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 
 	#include <algorithm>														// std::all_of()
@@ -30,8 +31,8 @@
 			std::string fmt = modifier.substr(1);
 
 			// String
-			if (fmt == "upper") return (toUpper(value));
-			if (fmt == "lower") return (toLower(value));
+			if (fmt == "upper") return (Utils::toUpper(value));
+			if (fmt == "lower") return (Utils::toLower(value));
 
 			// Numeric
 			try {
@@ -180,7 +181,7 @@
 		std::string current;
 		for (char c : env_string) {
 			if (c == '\n') {
-				std::string trimmed = trim(current);
+				std::string trimmed = Utils::trim(current);
 				if (!trimmed.empty() && !std::regex_match(trimmed, env_regex)) {
 					return false;
 				}
@@ -190,7 +191,7 @@
 			}
 		}
 
-		std::string trimmed = trim(current);
+		std::string trimmed = Utils::trim(current);
 		return (trimmed.empty() || std::regex_match(trimmed, env_regex));
 	}
 
@@ -254,8 +255,8 @@
 			for (const std::string& pair : pairs) {
 				size_t pos = pair.find('=');
 				if (pos != std::string::npos) {
-					std::string	key   = trim(pair.substr(0, pos));
-					std::string	value = trim(pair.substr(pos + 1));
+					std::string	key   = Utils::trim(pair.substr(0, pos));
+					std::string	value = Utils::trim(pair.substr(pos + 1));
 					env[key] = value;
 				}
 			}

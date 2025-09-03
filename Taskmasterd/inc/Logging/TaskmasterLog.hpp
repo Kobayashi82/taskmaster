@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 13:58:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/03 23:24:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,6 @@
 	#include <map>																// std::map
 	#include <deque>															// std::deque
 	#include <fstream>															// std::ofstream
-
-#pragma endregion
-
-#pragma region "Enumarators"
-
-	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL, GENERIC };
 
 #pragma endregion
 

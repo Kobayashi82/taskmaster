@@ -6,12 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:16:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 00:34:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
 	#include "Programs/Manager.hpp"
@@ -20,68 +21,6 @@
 	#include <unistd.h>															// getuid()
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
-	#include <iostream>															// std::cout()
-	#include <algorithm>														// std::replace()
-
-#pragma endregion
-
-#pragma region "Parse"
-
-	void ConfigParser::parse(const std::string& filePath) {
-		std::string configFile = filePath;
-
-		if (configFile.empty()) {
-			const std::string candidates[] = {
-				"../etc/taskmasterd.conf",
-				"../taskmasterd.conf",
-				"taskmasterd.conf",
-				"etc/taskmasterd.conf",
-				"/etc/taskmasterd.conf",
-				"/etc/taskmaster/taskmasterd.conf"
-			};
-
-			for (const auto& path : candidates) {
-				configFile = expand_path(path, "", true, false);
-				if (!configFile.empty()) break;
-			}
-		} else configFile = expand_path(configFile, "", true, false);
-
-		if (configFile.empty()) {
-			Log.error("no configuration file found");
-			Log.warning("tasksmasterd is running without a configuration file");
-			return ;
-		}
-
-		std::ifstream file(configFile);
-		if (!file.is_open()) {
-			Log.error("cannot open config file: " + configFile + " - " + strerror(errno));
-			Log.warning("tasksmasterd is running without a configuration file");
-			return ;
-		}
-
-		currentSection.clear();
-		sections.clear();
-		errors.clear();
-		error_maxLevel = 0;
-		order = 0;
-
-		std::string	line;
-		int			lineNumber = 0;
-		bool		invalidSection = false;
-
-		while (std::getline(file, line)) { lineNumber++; order += 2;
-			line = trim(remove_comments(line));
-			if (line.empty()) continue;
-
-			if		(currentSection == "include" && is_section(line))	include_process(configFile);
-			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
-			else if	(!invalidSection)									key_parse(line, lineNumber, configFile);
-		}
-
-		if (currentSection == "include")								include_process(configFile);
-
-		return ;
-	}
 
 #pragma endregion
 
@@ -108,11 +47,69 @@
 
 #pragma endregion
 
+#pragma region "Parse"
+
+	void ConfigParser::parse(const std::string& filePath) {
+		std::string configFile = filePath;
+
+		if (configFile.empty()) {
+			const std::string candidates[] = {
+				"../etc/taskmasterd.conf",
+				"../taskmasterd.conf",
+				"taskmasterd.conf",
+				"etc/taskmasterd.conf",
+				"/etc/taskmasterd.conf",
+				"/etc/taskmaster/taskmasterd.conf"
+			};
+
+			for (const auto& path : candidates) {
+				configFile = Utils::expand_path(path, "", true, false);
+				if (!configFile.empty()) break;
+			}
+		} else configFile = Utils::expand_path(configFile, "", true, false);
+
+		if (configFile.empty()) {
+			Log.error("no configuration file found");
+			Log.warning("tasksmasterd is running without a configuration file");
+			return ;
+		}
+
+		std::ifstream file(configFile);
+		if (!file.is_open()) {
+			Log.error("cannot open config file: " + configFile + " - " + strerror(errno));
+			Log.warning("tasksmasterd is running without a configuration file");
+			return ;
+		}
+
+		currentSection.clear();
+		sections.clear();
+		errors.clear();
+		error_maxLevel = 0;
+		order = 0;
+
+		std::string	line;
+		int			lineNumber = 0;
+		bool		invalidSection = false;
+
+		while (std::getline(file, line)) { lineNumber++; order += 2;
+			if ((line = Utils::trim(remove_comments(line))).empty()) continue;
+
+			if		(currentSection == "include" && is_section(line))	include_process(configFile);
+			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
+			else if	(!invalidSection)									key_parse(line, lineNumber, configFile);
+		}
+
+		if (currentSection == "include")								include_process(configFile);
+
+		return ;
+	}
+
+#pragma endregion
+
 #pragma region "Load"
 
 	int ConfigParser::load(int argc, char **argv) {
 		int result = 0;
-
 		is_root = getuid() == 0;
 
 		ConfigOptions Options;
@@ -126,7 +123,7 @@
 		parse(Options.configuration);
 		merge_options(Options);
 
-		validate();
+		Manager.initialize();
 		error_print();
 
 		if (errors.size())	{
@@ -140,25 +137,7 @@
 		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
 
-		if (!result) Manager.initialize();
-
 		return(result);
-	}
-
-#pragma endregion
-
-#pragma region "Print"
-
-	void ConfigParser::print() const {
-		for (const auto& section : sections) {
-			std::cout << "[" << section.first << "]" << std::endl;
-			for (const auto& kv : section.second) {
-				std::string value = kv.second.value;
-				std::replace(value.begin(), value.end(), '\n', ',');
-				std::cout << kv.first << " = " << value << std::endl;
-			}
-			std::cout << std::endl;
-		}
 	}
 
 #pragma endregion
