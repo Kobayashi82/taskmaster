@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:50:14 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:36:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,29 @@
 	#include <unistd.h>															// getuid()
 	#include <sys/resource.h>													// getrlimit(), setrlimit()
 	#include <sstream>															// std::istringstream, std::getline()
+
+#pragma endregion
+
+#pragma region "Remove Quotes"
+
+	std::string Utils::remove_quotes(const std::string& str) {
+		std::string	result;
+		char		quoteChar = 0;
+		bool		escaped = false;
+
+		for (char c : str) {
+			if (escaped)								{ escaped = false;	result += c;	continue; }
+			if (c == '\\')								{ escaped = true;					continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
+
+			result += c;
+		}
+
+		if (quoteChar || escaped) throw std::runtime_error("unclosed quote or unfinished escape sequence");
+
+		return (result);
+	}
 
 #pragma endregion
 

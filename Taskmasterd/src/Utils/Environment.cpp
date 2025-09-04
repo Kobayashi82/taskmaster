@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:39:35 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:31:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,22 +304,3 @@
 	#pragma endregion
 
 #pragma endregion
-
-	std::string remove_quotes(const std::string& str) {
-		std::string	result;
-		char		quoteChar = 0;
-		bool		escaped = false;
-
-		for (char c : str) {
-			if (escaped)								{ escaped = false;	result += c;	continue; }
-			if (c == '\\')								{ escaped = true;					continue; }
-			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
-			if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
-
-			result += c;
-		}
-
-		if (quoteChar || escaped) throw std::runtime_error("unclosed quote or unfinished escape sequence");
-
-		return (result);
-	}

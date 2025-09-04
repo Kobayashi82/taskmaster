@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:21:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:27:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@
 			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 			Utils::environment_add(env, "HERE", Utils::expand_path(std::filesystem::path(filename).parent_path(), "", true, false));
 
-			try { value = Utils::environment_expand(env, value, ", \f\v\t\r\n");
+			try { value = Utils::environment_expand(env, value);
 			} catch (const std::exception& e) {
 				Utils::error_add(entry.filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 				value = "";

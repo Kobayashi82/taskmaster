@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:50:20 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 22:52:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:36:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 	#include "Utils/Utils.hpp"
 
 	#include <algorithm>														// std::transform()
+	#include <stdexcept>														// std::runtime_error()
 
 #pragma endregion
 

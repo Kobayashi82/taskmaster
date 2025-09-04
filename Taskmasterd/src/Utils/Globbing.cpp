@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 14:58:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:23:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,10 +133,21 @@
 		if (base.empty()) base = ".";
 
 		try {
-			for (const auto& entry : std::filesystem::recursive_directory_iterator(base)) {
-				if (entry.is_regular_file()) {
-					std::filesystem::path rel = std::filesystem::relative(entry.path(), base);
-					if (globbing_match_glob(glob_pattern, rel.string())) matches.push_back(entry.path().string());
+			std::error_code ec;
+			auto it = std::filesystem::recursive_directory_iterator(base, ec);
+			if (ec) { matches.push_back(original); return (matches); }
+
+			while (it != std::filesystem::recursive_directory_iterator{}) {
+				const auto& entry = *it;
+
+				std::error_code increment_ec;
+				it.increment(increment_ec);
+				if (increment_ec) continue;
+				
+				std::error_code file_ec;
+				if (entry.is_regular_file(file_ec) && !file_ec) {
+					std::filesystem::path rel = std::filesystem::relative(entry.path(), base, file_ec);
+					if (!file_ec && globbing_match_glob(glob_pattern, rel.string())) matches.push_back(entry.path().string());
 				}
 			}
 			std::sort(matches.begin(), matches.end());

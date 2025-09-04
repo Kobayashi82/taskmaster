@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:24:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:36:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@
 			static void			environment_print(const std::map<std::string, std::string>& env);
 
 			// Parser
+			static std::string	remove_quotes(const std::string& str);
 			static std::string	remove_comments(const std::string& line);
 			static int			parse_fd_limit(uint16_t minfds);
 			static int			parse_process_limit(uint16_t minprocs);

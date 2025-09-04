@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 14:12:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:34:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,9 @@
 				if (c == '\\')									{ escaped = true;			current += c;							continue; }
 				if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;			current += c;	quotedToken = true; 	continue; }
 				if (quoteChar && c == quoteChar)				{ quoteChar = 0;			current += c;							continue; }
-				if (!quoteChar && c == '\n')					{ pushToken(quotedToken);					quotedToken = false;	continue; }
+				if (!quoteChar && std::string(", \f\v\t\r\n").find(c) != std::string::npos) {
+					pushToken(quotedToken); quotedToken = false; continue;
+				}
 
 				current += c;
 			}
@@ -102,7 +104,10 @@
 				std::string fullpath = Utils::expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (fullpath.empty()) fullpath = file;
 				if (include_load_file(fullpath)) {
-					Utils::error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order);
+					std::string clean_fullpath;
+					try { clean_fullpath = Utils::remove_quotes(fullpath); }
+					catch(const std::exception& e) { clean_fullpath = fullpath; }
+					Utils::error_add(clean_fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order);
 					order += 2;
 				}
 			}
