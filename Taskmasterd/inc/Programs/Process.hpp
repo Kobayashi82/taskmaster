@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:53:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 21:20:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@
 			uint32_t							stderr_logfile_maxbytes;
 			uint16_t							stderr_logfile_backups;
 			bool								stderr_logfile_syslog;
+			std::string							serverurl;
 			std::map<std::string, std::string>	environment;
 
 			pid_t								pid;

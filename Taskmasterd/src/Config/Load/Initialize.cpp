@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 23:13:01 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 23:24:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,6 +157,7 @@
 			}},
 
 			{"program:", {
+				{"process_name", "${PROGRAM_NAME}_${PROCESS_NUM:*02d}"},
 				{"tty_mode", "false"},
 				{"numprocs", "1"},
 				{"numprocs_start", "0"},

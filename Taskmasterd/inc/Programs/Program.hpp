@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:53:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 20:52:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,11 @@
 			std::vector<std::string>	groups;
 
 		private:
-		
-			void	add_process();
+
+			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
+			void		initialize();
+			void		add_process();
 
 	};
 

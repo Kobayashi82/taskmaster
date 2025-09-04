@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 18:33:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 18:49:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
-	#include <climits>															// LONG_MIN, LONG_MAX
 
 #pragma endregion
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 18:38:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 23:42:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,11 @@
 
 		if ((result = Config.load(argc, argv))) return (result) - 1;
 
+		for (auto& program : TaskMaster.programs) {
+			for (auto& process : program.process) {
+				std::cerr << process.name << "\n";
+			}
+		}
 		// std::cout << TaskMaster.programs[1].process[0].command << "\n";
 		// std::cout << TaskMaster.programs[0].groups[0] << "\n";
 		// std::cout << TaskMaster.directory << "\n";

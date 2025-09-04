@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 18:43:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 23:42:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,9 +211,12 @@
 
 		try {
 			entry->value = Utils::environment_expand(env, entry->value);
-			if (key == "environment")	Utils::environment_add_batch(environment, entry->value);
-			else						entry->value = Utils::remove_quotes(entry->value);
-			// std::cerr << key << " - " << entry->value << "\n";
+			if (key == "environment") {
+				if (!Utils::environment_validate(entry->value)) {
+					Utils::error_add(entry->filename, "[" + sectionName + "] " + key + ": invalid variable format", ERROR, entry->line, entry->order);
+					entry->value = "";
+				} else Utils::environment_add_batch(env, entry->value);
+			} else entry->value = Utils::remove_quotes(entry->value);
 		}
 		catch(const std::exception& e) {
 			Utils::error_add(entry->filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
@@ -236,34 +239,41 @@
 		if (!entry)	configFile = Utils::expand_path(".", "", true, false);
 		else		configFile = entry->filename;
 
-		std::map<std::string, std::string> env;
-		Utils::environment_initialize(env);
+		Utils::environment_initialize(environment);
+
+		std::string HERE			= Utils::environment_get(environment, "HERE");
+		std::string HOST_NAME		= Utils::environment_get(environment, "HOST_NAME");
 
 		char hostname[255];
-		Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
-		if (!configFile.empty()) Utils::environment_add(env, "HERE", std::filesystem::path(configFile).parent_path());
+		Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+		if (!configFile.empty()) Utils::environment_add(environment, "HERE", std::filesystem::path(configFile).parent_path());
 
-		directory			= expand_vars(env, "directory");
-		nodaemon			= Utils::parse_bool(expand_vars(env, "nodaemon"));
-		silent				= Utils::parse_bool(expand_vars(env, "silent"));
-		user				= Utils::parse_bool(expand_vars(env, "user"));
-		umask				= Utils::parse_bool(expand_vars(env, "umask"));
-		logfile				= Utils::parse_bool(expand_vars(env, "logfile"));
-		logfile_maxbytes	= Utils::parse_bool(expand_vars(env, "logfile_maxbytes"));
-		logfile_backups		= Utils::parse_bool(expand_vars(env, "logfile_backups"));
-		logfile_syslog		= Utils::parse_bool(expand_vars(env, "logfile_syslog"));
-		loglevel			= Utils::parse_bool(expand_vars(env, "loglevel"));
-		pidfile				= Utils::parse_bool(expand_vars(env, "pidfile"));
-		childlogdir			= Utils::parse_bool(expand_vars(env, "childlogdir"));
-		strip_ansi			= Utils::parse_bool(expand_vars(env, "strip_ansi"));
-		nocleanup			= Utils::parse_bool(expand_vars(env, "nocleanup"));
-		minfds				= Utils::parse_bool(expand_vars(env, "minfds"));
-		minprocs			= Utils::parse_bool(expand_vars(env, "minprocs"));
-		Utils::parse_bool(expand_vars(env, "environment"));
+		directory			= expand_vars(environment, "directory");
+		nodaemon			= Utils::parse_bool(expand_vars(environment, "nodaemon"));
+		silent				= Utils::parse_bool(expand_vars(environment, "silent"));
+		user				= expand_vars(environment, "user");
+		umask				= static_cast<uint16_t>(std::stoi(expand_vars(environment, "umask"), nullptr, 8));
+		logfile				= expand_vars(environment, "logfile");
+		logfile_maxbytes	= Utils::parse_size(expand_vars(environment, "logfile_maxbytes"));
+		logfile_backups		= Utils::parse_number(expand_vars(environment, "logfile_backups"), 0, 1000, 10);
+		logfile_syslog		= Utils::parse_bool(expand_vars(environment, "logfile_syslog"));
+		loglevel			= Utils::parse_loglevel(expand_vars(environment, "loglevel"));
+		pidfile				= expand_vars(environment, "pidfile");
+		childlogdir			= expand_vars(environment, "childlogdir");
+		strip_ansi			= Utils::parse_bool(expand_vars(environment, "strip_ansi"));
+		nocleanup			= Utils::parse_bool(expand_vars(environment, "nocleanup"));
+		minfds				= Utils::parse_number(expand_vars(environment, "minfds"), 1, 65535, 1024);
+		minprocs			= Utils::parse_number(expand_vars(environment, "minprocs"), 1, 10000, 200);
+		
+		if (HERE.empty())		Utils::environment_del(environment, "HERE");
+		else					Utils::environment_add(environment, "HERE", HERE);
+		if (HOST_NAME.empty())	Utils::environment_del(environment, "HOST_NAME");
+		else					Utils::environment_add(environment, "HOST_NAME", HOST_NAME);
+
+		expand_vars(environment, "environment");
 
 		for (auto& [program, keys] : Config.sections) {
 			if (program.substr(0, 8) == "program:") {
-				if (Config.get_value(program, "command").empty()) continue;
 				programs.emplace_back(program);
 			}
 		}

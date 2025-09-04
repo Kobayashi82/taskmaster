@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 16:47:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 23:45:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,11 @@
 
 		for (auto& program : TaskMaster.programs) {
 			if (program_names.find(program.name) != program_names.end()) {
-				programs.push_back(program.name);
-				program.groups.push_back(name);
+				if (!program.disabled) {
+					// Añadir a program.process la variable del grupo
+					programs.push_back(program.name);
+					program.groups.push_back(name);
+				}
 			}
 		}
 	}
