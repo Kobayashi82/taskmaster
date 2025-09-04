@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:21:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 16:47:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Config/Config.hpp"
-	#include "Programs/Manager.hpp"
+	#include "Programs/TaskManager.hpp"
 	#include "Programs/Group.hpp"
 
 	#include <sstream>															// std::stringstream
@@ -28,7 +28,7 @@
 		std::stringstream ss(Config.get_value(section, "programs")); std::string token;
 		while (std::getline(ss, token, ',')) program_names.insert(token);
 
-		for (auto& program : Manager.Programs) {
+		for (auto& program : TaskMaster.programs) {
 			if (program_names.find(program.name) != program_names.end()) {
 				programs.push_back(program.name);
 				program.groups.push_back(name);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:50:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 18:33:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,248 +26,6 @@
 #pragma endregion
 
 #pragma region "Validators"
-
-	#pragma region "Taskmasterd"
-
-		void ConfigParser::validate_taskmasterd() {
-			ConfigEntry	*entry;
-			std::string	dir = ".", sectionName = "taskmasterd";
-			currentSection = sectionName;
-
-			std::string HERE = Utils::environment_get(Utils::environment, "HERE");
-			Utils::environment_add(Utils::environment, "HERE", Utils::expand_path(".", "", true, false));
-
-			entry = get_value_entry(sectionName, "directory");
-			if (entry) {
-				try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
-				catch (const std::exception& e) {
-					Utils::error_add(entry->filename, "[" + sectionName + "] directory: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
-					Utils::error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + defaultValues[sectionName]["directory"], WARNING, 0, entry->order + 1);
-					entry->value = defaultValues[sectionName]["directory"];
-				}
-
-				std::string default_dir = ".";
-				if (entry->value != "do not change") {
-					if (!Utils::valid_path(entry->value, "", true)) {
-						Utils::error_add(entry->filename, "[" + sectionName + "] directory: invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order);
-						if (!Utils::valid_path(default_dir, "", true))	Utils::error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
-						else {
-							entry->value = Utils::expand_path(default_dir, "", true, false);
-							dir = entry->value;
-							Utils::error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + defaultValues[sectionName]["directory"], WARNING, 0, entry->order + 1);
-						}
-					} else dir = Utils::expand_path(entry->value, "", true, false);
-				} else {
-					if (!Utils::valid_path(default_dir, "", true))	Utils::error_add(entry->filename, "[" + sectionName + "] directory: failed to use default value - " + std::string(strerror(errno)), CRITICAL, 0, entry->order + 1);
-					else {
-						entry->value = Utils::expand_path(default_dir, "", true, false);
-						dir = entry->value;
-					}
-				}
-			}
-
-			auto it = sections.find(sectionName);
-			if (it != sections.end()) {
-				for (auto &kv : it->second) {
-					const std::string &key = kv.first;
-					ConfigEntry &entry = kv.second;
-					if (key == "directory") continue;
-
-					try {
-						if (key == "environment")	entry.value = Utils::environment_expand(Utils::environment, entry.value, ",");
-						else						entry.value = Utils::environment_expand(Utils::environment, entry.value);
-					}
-					catch (const std::exception& e) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (entry.value.empty() && key != "environment") {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": empty value", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "nodaemon" && !Utils::valid_bool(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be true or false", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-					if (key == "silent" && !Utils::valid_bool(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be true or false", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-					if (key == "strip_ansi" && !Utils::valid_bool(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be true or false", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-					if (key == "nocleanup" && !Utils::valid_bool(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be true or false", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-					if (key == "logfile_syslog" && !Utils::valid_bool(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be true or false", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "logfile_maxbytes") {
-						long bytes = Utils::parse_size(entry.value);
-						if (bytes == -1 || !Utils::valid_number(std::to_string(bytes), 0, 1024 * 1024 * 1024)) {
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 0 bytes and 1024 MB", ERROR, entry.line, entry.order);
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-							entry.value = defaultValues[sectionName][key];
-						}
-					}
-					if (key == "logfile_backups" && !Utils::valid_number(entry.value, 0, 1000)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 0 and 1000", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "loglevel" && !Utils::valid_loglevel(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "logfile") {
-						if (Utils::toUpper(entry.value) != "NONE") {
-							if (!Utils::valid_path(entry.value, dir, false)) {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-								if (entry.value != defaultValues[sectionName][key]) {
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-									entry.value = defaultValues[sectionName][key];
-									if (!Utils::valid_path(entry.value, dir)) {
-										Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-										entry.value = "NONE";
-									}
-								} else entry.value = "NONE";
-							}
-						}
-						if (Utils::toUpper(entry.value) != "NONE") entry.value = Utils::expand_path(entry.value, dir);
-					}
-
-					if (key == "pidfile") {
-						if (!Utils::valid_path(entry.value, dir)) {
-							if (entry.value != defaultValues[sectionName][key]) {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-								entry.value = defaultValues[sectionName][key];
-								if (!Utils::valid_path(entry.value, dir)) {
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry.line, entry.order);
-								}
-							} else Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), CRITICAL, entry.line, entry.order);
-						}
-						entry.value = Utils::expand_path(entry.value, dir);
-					}
-
-					if (key == "childlogdir") {
-						if (!Utils::valid_path(entry.value, dir, true)) {
-							if (entry.value != defaultValues[sectionName][key]) {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-								entry.value = defaultValues[sectionName][key];
-								if (!Utils::valid_path(entry.value, dir)) {
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-									entry.value = "NONE";
-								}
-							} else {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry.line, entry.order);
-								entry.value = "NONE";
-							}
-						}
-						if (entry.value != "NONE") entry.value = Utils::expand_path(entry.value, dir, true, false);
-					}
-
-					if (key == "user") {
-						if (!Utils::valid_user(entry.value)) {
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid user", CRITICAL, entry.line, entry.order);
-							entry.value = "";
-						} else {
-							if (!is_root && Utils::toLower(entry.value) != "do not switch") {
-								struct passwd* pw = getpwuid(getuid());
-								if (pw && pw->pw_name != entry.value && entry.value != std::to_string(getuid()))
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry.line, entry.order);
-							}
-						}
-					}
-
-					if (key == "umask" && !Utils::valid_umask(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be in octal format", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "minfds") {
-						if (!Utils::valid_number(entry.value, 1, 65535)) {
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 1 and 65535", ERROR, entry.line, entry.order);
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-							entry.value = defaultValues[sectionName][key];
-						}
-						if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
-							if (std::stoul(entry.value) > std::stoul(defaultValues[sectionName][key])) {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry.line, entry.order);
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-								entry.value = defaultValues[sectionName][key];
-								if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
-								}
-							} else Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
-						}
-					}
-
-					if (key == "minprocs") {
-						if (!Utils::valid_number(entry.value, 1, 10000)) {
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 1 and 10000", ERROR, entry.line, entry.order);
-							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-							entry.value = defaultValues[sectionName][key];
-						}
-						if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
-							if (std::stoul(entry.value) > std::stoul(defaultValues[sectionName][key])) {
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry.line, entry.order);
-								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-								entry.value = defaultValues[sectionName][key];
-								if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry.value)))) {
-									Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
-								}
-							} else Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry.line, entry.order);
-						}
-					}
-
-					if (key == "logfile_backups" && !Utils::valid_number(entry.value, 0, 1000)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 0 and 1000", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "logfile_backups" && !Utils::valid_number(entry.value, 0, 1000)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 0 and 1000", ERROR, entry.line, entry.order);
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
-						entry.value = defaultValues[sectionName][key];
-					}
-
-					if (key == "environment" && !Utils::environment_validate(entry.value)) {
-						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": invalid variable format", ERROR, entry.line, entry.order);
-						entry.value = "";
-					}
-				}
-			}
-
-			if (!HERE.empty()) Utils::environment_add(Utils::environment, "HERE", HERE);
-
-			std::string user = get_value("taskmasterd", "user");
-			if (is_root && (user.empty() || Utils::toLower(user) == "do not switch")) {
-				Log.warning("taskmasterd is running as root. Privileges were not dropped because no user is specified in the config file. If you intend to run as root, you can set user=root in the config file to avoid this message.");
-				Utils::errors_maxLevel = WARNING;
-			}
-		}
-
-	#pragma endregion
 
 	#pragma region "Program"
 
@@ -355,7 +113,7 @@
 						if (key == "command") continue;
 
 						try {
-							if (key == "environment")	entry.value = Utils::environment_expand(Utils::environment, entry.value, ",");
+							if (key == "environment")	entry.value = Utils::environment_expand(Utils::environment, entry.value);
 							else						entry.value = Utils::environment_expand(Utils::environment, entry.value);
 						}
 						catch (const std::exception& e) {
@@ -930,7 +688,6 @@
 		char hostname[255];
 		Utils::environment_add(Utils::environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 
-		validate_taskmasterd();
 		if (has_section("unix_http_server")) validate_unix_server();
 		if (has_section("inet_http_server")) validate_inet_server();
 		validate_program();

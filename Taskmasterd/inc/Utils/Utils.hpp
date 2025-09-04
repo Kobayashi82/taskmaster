@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:53:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 17:02:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@
 			static std::vector<std::string>	globbing_expand(const std::vector<std::string>& patterns);
 
 			// Environment
-			static std::string	environment_expand(std::map<std::string, std::string>& env, const std::string& str, std::string split = "");
+			static std::string	environment_expand(std::map<std::string, std::string>& env, const std::string& str);
 			static bool			environment_validate(const std::string& env_string);
 			static void			environment_del(std::map<std::string, std::string>& env, const std::string& key);
 			static void			environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);

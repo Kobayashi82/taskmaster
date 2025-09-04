@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:36:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 18:46:48 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
-	#include "Programs/Manager.hpp"
+	#include "Programs/TaskManager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <unistd.h>															// getuid()
@@ -121,11 +121,17 @@
 
 		load_file(Options.configuration);
 		merge_options(Options);
+		TaskMaster.initialize();
 
-		Manager.initialize();
+		std::string user = get_value("taskmasterd", "user");
+		if (is_root && (user.empty() || Utils::toLower(user) == "do not switch")) {
+			Log.warning("taskmasterd is running as root. Privileges were not dropped because no user is specified in the config file. If you intend to run as root, you can set user=root in the config file to avoid this message.");
+			Utils::errors_maxLevel = WARNING;
+		}
+
 		Utils::error_print();
 
-		if (Utils::errors.size())	{
+		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
 			if (Utils::errors_maxLevel == WARNING)	  Log.warning	("configuration loaded with warnings. Review recommended");
 			if (Utils::errors_maxLevel == ERROR)	  Log.error		("configuration loaded with errors. Execution can continue");
 			if (Utils::errors_maxLevel == CRITICAL)	{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }

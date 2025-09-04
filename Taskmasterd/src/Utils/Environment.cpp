@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:31:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 17:02:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,7 @@
 
 	#pragma region "Expand"
 
-		std::string Utils::environment_expand(std::map<std::string, std::string>& env, const std::string& line, std::string split) {
+		std::string Utils::environment_expand(std::map<std::string, std::string>& env, const std::string& line) {
 			std::string	result;
 			char		quoteChar = 0;
 			bool		escaped = false;
@@ -161,9 +161,7 @@
 						}
 					}
 				}
-
-				if (!quoteChar && !split.empty() && split.find(c) != std::string::npos)	result +='\n';
-				else																	result += c;
+				result += c;
 			}
 
 			if (quoteChar || escaped) throw std::runtime_error("unclosed quote or unfinished escape sequence");

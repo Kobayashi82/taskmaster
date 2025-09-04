@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:50:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 18:38:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
-	#include "Programs/Manager.hpp"
+	#include "Programs/TaskManager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <iostream>															// std::cerr()
@@ -27,8 +27,10 @@
 		int result = 0;
 
 		if ((result = Config.load(argc, argv))) return (result) - 1;
-		std::cout << Manager.Programs[1].process[0].command << "\n";
-		std::cout << Manager.Programs[0].groups[0] << "\n";
+
+		// std::cout << TaskMaster.programs[1].process[0].command << "\n";
+		// std::cout << TaskMaster.programs[0].groups[0] << "\n";
+		// std::cout << TaskMaster.directory << "\n";
 
 		Log.info("cerrando");
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:52:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 18:33:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 
 			// Variables
 			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
+			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 			bool														is_root;
 
 			// Keys
@@ -65,7 +66,6 @@
 
 			// Validation
 			int				validate_options(ConfigOptions& Options) const;
-			void			validate_taskmasterd();
 			void			validate_program();
 			void			validate_group();
 			void			validate_unix_server();
@@ -78,7 +78,6 @@
 			uint16_t													order;
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::set<std::string>										validSections;
-			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 			std::string													currentSection;
 
 			// Include
