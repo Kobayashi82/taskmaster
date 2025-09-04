@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:35:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:23:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,10 +56,12 @@
 			// Constructor
 			ConfigOptions() = default;
 			ConfigOptions(const ConfigOptions& src) = default;
+			ConfigOptions(ConfigOptions&&) = default;
 			~ConfigOptions() = default;
 
 			// Overloads
 			ConfigOptions& operator=(const ConfigOptions& rhs) = default;
+			ConfigOptions& operator=(ConfigOptions&&) = default;
 
 			// Methods
 			int	parse(int argc, char **argv);									// Parse options passed as arguments to the program

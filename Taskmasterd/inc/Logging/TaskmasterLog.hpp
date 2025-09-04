@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:45:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:24:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,10 +46,12 @@
 			// Constructors
 			TaskmasterLog() = default;
 			TaskmasterLog(const TaskmasterLog&) = delete;
+			TaskmasterLog(TaskmasterLog&&) = delete;
 			~TaskmasterLog() = default;
 
 			// Overloads
 			TaskmasterLog& operator=(const TaskmasterLog&) = delete;
+			TaskmasterLog& operator=(TaskmasterLog&&) = delete;
 
 			int				open();
 

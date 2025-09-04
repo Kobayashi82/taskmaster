@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:49:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:24:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,12 @@
 			// Constructors
 			Utils() = delete;
 			Utils(const Utils&) = delete;
+			Utils(Utils&&) = delete;
 			~Utils() = delete;
 
 			// Overloads
 			Utils& operator=(const Utils&) = delete;
+			Utils& operator=(Utils&&) = delete;
 
 			// String
 			static std::string	trim(const std::string& str);

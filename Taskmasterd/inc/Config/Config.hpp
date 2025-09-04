@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:30:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:23:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,12 @@
 			// Constructors
 			ConfigParser();
 			ConfigParser(const ConfigParser&) = delete;
+			ConfigParser(ConfigParser&&) = default;
 			~ConfigParser() = default;
 
 			// Overloads
 			ConfigParser& operator=(const ConfigParser&) = delete;
+			ConfigParser& operator=(ConfigParser&&) = delete;
 
 			// Keys
 			ConfigEntry*	get_value_entry(const std::string& section, const std::string& key);
