@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 23:41:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:10:22 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,10 @@
 		std::string section		= section_extract(line);
 		std::string sectionType	= section_type(section);
 
-		if (section.empty())													{ currentSection = ""; error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);		return (1); }
-		if (section == "include" && sections.find(section) != sections.end())	{ currentSection = ""; error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);		return (1); }
-		if (section == "program:")												{ currentSection = ""; error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);	return (1); }
-		if (section == "group:")												{ currentSection = ""; error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);	return (1); }
+		if (section.empty())													{ currentSection = ""; Utils::error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);		return (1); }
+		if (section == "include" && sections.find(section) != sections.end())	{ currentSection = ""; Utils::error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);		return (1); }
+		if (section == "program:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);	return (1); }
+		if (section == "group:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);	return (1); }
 		if (section == "taskmasterctl") 										{ currentSection = "";																								return (1); }
 
 		currentSection = section;

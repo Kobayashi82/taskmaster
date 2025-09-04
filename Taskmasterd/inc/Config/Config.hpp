@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:56:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:08:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,6 @@
 
 #pragma endregion
 
-#pragma region "Enumarators"
-
-	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL, GENERIC };
-
-#pragma endregion
-
 #pragma region "ConfigParser"
 
 	class ConfigParser {
@@ -40,13 +34,6 @@
 			struct ConfigEntry {
 				std::string	value;
 				std::string	filename;
-				uint16_t	line;
-				uint16_t	order;
-			};
-			struct ErrorInfo {
-				std::string	filename;
-				std::string	msg;
-				uint8_t		level;
 				uint16_t	line;
 				uint16_t	order;
 			};
@@ -85,8 +72,6 @@
 
 			std::map<std::string, std::string>							environment;
 			std::map<std::string, std::string>							environmentConfig;
-			std::vector<ErrorInfo>										errors;
-			uint16_t													error_maxLevel;
 			uint16_t													order;
 
 			// Initialize
@@ -129,10 +114,6 @@
 			void						validate_unix_server();
 			void						validate_inet_server();
 			void						validate();
-
-			// Error
-			void						error_print();
-			void						error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 
 			// Parser
 			void						merge_options(const ConfigOptions& Options);

@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/04 11:59:39 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/04 12:11:52 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -77,7 +77,8 @@ SRCS		= Main/Main.cpp Main/Signals.cpp					\
 			  Programs/Process.cpp Programs/Group.cpp			\
 																\
 			  Utils/String.cpp Utils/Path.cpp Utils/Parser.cpp	\
-			  Utils/Globbing.cpp Utils/Environment.cpp
+			  Utils/Globbing.cpp Utils/Environment.cpp			\
+			  Utils/Error.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

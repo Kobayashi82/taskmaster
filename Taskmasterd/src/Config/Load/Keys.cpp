@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:43:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:10:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,17 +37,17 @@
 #pragma region "Parse"
 
 	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename) {
-		if (currentSection.empty())				{ error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order); return (1); }
+		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order); return (1); }
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)			{ error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order); return (1); }
+		if (pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order); return (1); }
 
 		std::string key   = Utils::trim(Utils::toLower(line.substr(0, pos)));
 		std::string value = Utils::trim(line.substr(pos + 1));
 
-		if (key.empty())						{ error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order); return (1); }
-		if (!key_valid(currentSection, key))	{ error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order); return (1); }
-		if (value.empty())						{ error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order); return (1); }
+		if (key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order); return (1); }
+		if (!key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order); return (1); }
+		if (value.empty())						{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order); return (1); }
 
 		ConfigEntry entry;
 		if (currentSection == "include" && key == "files") {
@@ -58,7 +58,7 @@
 
 			try { value = Utils::environment_expand(environment, value, ", \f\v\t\r\n");
 			} catch (const std::exception& e) {
-				error_add(entry.filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
+				Utils::error_add(entry.filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 				value = "";
 			}
 			environment.clear();

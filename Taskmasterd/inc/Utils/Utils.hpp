@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:58:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:08:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,12 @@
 
 #pragma endregion
 
+#pragma region "Enumarators"
+
+	enum e_level { DEBUG, INFO, WARNING, ERROR, CRITICAL, GENERIC };
+
+#pragma endregion
+
 #pragma region "Utils"
 
 	class Utils {
@@ -34,6 +40,19 @@
 			static std::string	environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr);
 
 		public:
+
+			// Structures
+			struct ErrorInfo {
+				std::string	filename;
+				std::string	msg;
+				uint8_t		level;
+				uint16_t	line;
+				uint16_t	order;
+			};
+
+			// Variables
+			static std::vector<ErrorInfo>	errors;
+			static uint16_t					errors_maxLevel;
 
 			// String
 			static std::string	trim(const std::string& str);
@@ -76,6 +95,10 @@
 			static int			parse_bool(const std::string &value, bool unexpected = false);
 			static uint8_t		parse_loglevel(const std::string &value);
 			static std::string 	parse_executable(const std::string& value);
+
+			// Error
+			static void			error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
+			static void			error_print();
 
 	};
 

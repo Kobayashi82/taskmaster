@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:55:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:09:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,8 +83,8 @@
 
 		currentSection.clear();
 		sections.clear();
-		errors.clear();
-		error_maxLevel = 0;
+		Utils::errors.clear();
+		Utils::errors_maxLevel = 0;
 		order = 0;
 
 		std::string	line;
@@ -117,19 +117,19 @@
 
 		if (Options.configuration.empty() && is_root) {
 			Log.warning("taskmasterd is running as root and it is searching for its configuration file in default locations (including its current working directory). You probably want to specify a \"-c\" argument specifying an absolute path to a configuration file for improved security.");
-			error_maxLevel = WARNING;
+			Utils::errors_maxLevel = WARNING;
 		}
 
 		load_file(Options.configuration);
 		merge_options(Options);
 
 		Manager.initialize();
-		error_print();
+		Utils::error_print();
 
-		if (errors.size())	{
-			if (error_maxLevel == WARNING)	  Log.warning	("configuration loaded with warnings. Review recommended");
-			if (error_maxLevel == ERROR)	  Log.error		("configuration loaded with errors. Execution can continue");
-			if (error_maxLevel == CRITICAL)	{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
+		if (Utils::errors.size())	{
+			if (Utils::errors_maxLevel == WARNING)	  Log.warning	("configuration loaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)	  Log.error		("configuration loaded with errors. Execution can continue");
+			if (Utils::errors_maxLevel == CRITICAL)	{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
 		}
 		else Log.info("configuration loaded succesfully");
 
