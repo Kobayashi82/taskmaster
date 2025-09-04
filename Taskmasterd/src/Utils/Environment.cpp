@@ -6,14 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 22:56:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 11:42:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
 
 	#include <algorithm>														// std::all_of()
 	#include <regex>															// regex_match()
@@ -26,13 +25,13 @@
 
 	#pragma region "Format"
 
-		std::string ConfigParser::environment_apply_format(const std::string& value, const std::string& modifier) const {
+		std::string Utils::environment_apply_format(const std::string& value, const std::string& modifier) {
 			if (modifier.empty() || modifier[0] != '*') return (value);
 			std::string fmt = modifier.substr(1);
 
 			// String
-			if (fmt == "upper") return (Utils::toUpper(value));
-			if (fmt == "lower") return (Utils::toLower(value));
+			if (fmt == "upper") return (toUpper(value));
+			if (fmt == "lower") return (toLower(value));
 
 			// Numeric
 			try {
@@ -64,7 +63,7 @@
 
 	#pragma region "Substring"
 
-		std::string ConfigParser::environment_apply_substring(const std::string& value, const std::string& modifier) const {
+		std::string Utils::environment_apply_substring(const std::string& value, const std::string& modifier) {
 			size_t colon = modifier.find(':');
 
 			if (modifier[0] == ' ' && modifier[1] == '-') {							// ${VAR: -n}
@@ -93,7 +92,7 @@
 
 	#pragma region "Expression"
 
-		std::string ConfigParser::environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) const {
+		std::string Utils::environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) {
 			size_t		colon = var_expr.find(':');
 			std::string	var_name = (colon == std::string::npos) ? var_expr : var_expr.substr(0, colon);
 			std::string	modifier = (colon == std::string::npos) ? "" : var_expr.substr(colon + 1);
@@ -101,10 +100,8 @@
 			auto it = env.find(var_name);
 			std::string	value;
 
-			// Do not expand to "" if NUMPROCS or PROCESS_NUM are not set in the environment (they will be expanded later during program instance creation)
-			if (it != env.end()) value = it->second;
-			else if	(section_type(currentSection) == "program:" && (var_name == "PROCESS_NUM" || var_name == "EX_PROCESS_NUM")) return "${EX_" + var_expr + "}";
-			else value = "";
+			if (it != env.end())	value = it->second;
+			else					value = "";
 
 			if (modifier.empty()) 									return (value);												// No modifier
 			if (modifier.substr(0, 1) == "-")						return (value.empty() ? modifier.substr(1) : value);		// ${VAR:-default}
@@ -119,7 +116,7 @@
 
 	#pragma region "Expand"
 
-		std::string ConfigParser::environment_expand(std::map<std::string, std::string>& env, const std::string& line, std::string split) const {
+		std::string Utils::environment_expand(std::map<std::string, std::string>& env, const std::string& line, std::string split) {
 			std::string	result;
 			char		quoteChar = 0;
 			bool		escaped = false;
@@ -154,7 +151,6 @@
 							std::string var_name = line.substr(start, end - start);
 							auto it = env.find(var_name);
 							if (it != env.end()) result += it->second;
-							else if (section_type(currentSection) == "program:" && (var_name == "PROCESS_NUM" || var_name == "EX_PROCESS_NUM")) result += "$EX_PROCESS_NUM";
 							i = end - 1; continue;
 						}
 					}
@@ -164,7 +160,7 @@
 				else																	result += c;
 			}
 
-			if (quoteChar || escaped) throw std::runtime_error("[" + currentSection + "] unclosed quote or unfinished escape sequence");
+			if (quoteChar || escaped) throw std::runtime_error("unclosed quote or unfinished escape sequence");
 
 			return (result);
 		}
@@ -175,13 +171,13 @@
 
 #pragma region "Validate"
 
-	bool ConfigParser::environment_validate(const std::string& env_string) const {
+	bool Utils::environment_validate(const std::string& env_string) {
 		static const std::regex env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)=(.+)$)");
 
 		std::string current;
 		for (char c : env_string) {
 			if (c == '\n') {
-				std::string trimmed = Utils::trim(current);
+				std::string trimmed = trim(current);
 				if (!trimmed.empty() && !std::regex_match(trimmed, env_regex)) {
 					return false;
 				}
@@ -191,7 +187,7 @@
 			}
 		}
 
-		std::string trimmed = Utils::trim(current);
+		std::string trimmed = trim(current);
 		return (trimmed.empty() || std::regex_match(trimmed, env_regex));
 	}
 
@@ -201,7 +197,7 @@
 
 	#pragma region "Print"
 
-		void ConfigParser::environment_print(const std::map<std::string, std::string>& env) const {
+		void Utils::environment_print(const std::map<std::string, std::string>& env) {
 			for (const auto& pair : env) {
 				std::cerr << pair.first << "=" << pair.second << "\n";
 			}
@@ -211,7 +207,7 @@
 
 	#pragma region "Del"
 
-		void ConfigParser::environment_del(std::map<std::string, std::string>& env, const std::string& key) {
+		void Utils::environment_del(std::map<std::string, std::string>& env, const std::string& key) {
 			if (!key.empty()) env.erase(key);
 		}
 
@@ -219,11 +215,11 @@
 
 	#pragma region "Add"
 
-		void ConfigParser::environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value) {
+		void Utils::environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value) {
 			if (!key.empty() && !value.empty()) env[key] = value;
 		}
 
-		void ConfigParser::environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite) {
+		void Utils::environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite) {
 			for (const auto& [key, value] : src) {
 				if (overwrite || env.find(key) == env.end()) env[key] = value;
 			}
@@ -233,7 +229,7 @@
 
 	#pragma region "Add Batch"
 
-		void ConfigParser::environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch) {
+		void Utils::environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch) {
 			if (batch.empty()) return ;
 
 			std::vector<std::string>	pairs;
@@ -255,8 +251,8 @@
 			for (const std::string& pair : pairs) {
 				size_t pos = pair.find('=');
 				if (pos != std::string::npos) {
-					std::string	key   = Utils::trim(pair.substr(0, pos));
-					std::string	value = Utils::trim(pair.substr(pos + 1));
+					std::string	key   = trim(pair.substr(0, pos));
+					std::string	value = trim(pair.substr(pos + 1));
 					env[key] = value;
 				}
 			}
@@ -266,7 +262,7 @@
 
 	#pragma region "Get"
 
-		std::string ConfigParser::environment_get(const std::map<std::string, std::string>& env, const std::string& key) const {
+		std::string Utils::environment_get(const std::map<std::string, std::string>& env, const std::string& key) {
 			if (key.empty()) return ("");
 
 			auto it = env.find(key);
@@ -277,7 +273,7 @@
 
 	#pragma region "Clone"
 		
-		void ConfigParser::environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src) {
+		void Utils::environment_clone(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src) {
 			if (env != src) env = src;
 		}
 
@@ -287,7 +283,7 @@
 
 		extern char **environ;
 
-		void ConfigParser::environment_initialize(std::map<std::string, std::string>& env) {
+		void Utils::environment_initialize(std::map<std::string, std::string>& env) {
 			for (char **sys_env = environ; *sys_env != nullptr; ++sys_env) {
 				std::string entry(*sys_env);
 				auto pos = entry.find('=');

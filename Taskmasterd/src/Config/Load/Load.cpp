@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Config.cpp                                         :+:      :+:    :+:   */
+/*   Load.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 00:34:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 11:55:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@
 
 #pragma endregion
 
-#pragma region "Parse"
+#pragma region "Load File"
 
-	void ConfigParser::parse(const std::string& filePath) {
+	void ConfigParser::load_file(const std::string& filePath) {
 		std::string configFile = filePath;
 
 		if (configFile.empty()) {
@@ -92,7 +92,7 @@
 		bool		invalidSection = false;
 
 		while (std::getline(file, line)) { lineNumber++; order += 2;
-			if ((line = Utils::trim(remove_comments(line))).empty()) continue;
+			if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 
 			if		(currentSection == "include" && is_section(line))	include_process(configFile);
 			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
@@ -120,7 +120,7 @@
 			error_maxLevel = WARNING;
 		}
 
-		parse(Options.configuration);
+		load_file(Options.configuration);
 		merge_options(Options);
 
 		Manager.initialize();
@@ -133,7 +133,7 @@
 		}
 		else Log.info("configuration loaded succesfully");
 
-		Log.set_logfile_stdout(parse_bool(get_value("taskmasterd", "nodaemon")) && !parse_bool(get_value("taskmasterd", "silent")));
+		Log.set_logfile_stdout(Utils::parse_bool(get_value("taskmasterd", "nodaemon")) && !Utils::parse_bool(get_value("taskmasterd", "silent")));
 		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 23:14:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 11:50:14 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 
 #pragma region "Comments"
 
-	std::string ConfigParser::remove_comments(const std::string& line) const {
+	std::string Utils::remove_comments(const std::string& line) {
 		char	quoteChar = 0;
 		bool	escaped = false;
 
@@ -45,7 +45,7 @@
 
 #pragma region "FD Limit"
 
-	int ConfigParser::parse_fd_limit(uint16_t minfds) const {
+	int Utils::parse_fd_limit(uint16_t minfds) {
 		struct rlimit rl;
 
 		if (!getrlimit(RLIMIT_NOFILE, &rl)) {
@@ -63,7 +63,7 @@
 
 #pragma region "Process Limit"
 
-	int ConfigParser::parse_process_limit(uint16_t minprocs) const {
+	int Utils::parse_process_limit(uint16_t minprocs) {
 		struct rlimit rl;
 
 		if (getrlimit(RLIMIT_NPROC, &rl) == 0) {
@@ -81,7 +81,7 @@
 
 #pragma region "Size"
 
-	long ConfigParser::parse_size(const std::string &value) const {
+	long Utils::parse_size(const std::string &value) {
 		if (value.empty()) return (0);
 
 		char *end;
@@ -103,7 +103,7 @@
 
 #pragma region "Number"
 
-	long ConfigParser::parse_number(const std::string& value, long min, long max, long default_value) const {
+	long Utils::parse_number(const std::string& value, long min, long max, long default_value) {
 		if (value.empty()) return (default_value);
 
 		char	*end;
@@ -120,7 +120,7 @@
 
 #pragma region "Signal"
 
-	uint8_t ConfigParser::parse_signal(const std::string& value) const {
+	uint8_t Utils::parse_signal(const std::string& value) {
 		if (value.empty()) return (15);
 
 		static const std::map<std::string, int> signals = {
@@ -146,7 +146,7 @@
 
 #pragma region "Bool"
 
-	int ConfigParser::parse_bool(const std::string &value, bool unexpected) const {
+	int Utils::parse_bool(const std::string &value, bool unexpected) {
 		if (value.empty()) return (0);
 
 		std::string val = Utils::toLower(value);
@@ -159,7 +159,7 @@
 
 #pragma region "LogLevel"
 
-	uint8_t ConfigParser::parse_loglevel(const std::string &value) const {
+	uint8_t Utils::parse_loglevel(const std::string &value) {
 		if (value.empty()) return (1);
 
 		std::string level = Utils::toUpper(value);
@@ -177,7 +177,7 @@
 
 #pragma region "Executable"
 
-	std::string ConfigParser::parse_executable(const std::string& value) const {
+	std::string Utils::parse_executable(const std::string& value) {
 		if (value.empty()) return {};
 
 		std::string	command;

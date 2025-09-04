@@ -6,13 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 23:54:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 11:57:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Config.hpp"
+	#include "Utils/Utils.hpp"
 
 	#include <regex>															// std::regex_match()
 	#include <filesystem>														// std::filesystem::path()
@@ -21,7 +21,7 @@
 
 #pragma region "Has Glob"
 
-	bool ConfigParser::globbing_has_glob(const std::string& path) {
+	bool Utils::globbing_has_glob(const std::string& path) {
 		return (path.find_first_of("*?[") != std::string::npos);
 	}
 
@@ -29,7 +29,7 @@
 
 #pragma region "Match Glob"
 
-	bool ConfigParser::globbing_match_glob(const std::string& pattern, const std::string& text) {
+	bool Utils::globbing_match_glob(const std::string& pattern, const std::string& text) {
 		try {
 			std::string regex_pattern = globbing_glob_to_regex(pattern);
 			std::regex r(regex_pattern, std::regex_constants::nosubs);
@@ -42,7 +42,7 @@
 
 #pragma region "Glob to Regex"
 
-	std::string ConfigParser::globbing_glob_to_regex(const std::string& glob) {
+	std::string Utils::globbing_glob_to_regex(const std::string& glob) {
 		std::string regex;
 		regex.reserve(glob.size() * 2);
 
@@ -75,7 +75,7 @@
 
 #pragma region "Expand Glob"
 
-	std::vector<std::string> ConfigParser::globbing_expand_glob(const std::string& pattern) {
+	std::vector<std::string> Utils::globbing_expand_glob(const std::string& pattern) {
 		std::vector<std::string>	matches, parts;
 		std::filesystem::path		base, pathPattern(pattern);
 		std::string					glob_pattern;
@@ -117,7 +117,7 @@
 
 #pragma region "Expand Globs"
 
-	std::vector<std::string> ConfigParser::globbing_expand(const std::vector<std::string>& patterns) {
+	std::vector<std::string> Utils::globbing_expand(const std::vector<std::string>& patterns) {
 		std::vector<std::string> result;
 
 		for (const auto& pattern : patterns) {

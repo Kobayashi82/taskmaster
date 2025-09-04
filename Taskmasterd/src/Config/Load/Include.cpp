@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 00:34:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 11:58:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@
 
 #pragma region "Include"
 
-	#pragma region "File"
+	#pragma region "Load File"
 
-		int ConfigParser::include_parse(const std::string& filePath) {
+		int ConfigParser::include_load_file(const std::string& filePath) {
 			std::string configFile = filePath;
 
 			std::ifstream file(configFile);
@@ -36,7 +36,7 @@
 			bool		invalidSection = false;
 
 			while (std::getline(file, line)) { lineNumber++; order += 2;
-				if ((line = Utils::trim(remove_comments(line))).empty()) continue;
+				if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 
 				if (is_section(line)) {
 					std::string section = section_extract(line);
@@ -87,7 +87,7 @@
 				if (!fullpath.empty()) file = fullpath;
 			}
 
-			return (globbing_expand(files));
+			return (Utils::globbing_expand(files));
 		}
 
 	#pragma endregion
@@ -101,7 +101,7 @@
 			for (const auto& file : files) {
 				std::string fullpath = Utils::expand_path(file, std::filesystem::path(configFile).parent_path());
 				if (fullpath.empty()) fullpath = file;
-				if (include_parse(fullpath)) {
+				if (include_load_file(fullpath)) {
 					error_add(fullpath, "cannot open config file - " + std::string(strerror(errno)), ERROR, 0, order);
 					order += 2;
 				}

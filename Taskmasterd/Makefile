@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/03 23:55:13 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/04 11:59:39 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,24 +60,24 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp													\
-																			\
-			  Config/Options.cpp Config/Signals.cpp							\
-																			\
-			  Config/Parser/Initialize.cpp Config/Parser/Config.cpp			\
-			  Config/Parser/Section.cpp Config/Parser/Keys.cpp				\
-			  Config/Parser/Globbing.cpp Config/Parser/Include.cpp			\
-			  Config/Parser/Getters.cpp Config/Parser/Parser.cpp			\
-																			\
-			  Config/Environment.cpp Config/Validation.cpp					\
-																			\
-			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp				\
-			  Logging/ProcessOutput.cpp										\
-																			\
-			  Programs/Manager.cpp Programs/Program.cpp						\
-			  Programs/Process.cpp Programs/Group.cpp						\
-																			\
-			  Utils/String.cpp Utils/Path.cpp
+SRCS		= Main/Main.cpp Main/Signals.cpp					\
+																\
+			  Config/Options.cpp								\
+																\
+			  Config/Load/Initialize.cpp Config/Load/Load.cpp	\
+			  Config/Load/Section.cpp Config/Load/Keys.cpp		\
+			  Config/Load/Include.cpp Config/Load/Getters.cpp	\
+																\
+			  Config/Validation.cpp								\
+																\
+			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp	\
+			  Logging/ProcessOutput.cpp							\
+																\
+			  Programs/Manager.cpp Programs/Program.cpp			\
+			  Programs/Process.cpp Programs/Group.cpp			\
+																\
+			  Utils/String.cpp Utils/Path.cpp Utils/Parser.cpp	\
+			  Utils/Globbing.cpp Utils/Environment.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #
