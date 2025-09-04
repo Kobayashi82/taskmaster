@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 14:08:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:52:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,16 @@
 
 		public:
 
+			// Constructors
+			ConfigParser();
+			ConfigParser(const ConfigParser&) = delete;
+			ConfigParser(ConfigParser&&) = default;
+			~ConfigParser() = default;
+
+			// Overloads
+			ConfigParser& operator=(const ConfigParser&) = delete;
+			ConfigParser& operator=(ConfigParser&&) = delete;
+
 			// Structures
 			struct ConfigEntry {
 				std::string	value;
@@ -42,16 +52,6 @@
 			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
 			bool														is_root;
 
-			// Constructors
-			ConfigParser();
-			ConfigParser(const ConfigParser&) = delete;
-			ConfigParser(ConfigParser&&) = default;
-			~ConfigParser() = default;
-
-			// Overloads
-			ConfigParser& operator=(const ConfigParser&) = delete;
-			ConfigParser& operator=(ConfigParser&&) = delete;
-
 			// Keys
 			ConfigEntry*	get_value_entry(const std::string& section, const std::string& key);
 			std::string		get_value(const std::string& section, const std::string& key) const;
@@ -60,11 +60,17 @@
 			void			print() const;
 			bool			has_section(const std::string& section) const;
 
-			// Parser
+			// Load
 			int				load(int argc, char **argv);
 
 			// Validation
 			int				validate_options(ConfigOptions& Options) const;
+			void			validate_taskmasterd();
+			void			validate_program();
+			void			validate_group();
+			void			validate_unix_server();
+			void			validate_inet_server();
+			void			validate();
 
 		private:
 
@@ -90,35 +96,13 @@
 			std::string					section_extract(const std::string& line) const;
 			int							section_parse(const std::string& line, int line_number, std::string& filename);
 
-			// Initialize
-			void						initialize();
-			void						default_values();
-
-			// Parser
+			// Load
 			void						merge_options(const ConfigOptions& Options);
 			void						load_file(const std::string& filePath = "");
 
-			// Validation
-			bool						valid_bool(const std::string& value) const;
-			bool						valid_number(const std::string& value, long min = 0, long max = LONG_MAX) const;
-			bool						valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false) const;
-			bool						valid_signal(const std::string& value) const;
-			bool						valid_code(const std::string& value) const;
-			bool						valid_loglevel(const std::string& value) const;
-			bool						valid_autorestart(const std::string& value) const;
-			bool						valid_umask(const std::string& value) const;
-			bool						valid_user(const std::string& value) const;
-			bool						valid_chown(const std::string& value) const;
-			bool						valid_password(const std::string& value) const;
-			bool						valid_port(const std::string& value) const;
-			bool						valid_serverurl(const std::string &value) const;
-
-			void						validate_taskmasterd();
-			void						validate_program();
-			void						validate_group();
-			void						validate_unix_server();
-			void						validate_inet_server();
-			void						validate();
+			// Initialize
+			void						initialize();
+			void						default_values();
 
 	};
 

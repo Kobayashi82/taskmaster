@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:36:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:53:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,16 @@
 
 		public:
 
+			// Constructors
+			Utils() = delete;
+			Utils(const Utils&) = delete;
+			Utils(Utils&&) = delete;
+			~Utils() = delete;
+
+			// Overloads
+			Utils& operator=(const Utils&) = delete;
+			Utils& operator=(Utils&&) = delete;
+
 			// Structures
 			struct ErrorInfo {
 				std::string	filename;
@@ -54,16 +64,6 @@
 			static std::vector<ErrorInfo>				errors;
 			static uint16_t								errors_maxLevel;
 			static std::map<std::string, std::string>	environment;
-
-			// Constructors
-			Utils() = delete;
-			Utils(const Utils&) = delete;
-			Utils(Utils&&) = delete;
-			~Utils() = delete;
-
-			// Overloads
-			Utils& operator=(const Utils&) = delete;
-			Utils& operator=(Utils&&) = delete;
 
 			// String
 			static std::string	trim(const std::string& str);
@@ -107,6 +107,21 @@
 			static int			parse_bool(const std::string &value, bool unexpected = false);
 			static uint8_t		parse_loglevel(const std::string &value);
 			static std::string 	parse_executable(const std::string& value);
+
+			// Validation
+			static bool			valid_bool(const std::string& value);
+			static bool			valid_number(const std::string& value, long min = 0, long max = LONG_MAX);
+			static bool			valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false);
+			static bool			valid_signal(const std::string& value);
+			static bool			valid_code(const std::string& value);
+			static bool			valid_loglevel(const std::string& value);
+			static bool			valid_autorestart(const std::string& value);
+			static bool			valid_umask(const std::string& value);
+			static bool			valid_user(const std::string& value);
+			static bool			valid_chown(const std::string& value);
+			static bool			valid_password(const std::string& value);
+			static bool			valid_port(const std::string& value);
+			static bool			valid_serverurl(const std::string &value);
 
 			// Error
 			static void			error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);

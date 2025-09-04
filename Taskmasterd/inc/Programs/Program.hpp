@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:10:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:53:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,6 @@
 
 		public:
 
-			// Variables
-			std::string					section;
-			std::string					name;
-			uint16_t        			numprocs;
-			uint16_t        			numprocs_start;
-			bool						disabled;
-			std::vector<Process>		process;
-			std::vector<std::string>	groups;
-
 			// Constructors
 			Program(const std::string _name);
 			Program(const Program&) = default;
@@ -47,6 +38,15 @@
 			// Overloads
 			Program& operator=(const Program&) = default;
 			Program& operator=(Program&&) = default;
+
+			// Variables
+			std::string					section;
+			std::string					name;
+			uint16_t        			numprocs;
+			uint16_t        			numprocs_start;
+			bool						disabled;
+			std::vector<Process>		process;
+			std::vector<std::string>	groups;
 
 		private:
 		

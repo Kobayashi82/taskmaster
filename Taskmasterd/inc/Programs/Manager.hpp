@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:17:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:53:29 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,6 @@
 
 		public:
 
-			// Variables
-			std::vector<Program>	Programs;
-			std::vector<Group>		Groups;
-
 			// Constructors
 			ProgramManager() = default;
 			ProgramManager(const ProgramManager&) = delete;
@@ -38,6 +34,10 @@
 
 			// Overloads
 			ProgramManager& operator=(const ProgramManager&) = delete;
+
+			// Variables
+			std::vector<Program>	Programs;
+			std::vector<Group>		Groups;
 
 			void	initialize();
 

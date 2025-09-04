@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:23:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 15:53:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,16 @@
 
 		public:
 
+			// Constructor
+			ConfigOptions() = default;
+			ConfigOptions(const ConfigOptions& src) = default;
+			ConfigOptions(ConfigOptions&&) = default;
+			~ConfigOptions() = default;
+
+			// Overloads
+			ConfigOptions& operator=(const ConfigOptions& rhs) = default;
+			ConfigOptions& operator=(ConfigOptions&&) = default;
+
 			// Variables
 			std::string	configuration;											// Default path: /etc/taskmasterd.conf
 			std::string	nodaemon;												// Shows log and exits on signals
@@ -52,16 +62,6 @@
 
 			std::string	fullName;												// Name and path used to execute the program (same as argv[0])
 			std::string	options;												// 
-
-			// Constructor
-			ConfigOptions() = default;
-			ConfigOptions(const ConfigOptions& src) = default;
-			ConfigOptions(ConfigOptions&&) = default;
-			~ConfigOptions() = default;
-
-			// Overloads
-			ConfigOptions& operator=(const ConfigOptions& rhs) = default;
-			ConfigOptions& operator=(ConfigOptions&&) = default;
 
 			// Methods
 			int	parse(int argc, char **argv);									// Parse options passed as arguments to the program
