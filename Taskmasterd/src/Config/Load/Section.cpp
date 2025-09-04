@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:10:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:18:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,33 @@
 
 	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
+
+	#include <iostream>															// std::cout()
+	#include <algorithm>														// std::replace()
+
+#pragma endregion
+
+#pragma region "Print"
+
+	void ConfigParser::print() const {
+		for (const auto& section : sections) {
+			std::cout << "[" << section.first << "]" << std::endl;
+			for (const auto& kv : section.second) {
+				std::string value = kv.second.value;
+				std::replace(value.begin(), value.end(), '\n', ',');
+				std::cout << kv.first << " = " << value << std::endl;
+			}
+			std::cout << std::endl;
+		}
+	}
+
+#pragma endregion
+
+#pragma region "Has Section"
+
+	bool ConfigParser::has_section(const std::string& section) const {
+		return (sections.find(section) != sections.end());
+	}
 
 #pragma endregion
 
@@ -81,3 +108,4 @@
 	}
 
 #pragma endregion
+

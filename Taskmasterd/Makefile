@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/04 12:11:52 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/04 12:26:24 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -66,7 +66,7 @@ SRCS		= Main/Main.cpp Main/Signals.cpp					\
 																\
 			  Config/Load/Initialize.cpp Config/Load/Load.cpp	\
 			  Config/Load/Section.cpp Config/Load/Keys.cpp		\
-			  Config/Load/Include.cpp Config/Load/Getters.cpp	\
+			  Config/Load/Include.cpp							\
 																\
 			  Config/Validation.cpp								\
 																\

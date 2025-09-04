@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:11:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:24:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -299,12 +299,12 @@
 			std::string	dir = ".", sectionName = "taskmasterd";
 			currentSection = sectionName;
 
-			std::string HERE = Utils::environment_get(environment, "HERE");
-			Utils::environment_add(environment, "HERE", Utils::expand_path(".", "", true, false));
+			std::string HERE = Utils::environment_get(Utils::environment, "HERE");
+			Utils::environment_add(Utils::environment, "HERE", Utils::expand_path(".", "", true, false));
 
 			entry = get_value_entry(sectionName, "directory");
 			if (entry) {
-				try { entry->value = Utils::environment_expand(environment, entry->value); }
+				try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
 				catch (const std::exception& e) {
 					Utils::error_add(entry->filename, "[" + sectionName + "] directory: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
 					Utils::error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + defaultValues[sectionName]["directory"], WARNING, 0, entry->order + 1);
@@ -339,8 +339,8 @@
 					if (key == "directory") continue;
 
 					try {
-						if (key == "environment")	entry.value = Utils::environment_expand(environment, entry.value, ",");
-						else						entry.value = Utils::environment_expand(environment, entry.value);
+						if (key == "environment")	entry.value = Utils::environment_expand(Utils::environment, entry.value, ",");
+						else						entry.value = Utils::environment_expand(Utils::environment, entry.value);
 					}
 					catch (const std::exception& e) {
 						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
@@ -523,7 +523,7 @@
 				}
 			}
 
-			if (!HERE.empty()) Utils::environment_add(environment, "HERE", HERE);
+			if (!HERE.empty()) Utils::environment_add(Utils::environment, "HERE", HERE);
 
 			std::string user = get_value("taskmasterd", "user");
 			if (is_root && (user.empty() || Utils::toLower(user) == "do not switch")) {
@@ -556,13 +556,13 @@
 						order = itSec->second.begin()->second.order;
 					}
 
-					std::string HERE = Utils::environment_get(environment, "HERE");
-					Utils::environment_add(environment, "HERE", std::filesystem::path(filename).parent_path());
+					std::string HERE = Utils::environment_get(Utils::environment, "HERE");
+					Utils::environment_add(Utils::environment, "HERE", std::filesystem::path(filename).parent_path());
 
 					std::string numprocs = "1";
 					entry = get_value_entry(sectionName, "numprocs");
 					if (entry) {
-						try { entry->value = Utils::environment_expand(environment, entry->value); }
+						try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
 						catch (const std::exception& e) {
 							Utils::error_add(entry->filename, "[" + sectionName + "] numprocs: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
 							Utils::error_add(entry->filename, "[" + sectionName + "] numprocs: reset to default value: " + defaultValues[sectionName.substr(0, 8)]["numprocs"], WARNING, 0, entry->order + 1);
@@ -575,15 +575,15 @@
 						}
 					}
 
-					std::string PROGRAM_NAME	= Utils::environment_get(environment, "PROGRAM_NAME");
-					std::string NUMPROCS		= Utils::environment_get(environment, "NUMPROCS");
+					std::string PROGRAM_NAME	= Utils::environment_get(Utils::environment, "PROGRAM_NAME");
+					std::string NUMPROCS		= Utils::environment_get(Utils::environment, "NUMPROCS");
 
-					Utils::environment_add(environment, "PROGRAM_NAME", program.substr(8));
-					Utils::environment_add(environment, "NUMPROCS", numprocs);
+					Utils::environment_add(Utils::environment, "PROGRAM_NAME", program.substr(8));
+					Utils::environment_add(Utils::environment, "NUMPROCS", numprocs);
 
 					entry = get_value_entry(sectionName, "directory");
 					if (entry) {
-						try { entry->value = Utils::environment_expand(environment, entry->value); }
+						try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
 						catch (const std::exception& e) {
 							Utils::error_add(entry->filename, "[" + sectionName + "] directory: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
 							Utils::error_add(entry->filename, "[" + sectionName + "] directory: reset to default value: " + dir, WARNING, 0, entry->order + 1);
@@ -620,8 +620,8 @@
 						if (key == "command") continue;
 
 						try {
-							if (key == "environment")	entry.value = Utils::environment_expand(environment, entry.value, ",");
-							else						entry.value = Utils::environment_expand(environment, entry.value);
+							if (key == "environment")	entry.value = Utils::environment_expand(Utils::environment, entry.value, ",");
+							else						entry.value = Utils::environment_expand(Utils::environment, entry.value);
 						}
 						catch (const std::exception& e) {
 							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
@@ -722,7 +722,7 @@
 
 						if (key == "process_name") {
 							std::string numprocs;
-							try { numprocs =  Utils::environment_expand(environment, get_value(sectionName, "numprocs")); }
+							try { numprocs =  Utils::environment_expand(Utils::environment, get_value(sectionName, "numprocs")); }
 							catch (const std::exception& e) { numprocs = "0"; }
 							if (numprocs != "1" && entry.value.find("${PROCESS_NUM:") == std::string::npos && entry.value.find("${PROCESS_NUM}") == std::string::npos && entry.value.find("$PROCESS_NUM") == std::string::npos
 								&& entry.value.find("${EX_PROCESS_NUM:") == std::string::npos && entry.value.find("${EX_PROCESS_NUM}") == std::string::npos && entry.value.find("$EX_PROCESS_NUM") == std::string::npos) {
@@ -735,7 +735,7 @@
 								Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": must be a value between 1 and 1000", ERROR, entry.line, entry.order);
 							if (entry.value != "1") {
 								std::string process_name;
-								try { process_name = Utils::environment_expand(environment, get_value(sectionName, "process_name")); }
+								try { process_name = Utils::environment_expand(Utils::environment, get_value(sectionName, "process_name")); }
 								catch (const std::exception& e) { process_name = ""; }
 								if (process_name.empty() || (process_name.find("${PROCESS_NUM:") == std::string::npos && process_name.find("${PROCESS_NUM}") == std::string::npos && process_name.find("$PROCESS_NUM") == std::string::npos
 									&& process_name.find("${EX_PROCESS_NUM:") == std::string::npos && process_name.find("${EX_PROCESS_NUM}") == std::string::npos && process_name.find("$EX_PROCESS_NUM") == std::string::npos))
@@ -864,7 +864,7 @@
 
 					entry = get_value_entry(sectionName, "command");
 					if (entry) {
-						try { entry->value = Utils::environment_expand(environment, entry->value); }
+						try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
 						catch (const std::exception& e) { Utils::error_add(entry->filename, "[" + sectionName + "] command: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order); }
 
 						if (entry->value.empty()) {
@@ -874,9 +874,9 @@
 						}
 					} else Utils::error_add(filename, "[" + sectionName + "] command: required", ERROR, 0, last_order);
 
-					if (!HERE.empty())			Utils::environment_add(environment, "HERE", HERE);
-					if (!PROGRAM_NAME.empty())	Utils::environment_add(environment, "PROGRAM_NAME", PROGRAM_NAME);
-					if (!NUMPROCS.empty())		Utils::environment_add(environment, "NUMPROCS", NUMPROCS);
+					if (!HERE.empty())			Utils::environment_add(Utils::environment, "HERE", HERE);
+					if (!PROGRAM_NAME.empty())	Utils::environment_add(Utils::environment, "PROGRAM_NAME", PROGRAM_NAME);
+					if (!NUMPROCS.empty())		Utils::environment_add(Utils::environment, "NUMPROCS", NUMPROCS);
 				}
 			}
 		}
@@ -907,17 +907,17 @@
 						order = itSec->second.begin()->second.order;
 					}
 
-					std::string HERE		= Utils::environment_get(environment, "HERE");
-					std::string GROUP_NAME	= Utils::environment_get(environment, "GROUP_NAME");
+					std::string HERE		= Utils::environment_get(Utils::environment, "HERE");
+					std::string GROUP_NAME	= Utils::environment_get(Utils::environment, "GROUP_NAME");
 
-					Utils::environment_add(environment, "HERE", std::filesystem::path(filename).parent_path());
-					Utils::environment_add(environment, "GROUP_NAME", group.substr(6));
+					Utils::environment_add(Utils::environment, "HERE", std::filesystem::path(filename).parent_path());
+					Utils::environment_add(Utils::environment, "GROUP_NAME", group.substr(6));
 
 					for (auto &kv : keys) {
 						const std::string &key = kv.first;
 						ConfigEntry &entry = kv.second;
 
-						try { entry.value = Utils::environment_expand(environment, entry.value); }
+						try { entry.value = Utils::environment_expand(Utils::environment, entry.value); }
 						catch (const std::exception& e) {
 							Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 							if (key != "programs") {
@@ -953,8 +953,8 @@
 					entry = get_value_entry(sectionName, "programs");
 					if (!entry) Utils::error_add(filename, "[" + sectionName + "] programs: required", ERROR, 0, last_order);
 
-					if (!HERE.empty())			Utils::environment_add(environment, "HERE", HERE);
-					if (!GROUP_NAME.empty())	Utils::environment_add(environment, "GROUP_NAME", GROUP_NAME);
+					if (!HERE.empty())			Utils::environment_add(Utils::environment, "HERE", HERE);
+					if (!GROUP_NAME.empty())	Utils::environment_add(Utils::environment, "GROUP_NAME", GROUP_NAME);
 				}
 			}
 		}
@@ -978,9 +978,9 @@
 				order = itSec->second.begin()->second.order;
 			}
 
-			std::string HERE = Utils::environment_get(environment, "HERE");
+			std::string HERE = Utils::environment_get(Utils::environment, "HERE");
 
-			Utils::environment_add(environment, "HERE", std::filesystem::path(filename).parent_path());
+			Utils::environment_add(Utils::environment, "HERE", std::filesystem::path(filename).parent_path());
 
 			auto it = sections.find(sectionName);
 			if (it != sections.end()) {
@@ -988,7 +988,7 @@
 					const std::string &key = kv.first;
 					ConfigEntry &entry = kv.second;
 
-					try { entry.value = Utils::environment_expand(environment, entry.value); }
+					try { entry.value = Utils::environment_expand(Utils::environment, entry.value); }
 					catch (const std::exception& e) {
 						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": reset to default value: " + defaultValues[sectionName][key], WARNING, 0, entry.order + 1);
@@ -1041,7 +1041,7 @@
 			entry = get_value_entry(sectionName, "file");
 			if (!entry) Utils::error_add(filename, "[" + sectionName + "] file: required", ERROR, 0, last_order);
 
-			if (!HERE.empty()) Utils::environment_add(environment, "HERE", HERE);
+			if (!HERE.empty()) Utils::environment_add(Utils::environment, "HERE", HERE);
 		}
 
 	#pragma endregion
@@ -1061,9 +1061,9 @@
 				order = itSec->second.begin()->second.order;
 			}
 
-			std::string HERE = Utils::environment_get(environment, "HERE");
+			std::string HERE = Utils::environment_get(Utils::environment, "HERE");
 
-			Utils::environment_add(environment, "HERE", std::filesystem::path(filename).parent_path());
+			Utils::environment_add(Utils::environment, "HERE", std::filesystem::path(filename).parent_path());
 
 			auto it = sections.find(sectionName);
 			if (it != sections.end()) {
@@ -1071,7 +1071,7 @@
 					const std::string &key = kv.first;
 					ConfigEntry &entry = kv.second;
 
-					try { entry.value = Utils::environment_expand(environment, entry.value); }
+					try { entry.value = Utils::environment_expand(Utils::environment, entry.value); }
 					catch (const std::exception& e) {
 						Utils::error_add(entry.filename, "[" + sectionName + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 						if (key != "port") {
@@ -1104,7 +1104,7 @@
 			entry = get_value_entry(sectionName, "port");
 			if (!entry) Utils::error_add(filename, "[" + sectionName + "] port: required", ERROR, 0, last_order);
 
-			if (!HERE.empty()) Utils::environment_add(environment, "HERE", HERE);
+			if (!HERE.empty()) Utils::environment_add(Utils::environment, "HERE", HERE);
 		}
 
 	#pragma endregion
@@ -1189,11 +1189,11 @@
 #pragma region "Validate"
 
 	void ConfigParser::validate() {
-		Utils::environment_initialize(environment);
-		std::string HOST_NAME = Utils::environment_get(environment, "HOST_NAME");
+		Utils::environment_initialize(Utils::environment);
+		std::string HOST_NAME = Utils::environment_get(Utils::environment, "HOST_NAME");
 
 		char hostname[255];
-		Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+		Utils::environment_add(Utils::environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 
 		validate_taskmasterd();
 		if (has_section("unix_http_server")) validate_unix_server();
@@ -1201,7 +1201,7 @@
 		validate_program();
 		validate_group();
 
-		if (!HOST_NAME.empty())	Utils::environment_add(environment, "HOST_NAME", HOST_NAME);
+		if (!HOST_NAME.empty())	Utils::environment_add(Utils::environment, "HOST_NAME", HOST_NAME);
 	}
 
 #pragma endregion

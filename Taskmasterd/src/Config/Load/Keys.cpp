@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:10:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:21:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,32 @@
 
 	#include <unistd.h>															// gethostname()
 	#include <filesystem>														// std::filesystem::path()
+
+#pragma endregion
+
+#pragma region "Getters"
+
+	ConfigParser::ConfigEntry* ConfigParser::get_value_entry(const std::string& section, const std::string& key) {
+		auto sectionIt = sections.find(section);
+
+		if (sectionIt != sections.end()) {
+			auto keyIt = sectionIt->second.find(Utils::toLower(key));
+			if (keyIt != sectionIt->second.end()) return (&keyIt->second);
+		}
+
+		return {};
+	}
+
+	std::string ConfigParser::get_value(const std::string& section, const std::string& key) const {
+		auto sectionIt = sections.find(section);
+
+		if (sectionIt != sections.end()) {
+			auto keyIt = sectionIt->second.find(Utils::toLower(key));
+			if (keyIt != sectionIt->second.end()) return (keyIt->second.value);
+		}
+
+		return {};
+	}
 
 #pragma endregion
 
@@ -52,16 +78,17 @@
 		ConfigEntry entry;
 		if (currentSection == "include" && key == "files") {
 			char hostname[255];
-			Utils::environment_initialize(environment);
-			Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
-			Utils::environment_add(environment, "HERE", Utils::expand_path(std::filesystem::path(filename).parent_path(), "", true, false));
+			std::map<std::string, std::string> env;
+			Utils::environment_initialize(env);
+			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+			Utils::environment_add(env, "HERE", Utils::expand_path(std::filesystem::path(filename).parent_path(), "", true, false));
 
-			try { value = Utils::environment_expand(environment, value, ", \f\v\t\r\n");
+			try { value = Utils::environment_expand(env, value, ", \f\v\t\r\n");
 			} catch (const std::exception& e) {
 				Utils::error_add(entry.filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
 				value = "";
 			}
-			environment.clear();
+			env.clear();
 		}
 		entry.value = value;
 		entry.filename = filename;

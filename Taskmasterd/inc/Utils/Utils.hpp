@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:08:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:23:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,9 @@
 			};
 
 			// Variables
-			static std::vector<ErrorInfo>	errors;
-			static uint16_t					errors_maxLevel;
+			static std::vector<ErrorInfo>				errors;
+			static uint16_t								errors_maxLevel;
+			static std::map<std::string, std::string>	environment;
 
 			// String
 			static std::string	trim(const std::string& str);

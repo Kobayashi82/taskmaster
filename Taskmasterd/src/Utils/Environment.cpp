@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:42:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:24:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,12 @@
 	#include <regex>															// regex_match()
 	#include <iostream>															// std::cerr
 	#include <iomanip>															// std::setw(), std::setfill()
+
+#pragma endregion
+
+#pragma region "Variables"
+
+	std::map<std::string, std::string>	Utils::environment;
 
 #pragma endregion
 
