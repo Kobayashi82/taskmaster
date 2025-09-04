@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/08/30 23:29:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:35:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,15 +52,14 @@
 
 			std::string	fullName;												// Name and path used to execute the program (same as argv[0])
 			std::string	options;												// 
-			bool		is_root;												// 
 
 			// Constructor
-			ConfigOptions();													// Default constructor (no instantiable)
-			ConfigOptions(const ConfigOptions& src);
-			~ConfigOptions() = default;											// Destructor (no instantiable)
+			ConfigOptions() = default;
+			ConfigOptions(const ConfigOptions& src) = default;
+			~ConfigOptions() = default;
 
 			// Overloads
-			ConfigOptions& operator=(const ConfigOptions& rhs);
+			ConfigOptions& operator=(const ConfigOptions& rhs) = default;
 
 			// Methods
 			int	parse(int argc, char **argv);									// Parse options passed as arguments to the program

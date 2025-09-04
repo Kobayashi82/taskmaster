@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:54:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:11:01 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@
 
 		while (current_process < numprocs) {
 			try {
-				Process proc;
+				process.emplace_back();
+				Process& proc = process.back();
 
 				std::map<std::string, std::string> temp_vars;
 				Utils::environment_add(temp_vars, "EX_PROCESS_NUM", std::to_string(current_process_num++));
@@ -99,9 +100,7 @@
 
 				proc.process_num = current_process;
 				proc.program_name = name;
-				proc.program = this;
 
-				process.push_back(proc);
 				current_process++;
 			} catch(const std::exception& e) {
 				disabled = true;

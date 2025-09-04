@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:28:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:30:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include "Config/Options.hpp"
 
-	#include <cstdint>															// uint8_t, uint16_t
+	#include <cstdint>															// uint16_t
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector

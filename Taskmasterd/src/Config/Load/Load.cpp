@@ -6,14 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:09:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:36:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Utils/Utils.hpp"
-	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
 	#include "Programs/Manager.hpp"
 	#include "Logging/TaskmasterLog.hpp"

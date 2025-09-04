@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/03 19:38:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:10:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,15 +72,16 @@
 			std::string							exit_reason;
 			std::string							spawn_error;
 			std::string							program_name;
-			Program								*program;
 
 			// Constructors
-			Process();
+			Process() = default;
 			Process(const Process&) = default;
+			Process(Process&&) = default;
 			~Process() = default;
 
 			// Overloads
 			Process& operator=(const Process&) = default;
+			Process& operator=(Process&&) = default;
 
 		private:
 

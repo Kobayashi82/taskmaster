@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:53:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:45:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,24 +25,6 @@
 #pragma region "Variables"
 
 	TaskmasterLog Log;
-
-#pragma endregion
-
-#pragma region "Constructors"
-
-	TaskmasterLog::TaskmasterLog() :
-		_logfile(""),
-		_logfile_maxbytes(0),
-		_logfile_backups(0),
-		_logfile_level(DEBUG),
-		_logfile_syslog(false),
-		_logfile_stdout(false),
-		_logfile_ready(false)
-	{}
-
-	TaskmasterLog::~TaskmasterLog() {
-		
-	}
 
 #pragma endregion
 

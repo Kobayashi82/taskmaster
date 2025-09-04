@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/01 17:16:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 12:37:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,102 +15,8 @@
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
 
-	#include <unistd.h>															// getuid()
 	#include <iostream>															// std::cerr()
 	#include <getopt.h>															// getopt_long()
-
-#pragma endregion
-
-#pragma region "Constructors"
-
-	#pragma region "Constructor"
-
-		ConfigOptions::ConfigOptions() :
-			configuration		(""),											// Default path
-			nodaemon			(""),											// Shows log and exits on signals
-			silent				(""),											// Hides logs in stdout from debug to warning (only works with -n)
-			user				(""),											// Switch to this user after startup (privilege de-escalation) (requires root)
-			umask				(""),											// Set the file creation permission mask												(default: 022)
-			directory			(""),											// Set the initial working directory													(default: )
-			logfile				(""),											// File where the daemon writes its logs												(default: )
-			logfile_maxbytes	(""),											// Maximum log file size before rotation												(default: 10MB)
-			logfile_backups		(""),											// Number of backup files to keep during rotation										(default: 5)
-			loglevel			(""),											// Logging level: debug, info, warning, error, critical									(default: info)
-			pidfile				(""),											// File where the taskmaster process PID is written
-			identifier			(""),											// Unique identifier for this taskmaster instance (used in logs and communication)
-			childlogdir			(""),											// Directory where child processes write their logs by default
-			strip_ansi			(""),											// Remove ANSI escape sequences from child process logs
-			nocleanup			(""),											// Do not clean temporary files on exit
-			minfds				(""),											// Minimum number of file descriptors required											(default: 1024)
-			minprocs			(""),											// Minimum number of processes available in the system									(default: 200)
-			fullName			(""),											// Name and path used to execute the program (same as argv[0])
-			options				(""),											// 
-			is_root				(getuid() == 0)									// 
-		{}
-
-	#pragma endregion
-
-	#pragma region "Constructor (copy)"
-
-		ConfigOptions::ConfigOptions(const ConfigOptions& src) :
-			configuration		(src.configuration),							// Default path
-			nodaemon			(src.nodaemon),									// Shows log and exits on signals
-			silent				(src.silent),									// Hides logs in stdout from debug to warning (only works with -n)
-			user				(src.user),										// Switch to this user after startup (privilege de-escalation) (requires root)
-			umask				(src.umask),									// Set the file creation permission mask												(default: 022)
-			directory			(src.directory),								// Set the initial working directory													(default: )
-			logfile				(src.logfile),									// File where the daemon writes its logs												(default: )
-			logfile_maxbytes	(src.logfile_maxbytes),							// Maximum log file size before rotation												(default: 10MB)
-			logfile_backups		(src.logfile_backups),							// Number of backup files to keep during rotation										(default: 5)
-			loglevel			(src.loglevel),									// Logging level: debug, info, warning, error, critical									(default: info)
-			pidfile				(src.pidfile),									// File where the taskmaster process PID is written
-			identifier			(src.identifier),								// Unique identifier for this taskmaster instance (used in logs and communication)
-			childlogdir			(src.childlogdir),								// Directory where child processes write their logs by default
-			strip_ansi			(src.strip_ansi),								// Remove ANSI escape sequences from child process logs
-			nocleanup			(src.nocleanup),								// Do not clean temporary files on exit
-			minfds				(src.minfds),									// Minimum number of file descriptors required											(default: 1024)
-			minprocs			(src.minprocs),									// Minimum number of processes available in the system									(default: 200)
-			fullName			(src.fullName),									// Name and path used to execute the program (same as argv[0])
-			options				(src.options),									// 
-			is_root				(src.is_root)									// 
-		{}
-
-	#pragma endregion
-
-#pragma endregion
-
-#pragma region "Overloads"
-
-	#pragma region "Assing"
-
-		ConfigOptions& ConfigOptions::operator=(const ConfigOptions& rhs) {
-			if (this == &rhs) return (*this);
-
-			configuration		= rhs.configuration;								// Default path
-			nodaemon			= rhs.nodaemon;										// Shows log and exits on signals
-			silent				= rhs.silent;										// Hides logs in stdout from debug to warning (only works with -n)
-			user				= rhs.user;											// Switch to this user after startup (privilege de-escalation) (requires root)
-			umask				= rhs.umask;										// Set the file creation permission mask												(default: 022)
-			directory			= rhs.directory;									// Set the initial working directory													(default: )
-			logfile				= rhs.logfile;										// File where the daemon writes its logs												(default: )
-			logfile_maxbytes	= rhs.logfile_maxbytes;								// Maximum log file size before rotation												(default: 10MB)
-			logfile_backups		= rhs.logfile_backups;								// Number of backup files to keep during rotation										(default: 5)
-			loglevel			= rhs.loglevel;										// Logging level: debug, info, warning, error, critical									(default: info)
-			pidfile				= rhs.pidfile;										// File where the taskmaster process PID is written
-			identifier			= rhs.identifier;									// Unique identifier for this taskmaster instance (used in logs and communication)
-			childlogdir			= rhs.childlogdir;									// Directory where child processes write their logs by default
-			strip_ansi			= rhs.strip_ansi;									// Remove ANSI escape sequences from child process logs
-			nocleanup			= rhs.nocleanup;									// Do not clean temporary files on exit
-			minfds				= rhs.minfds;										// Minimum number of file descriptors required											(default: 1024)
-			minprocs			= rhs.minprocs;										// Minimum number of processes available in the system									(default: 200)
-			fullName			= rhs.fullName;										// Name and path used to execute the program (same as argv[0])
-			options				= rhs.options;										// 
-			is_root				= rhs.is_root;										// 
-
-			return (*this);
-		}
-
-	#pragma endregion
 
 #pragma endregion
 
