@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 13:23:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 14:08:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@
 
 			// Include
 			int							include_load_file(const std::string& filePath);
-			std::vector<std::string>	include_parse_files(const std::string& fileString, std::string& ConfigFile);
+			std::vector<std::string>	include_parse_files(const std::string& fileString, const std::string& configFile);
 			void						include_process(std::string& ConfigFile);
 
 			// Keys

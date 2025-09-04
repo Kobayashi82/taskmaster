@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:24:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 13:39:35 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,10 +130,10 @@
 			for (size_t i = 0; i < line.length(); ++i) {
 				char c = line[i];
 
-				if (escaped)								{ escaped = false; result += c;		continue; }
-				if (c == '\\')								{ escaped = true;					continue; }
-				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
-				if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
+				if (escaped)								{ escaped = false;	result += c;	continue; }
+				if (c == '\\')								{ escaped = true;	result += c;	continue; }
+				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	result += c;	continue; }
+				if (quoteChar && c == quoteChar)			{ quoteChar = 0;	result += c;	continue; }
 
 				if (quoteChar != '\'' && c == '$') {
 					if (i + 1 < line.length() && line[i + 1] == '{') {							// ${VAR}
@@ -244,11 +244,11 @@
 			bool						escaped = false;
 
 			for (char c : batch) {
-				if (escaped)								{ current += c; escaped = false; 				continue; }
+				if (escaped)								{ escaped = false;			current += c;		continue; }
 				if (c == '\\')								{ escaped = true;								continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;								continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;								continue; }
-				if (!quoteChar && c == '\n')				{ pairs.push_back(current); current.clear(); 	continue; }
+				if (!quoteChar && c == '\n')				{ pairs.push_back(current);	current.clear();	continue; }
 
 				current += c;
 			}
@@ -304,3 +304,22 @@
 	#pragma endregion
 
 #pragma endregion
+
+	std::string remove_quotes(const std::string& str) {
+		std::string	result;
+		char		quoteChar = 0;
+		bool		escaped = false;
+
+		for (char c : str) {
+			if (escaped)								{ escaped = false;	result += c;	continue; }
+			if (c == '\\')								{ escaped = true;					continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
+
+			result += c;
+		}
+
+		if (quoteChar || escaped) throw std::runtime_error("unclosed quote or unfinished escape sequence");
+
+		return (result);
+	}

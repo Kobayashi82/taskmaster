@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 11:57:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 14:58:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,25 @@
 
 	#include <regex>															// std::regex_match()
 	#include <filesystem>														// std::filesystem::path()
+	#include <iostream>
 
 #pragma endregion
 
 #pragma region "Has Glob"
 
-	bool Utils::globbing_has_glob(const std::string& path) {
-		return (path.find_first_of("*?[") != std::string::npos);
+	bool Utils::globbing_has_glob(const std::string& pattern) {
+		char	quoteChar = 0;
+		bool	escaped = false;
+
+		for (char c : pattern) {
+			if (escaped)								{ escaped = false;	continue; }
+			if (c == '\\')								{ escaped = true;	continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	continue; }
+			if (!quoteChar && (c == '*' || c == '?' || c == '['))			return (true);
+		}
+
+		return (false);
 	}
 
 #pragma endregion
@@ -49,9 +61,11 @@
 		for (size_t i = 0; i < glob.size(); ++i) {
 			char c = glob[i];
 
+			if (c == '\\' && i + 1 < glob.size()) { regex += "\\"; regex += glob[++i];	continue; }
+
 			switch (c) {
-				case '*':	regex += ".*";				break;
-				case '?':	regex += ".";				break;
+				case '*':	regex += ".*";												break;
+				case '?':	regex += ".";												break;
 				case '[': {	regex += "["; ++i;
 					if (i < glob.size() && (glob[i] == '!' || glob[i] == '^')) { regex += "^"; ++i; }
 					while (i < glob.size() && glob[i] != ']') {
@@ -59,12 +73,12 @@
 						else regex += glob[i];
 						++i;
 					}
-					if (i < glob.size()) regex += "]";	break;
+					if (i < glob.size()) regex += "]";									break;
 				}
-				case '.': case '^': case '$': case '+': case '{': case '}': case '|': case '(': case ')': case '\\':
-					regex += "\\"; regex += c;			break;
+				case '.': case '^': case '$': case '+': case '{': case '}': case '|': case '(': case ')':
+					regex += "\\"; regex += c;											break;
 				default:
-					regex += c;							break;
+					regex += c;															break;
 			}
 		}
 
@@ -77,25 +91,45 @@
 
 	std::vector<std::string> Utils::globbing_expand_glob(const std::string& pattern) {
 		std::vector<std::string>	matches, parts;
-		std::filesystem::path		base, pathPattern(pattern);
-		std::string					glob_pattern;
+		std::filesystem::path		base, pathPattern;
+		std::string					glob_pattern, processed, original;
+		char						quoteChar = 0;
+		bool						escaped = false;
+		bool						hasGlobbing = false;
 
-		for (const auto& part : pathPattern) {
-			parts.push_back(part.string());
+		for (char c : pattern) {
+			if (escaped)								{ escaped = false;	processed += '\\';	processed += c;	original += c;	continue; }
+			if (c == '\\')								{ escaped = true;														continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;														continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;														continue; }
+
+			original += c;
+			
+			if (quoteChar && (c == '*' || c == '?' || c == '[')) {			processed += '\\';	processed += c; }
+			else {																				processed += c;
+				if (!quoteChar && (c == '*' || c == '?' || c == '['))		hasGlobbing = true;
+			}
 		}
+
+		if (escaped || !hasGlobbing) { matches.push_back(original); return (matches); }
+		pathPattern = std::filesystem::path(processed);
+
+		for (const auto& part : pathPattern)
+			parts.push_back(part.string());
 
 		size_t glob_idx = 0;
-		for (; glob_idx < parts.size(); ++glob_idx) {
-			if (globbing_has_glob(parts[glob_idx])) break;
-		}
+		for (; glob_idx < parts.size(); ++glob_idx)
+			if (parts[glob_idx].find_first_of("*?[") != std::string::npos) break;
 
-		for (size_t i = 0; i < glob_idx; ++i) base /= parts[i];
+		for (size_t i = 0; i < glob_idx; ++i)
+			base /= parts[i];
 
 		glob_pattern = std::filesystem::path("").string();
 		for (size_t i = glob_idx; i < parts.size(); ++i) {
 			if (i > glob_idx) glob_pattern += "/";
 			glob_pattern += parts[i];
 		}
+
 		if (base.empty()) base = ".";
 
 		try {
@@ -106,9 +140,9 @@
 				}
 			}
 			std::sort(matches.begin(), matches.end());
-		} catch (const std::filesystem::filesystem_error&) { matches.push_back(pattern); }
+		} catch (const std::filesystem::filesystem_error&) { matches.push_back(original); }
 
-		if (matches.empty()) matches.push_back(pattern);
+		if (matches.empty()) matches.push_back(original);
 
 		return (matches);
 	}

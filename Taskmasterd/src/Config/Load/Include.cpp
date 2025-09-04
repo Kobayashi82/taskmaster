@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:10:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/04 14:12:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
 	#include <filesystem>														// std::filesystem::path()
+	#include <iostream>
 
 #pragma endregion
 
@@ -57,35 +58,34 @@
 
 	#pragma region "Parse Files"
 
-		std::vector<std::string> ConfigParser::include_parse_files(const std::string& fileString, std::string& configFile) {
+		std::vector<std::string> ConfigParser::include_parse_files(const std::string& fileString, const std::string& configFile) {
 			std::vector<std::string>	files;
 			std::string					current;
 			char						quoteChar = 0;
-			bool						quotedToken = false;
 			bool						escaped = false;
+			bool						quotedToken = false;
 
 			auto pushToken = [&](bool wasQuoted) {
 				if (!current.empty()) {
 					std::string token = wasQuoted ? current : Utils::trim(current);
-					if (!token.empty()) files.push_back(token);
+					if (!token.empty()) {
+						token = Utils::expand_path(token, std::filesystem::path(configFile).parent_path());
+						if (!token.empty()) files.push_back(token);
+					}
 					current.clear();
 				}
 			};
 
 			for (char c : fileString) {
-				if (escaped)									{ escaped = false;			current.push_back(c);		continue; }
-				if (c == '\\')									{ escaped = true;										continue; }
-				if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;			quotedToken = true; 		continue; }
-				if (quoteChar && c == quoteChar)				{ quoteChar = 0;										continue; }
-				if (!quoteChar && c == '\n')					{ pushToken(quotedToken);	quotedToken = false;		continue; }
-				current.push_back(c);
+				if (escaped)									{ escaped = false;			current += c;							continue; }
+				if (c == '\\')									{ escaped = true;			current += c;							continue; }
+				if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;			current += c;	quotedToken = true; 	continue; }
+				if (quoteChar && c == quoteChar)				{ quoteChar = 0;			current += c;							continue; }
+				if (!quoteChar && c == '\n')					{ pushToken(quotedToken);					quotedToken = false;	continue; }
+
+				current += c;
 			}
 			pushToken(quotedToken);
-
-			for (auto& file : files) {
-				std::string fullpath = Utils::expand_path(file, std::filesystem::path(configFile).parent_path());
-				if (!fullpath.empty()) file = fullpath;
-			}
 
 			return (Utils::globbing_expand(files));
 		}
