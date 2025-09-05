@@ -2,18 +2,13 @@
 
 ## Program
 
-- Variable de Grupos
-- Validar serverurl (obtener de unix o inet)
+- Variable de configuración de Grupos
 - Globbing en comando
-
-# Group
-
-- Validaciones de grupos
-- Warning: "Program 'myapp' has same name as group 'myapp'. Program will take precedence in ambiguous commands"
 
 # Servers
 
-- Validaciones de unix e inet
+- Unix: Separar chown_str en chown_user y chown_group
+- Inet: Separar url de puerto
 
 ## Logging
 

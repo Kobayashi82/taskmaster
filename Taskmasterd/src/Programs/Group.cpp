@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 19:01:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:47:50 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,8 @@
 				if (program_names.find(program.name) != program_names.end()) {
 					if (!program.disabled) {
 						for (auto& process : program.process) {
+							if (program.name == name) Utils::error_add(configFile, "[" + section + "] programs: Program '" + program.name + "' has same name as group '" + name + "'. Program will take precedence in ambiguous commands", WARNING, 0, order);
+
 							std::string current = Utils::environment_get(process.environment, "TASKMASTER_GROUP_NAME");
 							if (current.empty())	Utils::environment_add(process.environment, "TASKMASTER_GROUP_NAME", name);
 							else					Utils::environment_add(process.environment, "TASKMASTER_GROUP_NAME", current + ", " + name);

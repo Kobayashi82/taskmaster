@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 17:50:11 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:57:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,6 @@
 			entry->value = Config.defaultValues[section][key];
 		}
 
-		// USAR TaskMaster.unix_server y TaskMaster.inet_server
 		if (key == "serverurl") {
 			if (Utils::toUpper(entry->value) != "AUTO" && !Utils::valid_serverurl(entry->value)) {
 				Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid format", ERROR, entry->line, entry->order);
@@ -226,14 +225,8 @@
 			}
 			if (Utils::toUpper(entry->value) == "AUTO") {
 				std::string url;
-				if (Config.has_section("unix_http_server")) {
-					url = Config.get_value("unix_http_server", "file");
-					if (!url.empty()) url = "unix://" + url;
-				}
-				if (url.empty() && Config.has_section("inet_http_server")) {
-					url = Config.get_value("inet_http_server", "port");
-					if (!url.empty()) url = "http://" + url;
-				}
+				if (!TaskMaster.unix_server.disabled)					url = "unix://" + TaskMaster.unix_server.file;
+				if (url.empty() && !TaskMaster.inet_server.disabled)	url = "http://" + TaskMaster.inet_server.url;
 				entry->value = url;
 			}
 		}
@@ -381,8 +374,8 @@
 				proc.stderr_logfile_maxbytes	= Utils::parse_size(expand_vars(proc.environment, "stderr_logfile_maxbytes"));
 				proc.stderr_logfile_backups		= Utils::parse_number(expand_vars(proc.environment, "stderr_logfile_backups"), 0, 1000, 10);
 				proc.stderr_logfile_syslog		= Utils::parse_bool(expand_vars(proc.environment, "stderr_logfile_syslog"));
+				proc.serverurl					= expand_vars(proc.environment, "serverurl");
 
-				// validar serverurl (obtener de unix o inet clases)
 				Utils::environment_add(proc.environment, "TASKMASTER_PROCESS_NAME", proc.name);
 				if (!proc.serverurl.empty())	Utils::environment_add(proc.environment, "TASKMASTER_SERVER_URL", proc.serverurl);
 				else							Utils::environment_del(proc.environment, "TASKMASTER_SERVER_URL");

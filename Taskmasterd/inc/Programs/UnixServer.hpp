@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:41 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 19:41:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:42:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 		public:
 
 			// Constructors
-			UnixServer(const std::string _name);
+			UnixServer() = default;
 			UnixServer(const UnixServer&) = default;
 			UnixServer(UnixServer&&) = default;
 			~UnixServer() = default;
@@ -39,7 +39,7 @@
 
 			// Variables
 			std::string		section;
-			std::string		name;
+			std::string		file;
 			uint16_t		chmod;
 			std::string		chown_user;
 			std::string		chown_group;
@@ -47,11 +47,11 @@
 			std::string		password;
 			bool			disabled;
 
+			void		initialize();
 		private:
 
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
-			void		initialize();
 
 	};
 

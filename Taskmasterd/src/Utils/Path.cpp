@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 23:00:37 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 09:58:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 22:04:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@
 			}
 			if (!home) return ("");
 			std::string suffix = (path.length() > 1 && path[1] == '/') ? path.substr(2) : path.substr(1);
-    		p = std::filesystem::path(home) / suffix;
+			if (path.length() > 1 && path[1] == '/')	p = std::filesystem::path(home) / suffix;
+			else 										p = home + path.substr(1);
 		}
 		// is absolute
 		else if (std::filesystem::path(path).is_absolute()) p = path;

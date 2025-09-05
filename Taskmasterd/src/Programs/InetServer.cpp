@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 20:34:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:52:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@
 		uint16_t	order = 0;
 		disabled = false;
 
+		section = "inet_http_server";
 		if (!Config.has_section("inet_http_server")) { disabled = true; return; }
 
 		ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "username");
@@ -100,12 +101,11 @@
 			if (!entry->value.empty() && !Utils::valid_port(entry->value)) {
 				Utils::error_add(entry->filename, "[" + section + "] port: must be a valid TCP host:port", ERROR, entry->line, entry->order);
 				entry->value = ""; disabled = true;
-			}
-
-			if (entry->value.empty()) {
+			} else if (entry->value.empty()) {
 				Utils::error_add(entry->filename, "[" + section + "] port: empty value", ERROR, entry->line, entry->order);
 				disabled = true;
 			}
+			if (!disabled) url = entry->value;
 		} else {
 			if (!username.empty() && !password.empty())
 				Utils::error_add(configFile, "[" + section + "] port: required", ERROR, 0, order);

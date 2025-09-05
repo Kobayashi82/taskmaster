@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 20:34:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:41:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,6 @@
 	#include <filesystem>														// std::filesistem::path()
 	#include <sstream>															// std::stringstream
 	#include <iostream>
-
-#pragma endregion
-
-#pragma region "Constructors"
-
-	UnixServer::UnixServer(const std::string _section) : section(_section), name(_section.substr(6)) {
-		initialize();
-	}
 
 #pragma endregion
 
@@ -93,6 +85,7 @@
 		uint16_t	order = 0;
 		disabled = false;
 
+		section = "unix_http_server";
 		if (!Config.has_section("unix_http_server")) { disabled = true; return; }
 
 		ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "username");
@@ -145,6 +138,7 @@
 				Utils::error_add(entry->filename, "[" + section + "] file: empty value", ERROR, entry->line, entry->order);
 				disabled = true;
 			}
+			if (!disabled) file = entry->value;
 		} else {
 			if (!username.empty() && !password.empty())
 				Utils::error_add(configFile, "[" + section + "] file: required", ERROR, 0, order);

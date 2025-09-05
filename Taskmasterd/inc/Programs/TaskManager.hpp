@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 17:41:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:39:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 	#include "Config/Config.hpp"
 	#include "Programs/Program.hpp"
 	#include "Programs/Group.hpp"
+	#include "Programs/UnixServer.hpp"
+	#include "Programs/InetServer.hpp"
 
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <vector>															// std::vector
@@ -59,6 +61,8 @@
 
 			std::vector<Program>				programs;
 			std::vector<Group>					groups;
+			UnixServer							unix_server;
+			InetServer							inet_server;
 
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);

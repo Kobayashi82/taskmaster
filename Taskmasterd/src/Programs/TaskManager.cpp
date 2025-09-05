@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 10:33:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 21:41:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,6 +271,9 @@
 		else					Utils::environment_add(environment, "HOST_NAME", HOST_NAME);
 
 		expand_vars(environment, "environment");
+
+		unix_server.initialize();
+		inet_server.initialize();
 
 		for (auto& [program, keys] : Config.sections) {
 			if (program.substr(0, 8) == "program:") {
