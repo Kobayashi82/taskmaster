@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:24:48 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 17:50:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -352,7 +352,7 @@
 					disabled = true;
 				}
 
-				proc.priority					= Utils::parse_number(expand_vars(proc.environment, "stdout_logfile_backups"), 0, 999, 999);
+				proc.priority					= Utils::parse_number(expand_vars(proc.environment, "priority"), 0, 999, 999);
 				proc.autostart					= Utils::parse_bool(expand_vars(proc.environment, "autostart"));
 				proc.autorestart				= Utils::parse_bool(expand_vars(proc.environment, "autorestart"));
 				proc.startsecs					= Utils::parse_number(expand_vars(proc.environment, "startsecs"), 0, 3600, 1);

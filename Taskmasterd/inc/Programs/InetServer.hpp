@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Group.hpp                                          :+:      :+:    :+:   */
+/*   InetServer.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 19:32:14 by vzurera-         ###   ########.fr       */
+/*   Created: 2025/09/05 19:26:45 by vzurera-          #+#    #+#             */
+/*   Updated: 2025/09/05 20:06:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,29 +21,31 @@
 
 #pragma endregion
 
-#pragma region "Group"
+#pragma region "InetServer"
 
-	class Program;
-	class Group {
+	class InetServer {
 
 		public:
 
 			// Constructors
-			Group(const std::string _name);
-			Group(const Group&) = default;
-			Group(Group&&) = default;
-			~Group() = default;
+			InetServer(const std::string _name);
+			InetServer(const InetServer&) = default;
+			InetServer(InetServer&&) = default;
+			~InetServer() = default;
 
 			// Overloads
-			Group& operator=(const Group&) = default;
-			Group& operator=(Group&&) = default;
+			InetServer& operator=(const InetServer&) = default;
+			InetServer& operator=(InetServer&&) = default;
 
 			// Variables
-			std::string					section;
-			std::string					name;
-			uint16_t					priority;
-			bool						disabled;
-			std::vector<std::string>	programs;
+			std::string		section;
+			std::string		name;
+			uint16_t		chmod;
+			std::string		chown_user;
+			std::string		chown_group;
+			std::string		username;
+			std::string		password;
+			bool			disabled;
 
 		private:
 

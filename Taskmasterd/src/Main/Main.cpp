@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 17:14:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 20:36:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,17 @@
 
 		if ((result = Config.load(argc, argv))) return (result) - 1;
 
-		for (auto& program : TaskMaster.programs) {
-			for (auto& process : program.process) {
-				std::cerr << process.name << "-\n";
-			}
-		}
+		// for (auto& program : TaskMaster.programs) {
+		// 	for (auto& process : program.process) {
+		// 		std::cerr << process.name << "-\n";
+		// 	}
+		// }
 
 		Log.close();
 		char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
 		char **args = Utils::toArray(TaskMaster.programs[2].process[0].arguments);
+
+		// Utils::environment_print(TaskMaster.programs[2].process[0].environment);
 
 		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);

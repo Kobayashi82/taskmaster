@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:21:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 18:20:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 		char		quoteChar = 0;
 		bool		escaped = false;
 
+		trim(str);
 		for (char c : str) {
 			if (escaped)								{ escaped = false;	result += c;	continue; }
 			if (!quoteChar && c == '\\')				{ escaped = true;					continue; }

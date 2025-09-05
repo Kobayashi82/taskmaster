@@ -394,10 +394,10 @@ El sistema de variables de Taskmaster permite una configuración dinámica y fle
 
 | Sintaxis                    | Descripción                                                                           |
 |-----------------------------|---------------------------------------------------------------------------------------|
-| **SUPERVISOR_ENABLED**      | Flag indicando que el proceso está bajo control de Taskmaster                         |
-| **SUPERVISOR_PROCESS_NAME** | Nombre del proceso especificado en el archivo de configuración                        |
-| **SUPERVISOR_GROUP_NAME**   | Nombre del grupo al que pertenece el proceso                                          |
-| **SUPERVISOR_SERVER_URL**   | URL del servidor interno                                                              |
+| **TASKMASTER_ENABLED**      | Flag indicando que el proceso está bajo control de Taskmaster                         |
+| **TASKMASTER_PROCESS_NAME** | Nombre del proceso especificado en el archivo de configuración                        |
+| **TASKMASTER_GROUP_NAME**   | Nombre del grupo al que pertenece el proceso                                          |
+| **TASKMASTER_SERVER_URL**   | URL del servidor interno                                                              |
 |
 
 #### Variables de Configuración

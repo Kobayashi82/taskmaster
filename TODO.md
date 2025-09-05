@@ -3,7 +3,7 @@
 ## Program
 
 - Variable de Grupos
-- Validar serverurl (obtener de unix o inet clases)
+- Validar serverurl (obtener de unix o inet)
 - Globbing en comando
 
 # Group
