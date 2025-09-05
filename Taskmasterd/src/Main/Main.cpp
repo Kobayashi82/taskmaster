@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 10:37:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:42:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 	#include <iostream>															// std::cerr()
 	#include <unistd.h>
 
+	#include <cstring>
+
 #pragma endregion
 
 #pragma region "Main"
@@ -32,14 +34,14 @@
 
 		for (auto& program : TaskMaster.programs) {
 			for (auto& process : program.process) {
-				std::cerr << process.name << "\n";
+				std::cerr << process.name << "-\n";
 			}
 		}
 
-		char **envp = Utils::toArray(TaskMaster.programs[0].process[0].environment);
-		char **args = Utils::toArray({"-a", "-l"});
-
 		Log.close();
+		char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
+		char **args = Utils::toArray(TaskMaster.programs[2].process[0].arguments);
+
 		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);
 		Utils::array_free(args);

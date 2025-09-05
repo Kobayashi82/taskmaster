@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 10:18:34 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:11:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@
 				char c = line[i];
 
 				if (escaped)								{ escaped = false;	result += c;	continue; }
-				if (c == '\\')								{ escaped = true;	result += c;	continue; }
+				if (!quoteChar && c == '\\')				{ escaped = true;	result += c;	continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	result += c;	continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;	result += c;	continue; }
 
@@ -243,7 +243,7 @@
 
 			for (char c : batch) {
 				if (escaped)								{ escaped = false;			current += c;		continue; }
-				if (c == '\\')								{ escaped = true;								continue; }
+				if (!quoteChar && c == '\\')				{ escaped = true;								continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;								continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;								continue; }
 				if (!quoteChar && c == '\n')				{ pairs.push_back(current);	current.clear();	continue; }

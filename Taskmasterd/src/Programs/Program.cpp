@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 10:33:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:24:48 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,6 @@
 		}
 
 		if (std::find(bool_values.begin(), bool_values.end(), key) != bool_values.end() && !Utils::valid_bool(entry->value)) {
-			std::cerr << key << " - " << entry->value << "\n";
 			Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be true or false", ERROR, entry->line, entry->order);
 			Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, 0, entry->order + 1);
 			entry->value = Config.defaultValues[section][key];
@@ -305,10 +304,10 @@
 		if (!configFile.empty()) Utils::environment_add(env, "HERE", std::filesystem::path(configFile).parent_path());
 
 		// Si pertenece a grupos, ponerlo aqui?
-		Utils::environment_add(env, "SUPERVISOR_ENABLED", "1");
-		Utils::environment_add(env, "SUPERVISOR_PROCESS_GROUP", "");
-		Utils::environment_del(env, "SUPERVISOR_PROCESS_NAME");
-		Utils::environment_del(env, "SUPERVISOR_SERVER_URL");
+		Utils::environment_add(env, "TASKMASTER_ENABLED", "1");
+		Utils::environment_add(env, "TASKMASTER_PROCESS_GROUP", "");
+		Utils::environment_del(env, "TASKMASTER_PROCESS_NAME");
+		Utils::environment_del(env, "TASKMASTER_SERVER_URL");
 
 		numprocs		= Utils::parse_number(expand_vars(env, "numprocs"), 0, 10000, 1);
 		numprocs_start	= Utils::parse_number(expand_vars(env, "numprocs_start"), 0, 65535, 0);
@@ -335,17 +334,19 @@
 
 				entry = Config.get_value_entry(section, "command");
 				if (entry) {
-					try { entry->value = Utils::environment_expand(Utils::environment, entry->value); }
+					try { entry->value = Utils::environment_expand(proc.environment, entry->value); }
 					catch (const std::exception& e) { Utils::error_add(entry->filename, "[" + section + "] command: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order); }
 					
+					std::string command;
 					if (entry->value.empty()) {
 						Utils::error_add(entry->filename, "[" + section + "] command: empty value", ERROR, entry->line, entry->order);
 						disabled = true;
-					} else if ((entry->value = Utils::parse_executable(entry->value)).empty()) {
+					} else if ((command = Utils::parse_executable(entry->value)).empty()) {
 						Utils::error_add(entry->filename, "[" + section + "] command: must be a valid executable", ERROR, entry->line, entry->order);
 						disabled = true;
 					}
-					proc.command = entry->value;
+					proc.command = command;
+					proc.arguments = entry->value;
 				} else {
 					Utils::error_add(configFile, "[" + section + "] command: required", ERROR, 0, order);
 					disabled = true;
@@ -382,9 +383,9 @@
 				proc.stderr_logfile_syslog		= Utils::parse_bool(expand_vars(proc.environment, "stderr_logfile_syslog"));
 
 				// validar serverurl (obtener de unix o inet clases)
-				Utils::environment_add(proc.environment, "SUPERVISOR_PROCESS_NAME", proc.name);
-				if (!proc.serverurl.empty())	Utils::environment_add(proc.environment, "SUPERVISOR_SERVER_URL", proc.serverurl);
-				else							Utils::environment_del(proc.environment, "SUPERVISOR_SERVER_URL");
+				Utils::environment_add(proc.environment, "TASKMASTER_PROCESS_NAME", proc.name);
+				if (!proc.serverurl.empty())	Utils::environment_add(proc.environment, "TASKMASTER_SERVER_URL", proc.serverurl);
+				else							Utils::environment_del(proc.environment, "TASKMASTER_SERVER_URL");
 
 				if (HERE.empty())				Utils::environment_del(proc.environment, "HERE");
 				else							Utils::environment_add(proc.environment, "HERE", HERE);

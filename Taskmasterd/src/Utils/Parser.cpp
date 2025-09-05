@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:36:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:21:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 	#include <unistd.h>															// getuid()
 	#include <sys/resource.h>													// getrlimit(), setrlimit()
 	#include <sstream>															// std::istringstream, std::getline()
+	#include <iostream>
 
 #pragma endregion
 
@@ -30,7 +31,7 @@
 
 		for (char c : str) {
 			if (escaped)								{ escaped = false;	result += c;	continue; }
-			if (c == '\\')								{ escaped = true;					continue; }
+			if (!quoteChar && c == '\\')				{ escaped = true;					continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
 
@@ -54,7 +55,7 @@
 			char c = line[i];
 
 			if (escaped)								{ escaped = false;	continue; }
-			if (c == '\\')								{ escaped = true;	continue; }
+			if (!quoteChar && c == '\\')				{ escaped = true;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	continue; }
 
@@ -202,14 +203,15 @@
 
 	std::string Utils::parse_executable(const std::string& value) {
 		if (value.empty()) return {};
+		std::string val = trim(value);
 
 		std::string	command;
 		char		quoteChar = 0;
 		bool		escaped = false;
 
-		for (char c : value) {
-			if (escaped)									{ command += c; escaped = false;	continue; }
-			if (c=='\\')									{ escaped = true;					continue; }
+		for (char c : val) {
+			if (escaped)									{ escaped = false;	command += c;	continue; }
+			if (!quoteChar && c=='\\')						{ escaped = true;					continue; }
 			if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;					continue; }
 			if (quoteChar && c == quoteChar)				{ quoteChar = 0;					continue; }
 			if (!quoteChar && isspace((unsigned char)c))										break;

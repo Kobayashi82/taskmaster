@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:34:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:09:51 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,9 @@
 	#pragma region "Parse Files"
 
 		std::vector<std::string> ConfigParser::include_parse_files(const std::string& fileString, const std::string& configFile) {
+			if (fileString.empty()) return {};
+			static std::string split = ", \f\v\t\r\n";
+
 			std::vector<std::string>	files;
 			std::string					current;
 			char						quoteChar = 0;
@@ -77,13 +80,11 @@
 			};
 
 			for (char c : fileString) {
-				if (escaped)									{ escaped = false;			current += c;							continue; }
-				if (c == '\\')									{ escaped = true;			current += c;							continue; }
-				if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;			current += c;	quotedToken = true; 	continue; }
-				if (quoteChar && c == quoteChar)				{ quoteChar = 0;			current += c;							continue; }
-				if (!quoteChar && std::string(", \f\v\t\r\n").find(c) != std::string::npos) {
-					pushToken(quotedToken); quotedToken = false; continue;
-				}
+				if (escaped)											{ escaped = false;			current += c;							continue; }
+				if (!quoteChar && c == '\\')							{ escaped = true;			current += c;							continue; }
+				if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c;			current += c;	quotedToken = true; 	continue; }
+				if (quoteChar && c == quoteChar)						{ quoteChar = 0;			current += c;							continue; }
+				if (!quoteChar && split.find(c) != std::string::npos)	{ pushToken(quotedToken);					quotedToken = false;	continue; }
 
 				current += c;
 			}

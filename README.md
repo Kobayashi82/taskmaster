@@ -354,32 +354,40 @@ El sistema de variables de Taskmaster permite una configuración dinámica y fle
 
 | Sintaxis                    | Descripción                                                     | Ejemplo             |
 |-----------------------------|-----------------------------------------------------------------|---------------------|
-| **${VAR:-default}**         | Si `VAR` está vacía o no existe, usa `default`                  | ${PORT:-8080}       |
-| **${VAR:+value}**           | Si `VAR` tiene valor, devuelve `value`, sino devuelve vacío     | ${DEBUG:+--verbose} |
+| **${VAR-default}**          | Si `VAR` no está definida, devuelve `default`                   | ${PORT-8080}        |
+| **${VAR:-default}**         | Si `VAR` no está definida o está vacía, devuelve `default`      | ${PORT:-8080}       |
+| **${VAR+default}**          | Si `VAR` está definida, devuelve `default`                      | ${DEBUG:+--verbose} |
+| **${VAR:+default}**         | Si `VAR` está definida y no está vacía, devuelve `default`      | ${DEBUG:+--verbose} |
 |
 
 #### Manipulación de Cadenas
 
 | Sintaxis                    | Descripción                                                     | Ejemplo             |
 |-----------------------------|-----------------------------------------------------------------|---------------------|
-| **${VAR:2}**                | Desde posición 2 hasta el final                                 | ${PATH:2}           |
-| **${VAR:2:3}**              | Desde posición 2, toma 3 caracteres                             | ${USER:0:3}         |
-| **${VAR: -2}**              | Últimos 2 caracteres (espacio antes del `-`)                    | ${HOST: -2}         |
-| **${VAR:\*upper}**          | Convertir a mayúsculas                                          | ${USER:*upper}      |
-| **${VAR:\*lower}**          | Convertir a minúsculas                                          | ${USER:*lower}      |
+| **${VAR:offset}**           | Desde posición `offset` hasta el final                          | ${HOST:2}           |
+| **${VAR:offset:len}**       | Desde posición `offset`, toma `len` caracteres                  | ${HOST:0:3}         |
+| **${VAR: -offset}**         | Desde `offset` caracteres desde el final hasta el final         | ${HOST: -2}         |
+| **${VAR: -offset:len}**     | Desde `offset` caracteres desde el final, toma `len` caracteres | ${HOST: -2:3}       |
+| **${VAR:^}**                | Convertir primera letra a mayúsculas                            | ${USER:^}           |
+| **${VAR:^^}**               | Convertir todo a mayúsculas                                     | ${USER:^^}          |
+| **${VAR:,}**                | Convertir primera letra a minúsculas                            | ${USER:,}           |
+| **${VAR:,,}**               | Convertir todo a minúsculas                                     | ${USER:,,}          |
+| **${VAR:~}**                | Invertir `case` de la primera letra                             | ${USER:~}           |
+| **${VAR:~~}**               | Invertir `case` de toda la cadena                               | ${USER:~~}          |
 |
 
 #### Formateo Numérico
 
 | Sintaxis                    | Descripción                                                     | Ejemplo             |
 |-----------------------------|-----------------------------------------------------------------|---------------------|
-| **${VAR:\*d}**              | Entero decimal con signo                                        | ${PROCESS_NUM:*d}   |
-| **${VAR:\*02d}**            | Entero con ceros a la izquierda                                 | ${PROCESS_NUM:*02d} |
-| **${VAR:\*x}**              | Hexadecimal minúsculas                                          | ${PORT:*x}          |
-| **${VAR:\*X}**              | Hexadecimal mayúsculas                                          | ${PORT:*X}          |
-| **${VAR:\*#x}**             | Hexadecimal minúsculas (precedido de 0x)                        | ${PORT:*#x}         |
-| **${VAR:\*#X}**             | Hexadecimal mayúsculas (precedido de 0X)                        | ${PORT:*#X}         |
-| **${VAR:\*o}**              | Octal                                                           | ${UMASK:*o}         |    
+| **${#VAR}**                 | Longitud de la variable                                         | ${#PROCESS_NUM}     |
+| **${VAR:d}**                | Entero decimal con signo                                        | ${PROCESS_NUM:*d}   |
+| **${VAR:02d}**              | Entero con ceros a la izquierda                                 | ${PROCESS_NUM:*02d} |
+| **${VAR:x}**                | Hexadecimal minúsculas                                          | ${PORT:*x}          |
+| **${VAR:X}**                | Hexadecimal mayúsculas                                          | ${PORT:*X}          |
+| **${VAR:#x}**               | Hexadecimal minúsculas (precedido de 0x)                        | ${PORT:*#x}         |
+| **${VAR:#X}**               | Hexadecimal mayúsculas (precedido de 0X)                        | ${PORT:*#X}         |
+| **${VAR:o}**                | Octal                                                           | ${UMASK:*o}         |    
 |
 
 #### Variables de Taskmaster

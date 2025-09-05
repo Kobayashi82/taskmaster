@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 21:20:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:14:14 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@
 			// Variables
 			std::string							name;
 			std::string							command;
+			std::string							arguments;
 			std::string							directory;
 			std::string							user;
 			uint16_t 							umask;

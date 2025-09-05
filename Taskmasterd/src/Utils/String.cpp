@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:50:20 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:36:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 13:42:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,21 @@
 		const auto first = str.find_first_not_of(" \f\v\t\r\n");
 		if (first == std::string::npos) return {};
 
-		const auto last = str.find_last_not_of(" \f\v\t\r\n");
+		bool escaped = false;
+		char quoteChar = 0;
+		size_t last = first;
+
+		for (size_t i = 0; i < str.length(); ++i) {
+			char c = str[i];
+
+			if (escaped)								{ escaped = false;	last = i;	continue; }
+			if (!quoteChar && c == '\\')				{ escaped = true;	last = i;	continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	last = i;	continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	last = i;	continue; }
+			if (!std::isspace(c))						{ last = i; }
+		}
+
+		if (last < first) last = first;
 		return (str.substr(first, (last - first) + 1));
 	}
 
@@ -37,8 +51,21 @@
 	}
 
 	std::string Utils::rtrim(const std::string& str) {
-		const auto last = str.find_last_not_of(" \f\v\t\r\n");
-		if (last == std::string::npos) return {};
+		if (str.find_last_not_of(" \f\v\t\r\n") == std::string::npos) return {};
+
+		bool escaped = false;
+		char quoteChar = 0;
+		size_t last = 0;
+
+		for (size_t i = 0; i < str.length(); ++i) {
+			char c = str[i];
+
+			if (escaped)								{ escaped = false;	last = i;	continue; }
+			if (!quoteChar && c == '\\')				{ escaped = true;	last = i;	continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	last = i;	continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	last = i;	continue; }
+			if (!std::isspace(c))						{ last = i; }
+		}
 
 		return (str.substr(0, last + 1));
 	}
