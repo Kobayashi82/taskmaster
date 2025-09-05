@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:27:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 17:13:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,14 @@
 #pragma region "Parse"
 
 	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename) {
+		std::string check_inv_chars = line;
+		size_t open_sec = check_inv_chars.find_first_of("[");
+		size_t equal_char = check_inv_chars.find_first_of("=");
+		if (open_sec < equal_char) {
+			Utils::error_add(filename, line + " invalid section", WARNING, line_number, order);
+			currentSection = ""; return (2);
+		}
+
 		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order); return (1); }
 
 		size_t pos = line.find('=');

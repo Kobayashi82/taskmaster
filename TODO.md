@@ -1,9 +1,5 @@
 # TODO
 
-# Config
-
-- [program:*] and [group:*] sections must be unique and not contain colons or brackets
-
 ## Program
 
 - Variable de Grupos

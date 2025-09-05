@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:09:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 17:14:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@
 					}
 					invalidSection = section_parse(line, lineNumber, configFile);
 				}
-				else if (!invalidSection) key_parse(line, lineNumber, configFile);
+				else if (!invalidSection) invalidSection = key_parse(line, lineNumber, configFile) == 2;
 			}
 
 			return (0);
