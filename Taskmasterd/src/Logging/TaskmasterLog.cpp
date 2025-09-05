@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:45:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 10:37:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,14 @@
 
 #pragma endregion
 
+#pragma region "Constructors"
+
+	TaskmasterLog::~TaskmasterLog() {
+		if (_logfile_stream.is_open()) _logfile_stream.close();
+	}
+
+#pragma endregion
+
 #pragma region "Open"
 
 	int TaskmasterLog::open() {
@@ -42,6 +50,14 @@
 		
 		_logfile_stream << std::unitbuf;
 		return (0);
+	}
+
+#pragma endregion
+
+#pragma region "Close"
+
+	void TaskmasterLog::close() {
+		if (_logfile_stream.is_open()) _logfile_stream.close();
 	}
 
 #pragma endregion

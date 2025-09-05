@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 23:42:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 10:33:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,6 +284,7 @@
 	void Program::initialize() {
 		std::string configFile;
 		uint16_t	order = 0;
+		disabled = false;
 
 		ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "directory");
 		if (!entry)	  configFile = Utils::expand_path(".", "", true, false);

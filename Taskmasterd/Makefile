@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/04 16:37:55 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/05 10:31:52 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,7 +44,7 @@ NAME		= taskmaster
 # ─────────── #
 
 CC			= clang++
-CFLAGS		= -Wall -Wextra -Werror -std=c++17
+CFLAGS		= -Wall -Wextra -Werror -std=c++17 -g
 CEFLAGS		= -lm -lcrypt
 
 # ───────────────── #
@@ -78,7 +78,8 @@ SRCS		= Main/Main.cpp Main/Signals.cpp					\
 																\
 			  Utils/String.cpp Utils/Path.cpp Utils/Parser.cpp	\
 			  Utils/Globbing.cpp Utils/Environment.cpp			\
-			  Utils/Validators.cpp Utils/Error.cpp
+			  Utils/Validators.cpp Utils/Error.cpp				\
+			  Utils/Array.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

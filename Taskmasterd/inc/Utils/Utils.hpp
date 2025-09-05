@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 17:02:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/05 10:25:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,12 @@
 			static int			parse_bool(const std::string &value, bool unexpected = false);
 			static uint8_t		parse_loglevel(const std::string &value);
 			static std::string 	parse_executable(const std::string& value);
+
+			// Array
+			static char**		toArray(const std::initializer_list<std::string>& src);
+			static char**		toArray(const std::map<std::string, std::string>& src);
+			static char**		toArray(const std::vector<std::string>& src);
+			static void			array_free(char **array);
 
 			// Validation
 			static bool			valid_bool(const std::string& value);
