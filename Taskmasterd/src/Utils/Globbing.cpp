@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:51:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:03:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 
 	#include "Utils/Utils.hpp"
 
+	#include <unistd.h>															// getuid()
 	#include <regex>															// std::regex_match()
 	#include <filesystem>														// std::filesystem::path()
+	#include <pwd.h>															// struct passwd, getpwuid()
+
 	#include <iostream>
+	#include <cstdlib>															// std::getenv()
 
 #pragma endregion
 
@@ -87,17 +91,45 @@
 
 #pragma endregion
 
+#pragma region "Expand Tilde"
+
+	std::string Utils::globbing_expand_tilde(const std::string& path) {
+		if (path.empty() || path[0] != '~') return (path);
+
+		std::filesystem::path p;
+
+		if (path[0] == '~') {
+			const char *home = std::getenv("HOME");
+			if (!home) {
+				struct passwd *pw = getpwuid(getuid());
+				if (pw) home = pw->pw_dir;
+			}
+			if (!home) return ("");
+			std::string suffix = (path.length() > 1 && path[1] == '/') ? path.substr(2) : path.substr(1);
+			if (path.length() > 1 && path[1] == '/')	p = std::filesystem::path(home) / suffix;
+			else 										p = home + path.substr(1);
+
+			return (p);
+		}
+
+		return (path);
+	}
+
+#pragma endregion
+
 #pragma region "Expand Glob"
 
 	std::vector<std::string> Utils::globbing_expand_glob(const std::string& pattern) {
 		std::vector<std::string>	matches, parts;
 		std::filesystem::path		base, pathPattern;
-		std::string					glob_pattern, processed, original;
+		std::string					glob_pattern, processed, original, expanded_pattern;
 		char						quoteChar = 0;
 		bool						escaped = false;
 		bool						hasGlobbing = false;
 
-		for (char c : pattern) {
+		expanded_pattern = globbing_expand_tilde(pattern);
+
+		for (char c : expanded_pattern) {
 			if (escaped)								{ escaped = false;	processed += '\\';	processed += c;	original += c;	continue; }
 			if (!quoteChar && c == '\\')				{ escaped = true;														continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;														continue; }
@@ -170,7 +202,8 @@
 			if (globbing_has_glob(pattern)) {
 				auto matches = globbing_expand_glob(pattern);
 				result.insert(result.end(), matches.begin(), matches.end());
-			} else result.push_back(pattern);
+			} else
+				result.push_back(globbing_expand_tilde(pattern));
 		}
 
 		return (result);

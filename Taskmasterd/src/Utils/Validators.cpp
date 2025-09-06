@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:46:53 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 21:12:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include <unistd.h>															// access()
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::is_directory(), std::filesystem::exists()
-	#include <pwd.h>															// struct passwd, getpwnam()
+	#include <pwd.h>															// struct passwd, getpwuid(), getpwnam()
 	#include <grp.h>															// struct group, getgrnam()
 	#include <regex>															// std::regex_match()
 	#include <climits>															// INT_MAX
@@ -174,41 +174,47 @@
 #pragma region "Chown"
 
 	bool Utils::valid_chown(const std::string& value) {
-		if (value.empty()) return (false);
+		if (value.empty())								return (false);
+		if (toLower(value) == "do not switch")			return (true);
 
 		size_t colon_pos = value.find(':');
-
-		if (colon_pos == std::string::npos) {
-			if (toLower(value) == "do not switch")					return (false);
-			if (!valid_user(value))									return (false);
-
-			return (true);
-		}
+		if (colon_pos == std::string::npos)				return valid_user(value);
 
 		std::string username = value.substr(0, colon_pos);
-		std::string group    = value.substr(colon_pos + 1);
+		std::string group = value.substr(colon_pos + 1);
+		if (username.empty() || group.empty())			return (false);
 
-		if (toLower(value) == "do not switch")						return (false);
-		if (username.empty() || !valid_user(username))				return (false);
-		if (group.empty())											return (false);
+		if (!valid_user(username))						return (false);
 
-		struct passwd *pw = nullptr;
-		char *endptr = nullptr; errno = 0;
+		// Obtener información del usuario
+		struct passwd *pw = nullptr; char *endptr = nullptr; errno = 0;
 		long uid = std::strtol(username.c_str(), &endptr, 10);
-		if (!*endptr && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
-		else														pw = getpwnam(username.c_str());
-		if (!pw)													return false;
+		if (*endptr == '\0' && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
+		else																pw = getpwnam(username.c_str());
+		if (!pw)										return (false);
 
-		struct group *gr = nullptr;
-		endptr = nullptr; errno = 0;
+		struct group *gr = nullptr; endptr = nullptr; errno = 0;
 		long gid = std::strtol(group.c_str(), &endptr, 10);
-		if (!*endptr && errno == 0 && gid >= 0 && gid <= INT_MAX)	gr = getgrgid(static_cast<gid_t>(gid));
-		else														gr = getgrnam(group.c_str());
-		if (!gr)													return (false);
+		if (*endptr == '\0' && errno == 0 && gid >= 0 && gid <= INT_MAX)	gr = getgrgid(static_cast<gid_t>(gid));
+		else																gr = getgrnam(group.c_str());
+		if (!gr)										return (false);
 
-		if (pw->pw_gid == gr->gr_gid)								return (true);
+		if (pw->pw_gid == gr->gr_gid)					return (true);
+
 		for (char **member = gr->gr_mem; *member != nullptr; ++member) {
-			if (username == *member) return (true);
+			if (std::string(*member) == pw->pw_name)	return (true);
+		}
+
+		int ngroups = 0;
+		getgrouplist(pw->pw_name, pw->pw_gid, nullptr, &ngroups);
+		if (ngroups > 0) {
+			gid_t *groups = new gid_t[ngroups];
+			if (getgrouplist(pw->pw_name, pw->pw_gid, groups, &ngroups) != -1) {
+				for (int i = 0; i < ngroups; i++) {
+					if (groups[i] == gr->gr_gid) { delete[] groups; return (true); }
+				}
+			}
+			delete[] groups;
 		}
 
 		return (false);

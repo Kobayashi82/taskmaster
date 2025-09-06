@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:05:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 20:03:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,10 @@
 			"unix_http_server",
 			"inet_http_server",
 			"include",
-			"taskmasterctl"
+			"taskmasterctl",
+			"fcgi-program:",
+			"eventlistener:",
+			"rpcinterface:"
 		};
 
 		validKeys = {
@@ -96,7 +99,11 @@
 				"stderr_logfile_backups",
 				"stderr_logfile_syslog",
 				"serverurl",
-				"environment"
+				"environment",
+				"stdout_events_enabled",
+				"stdout_capture_maxbytes",
+				"stderr_events_enabled",
+				"stderr_capture_maxbytes"
 			}},
 
 			{"group:", {
@@ -184,7 +191,7 @@
 				{"stderr_logfile_backups", "10"},
 				{"stderr_logfile_syslog", "false"},
 				{"serverurl", "AUTO"},
-				{"environment", ""},
+				{"environment", ""}
 			}},
 
 			{"group:", {

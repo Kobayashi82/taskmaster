@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 17:13:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 20:01:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,17 +71,22 @@
 			currentSection = ""; return (2);
 		}
 
-		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order); return (1); }
+		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order);					return (1); }
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order); return (1); }
+		if (pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order);		return (1); }
 
 		std::string key   = Utils::trim(Utils::toLower(line.substr(0, pos)));
 		std::string value = Utils::trim(line.substr(pos + 1));
 
-		if (key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order); return (1); }
-		if (!key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order); return (1); }
-		if (value.empty())						{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order); return (1); }
+		if (key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order);						return (1); }
+		if (!key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order);		return (1); }
+		if (value.empty())						{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
+
+		if (key == "stdout_events_enabled")		{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stdout_capture_maxbytes")	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stderr_events_enabled")		{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stderr_capture_maxbytes")	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 
 		ConfigEntry entry;
 		if (currentSection == "include" && key == "files") {

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 23:00:37 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 22:04:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 18:57:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include <unistd.h>															// getuid()
 	#include <filesystem>														// std::filesystem::path(), std::filesystem::parent_path(), std::filesystem::current_path(), std::filesystem::temp_directory_path(), std::filesystem::weakly_canonical(), std::filesystem::exists()
-	#include <pwd.h>															// struct passwd, getpwnam()
+	#include <pwd.h>															// struct passwd, getpwnam(), getpwuid()
 
 #pragma endregion
 

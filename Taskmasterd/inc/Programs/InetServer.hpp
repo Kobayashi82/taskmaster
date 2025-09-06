@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 10:48:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:54:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@
 			InetServer() = default;
 			InetServer(const InetServer&) = default;
 			InetServer(InetServer&&) = default;
-			~InetServer() = default;
+			~InetServer();
 
 			// Overloads
 			InetServer& operator=(const InetServer&) = default;
@@ -40,6 +40,9 @@
 			// Variables
 			std::string		section;
 			std::string		url;
+			std::string		host;
+			std::string		hostname;
+			uint16_t		port;
 			std::string		username;
 			std::string		password;
 			bool			disabled;
@@ -47,10 +50,11 @@
 
 			void	initialize();
 			int		start();
-			int		close();
+			void	close();
 
 		private:
 
+			std::string	resolve_host(const std::string& host);
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
 

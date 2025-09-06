@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 16:57:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:59:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,9 @@
 		if (section == "program:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);	return (1); }
 		if (section == "group:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);	return (1); }
 		if (section == "taskmasterctl") 										{ currentSection = "";																										return (1); }
+		if (section.substr(0, 13) == "fcgi-program:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
+		if (section.substr(0, 14) == "eventlistener:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
+		if (section.substr(0, 13) == "rpcinterface:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
 
 		std::string check_inv_chars = section;
 		if (section.substr(0, 8) == "program:") check_inv_chars = section.substr(8);

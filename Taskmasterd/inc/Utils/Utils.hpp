@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:33:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 18:55:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@
 			static bool							globbing_has_glob(const std::string& path);
 			static bool							globbing_match_glob(const std::string& pattern, const std::string& text);
 			static std::string					globbing_glob_to_regex(const std::string& glob);
+			static std::string					globbing_expand_tilde(const std::string& path);
 			static std::vector<std::string>		globbing_expand_glob(const std::string& pattern);
 			static std::vector<std::string>		globbing_expand(const std::vector<std::string>& patterns);
 

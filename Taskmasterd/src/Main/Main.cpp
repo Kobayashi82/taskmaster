@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:43:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 20:48:14 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,7 @@
 	#include "Logging/TaskmasterLog.hpp"
 
 	#include <iostream>															// std::cerr()
-	#include <unistd.h>
-
-	#include <cstring>
+	#include <unistd.h>															// execvpe()
 
 #pragma endregion
 
@@ -45,7 +43,8 @@
 		// Utils::environment_print(TaskMaster.programs[2].process[0].environment);
 
 		TaskMaster.unix_server.close();
-		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
+		TaskMaster.inet_server.close();
+		// execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);
 		Utils::array_free(args);
 

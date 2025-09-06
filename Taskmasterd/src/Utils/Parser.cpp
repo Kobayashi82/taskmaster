@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:33:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:05:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@
 #pragma region "Comments"
 
 	std::string Utils::remove_comments(const std::string& line) {
-		char	quoteChar = 0, lastChar;
+		char	quoteChar = 0, lastChar = 0;
 		bool	escaped = false;
 
 		for (size_t i = 0; i < line.length(); ++i) {
@@ -219,9 +219,9 @@
 
 		for (char c : value) {
 			if (escaped)											{ escaped = false;	current += c;	continue; }
-			if (!quoteChar && c == '\\')							{ escaped = true;					continue; }
-			if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c; 					continue; }
-			if (quoteChar && c == quoteChar)						{ quoteChar = 0;					continue; }
+			if (!quoteChar && c == '\\')							{ escaped = true;	current += c;	continue; }
+			if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c; 	current += c;	continue; }
+			if (quoteChar && c == quoteChar)						{ quoteChar = 0;	current += c;	continue; }
 			if (!quoteChar && split.find(c) != std::string::npos)	{ pushToken();						continue; }
 
 			current += c;

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:42:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:09:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -366,13 +366,6 @@
 				proc.directory	= expand_vars(proc.environment, "directory");
 				proc.name		= expand_vars(proc.environment, "process_name");
 
-				// Expandir variables
-				// Dividir en vector
-				// Por cada item hacer globbing
-				// Sustituir item por vector devuelto por globbing
-				// Command = vector[0]
-				// Args es el vector directamente
-
 				entry = Config.get_value_entry(section, "command");
 				if (entry) {
 					try { entry->value = Utils::environment_expand(proc.environment, entry->value); }
@@ -382,6 +375,7 @@
 
 					if (proc.arguments.empty() || proc.arguments[0].empty()) {
 						Utils::error_add(entry->filename, "[" + section + "] command: empty value", ERROR, entry->line, entry->order);
+						Utils::error_add(entry->filename, "[" + section + "] command: required", ERROR, 0, entry->order);
 						disabled = true;
 					} else if ((proc.command = Utils::parse_executable(proc.arguments[0])).empty()) {
 						Utils::error_add(entry->filename, "[" + section + "] command: must be a valid executable", ERROR, entry->line, entry->order);

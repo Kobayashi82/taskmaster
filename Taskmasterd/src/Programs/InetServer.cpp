@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 11:08:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 19:54:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,12 +16,25 @@
 	#include "Config/Config.hpp"
 	#include "Programs/TaskManager.hpp"
 	#include "Programs/InetServer.hpp"
+	#include "Logging/TaskmasterLog.hpp"
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname(), close()
 	#include <filesystem>														// std::filesistem::path()
+	#include <sys/socket.h>														// socket()
+	#include <netinet/in.h>														// struct sockaddr_in
+	#include <netdb.h>															// getaddrinfo(), freeaddrinfo()
+	#include <arpa/inet.h>														// inet_pton(), inet_ntoa()
 	#include <sstream>															// std::stringstream
 	#include <iostream>
+
+#pragma endregion
+
+#pragma region "Constructors"
+
+	InetServer::~InetServer() {
+		close();
+	}
 
 #pragma endregion
 
@@ -78,6 +91,7 @@
 			uint16_t	order = 0;
 			disabled = false;
 			sockfd = 0;
+			port = 9001;
 
 			section = "inet_http_server";
 			if (!Config.has_section("inet_http_server")) { disabled = true; return; }
@@ -110,7 +124,14 @@
 					Utils::error_add(entry->filename, "[" + section + "] port: empty value", ERROR, entry->line, entry->order);
 					disabled = true;
 				}
-				if (!disabled) url = entry->value;
+				if (!disabled) {
+					url = entry->value;
+					size_t pos = url.find_first_of(":");
+					if (pos != std::string::npos) {
+						host = url.substr(0, pos);
+						port = Utils::parse_number(url.substr(pos + 1), 1, 65535, 9001);
+					}
+				}
 			} else {
 				if (!username.empty() && !password.empty())
 					Utils::error_add(configFile, "[" + section + "] port: required", ERROR, 0, order);
@@ -122,9 +143,73 @@
 
 #pragma endregion
 
+#pragma region "Resolve Host"
+
+	std::string InetServer::resolve_host(const std::string& host) {
+		if (host.empty() || host == "*") return ("0.0.0.0");
+
+		struct sockaddr_in sa;
+		if (inet_pton(AF_INET, host.c_str(), &(sa.sin_addr)) == 1) return (host);
+
+		hostname = host;
+		struct addrinfo hints, *result;
+		std::memset(&hints, 0, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+
+		int status = getaddrinfo(host.c_str(), nullptr, &hints, &result);
+		if (status) {
+			Log.error("Inet Server: Failed to resolve hostname '" + host + "': " + std::string(gai_strerror(status)));
+			return ("");
+		}
+
+		struct sockaddr_in* addr_in = (struct sockaddr_in *)result->ai_addr;
+		std::string ip = inet_ntoa(addr_in->sin_addr);
+
+		freeaddrinfo(result);
+
+		return (ip);
+	}
+
+#pragma endregion
+
 #pragma region "Start"
 
 	int InetServer::start() {
+		std::string ip = resolve_host(host);
+		if (ip.empty()) { disabled = true; return (1); }
+
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (sockfd == -1) {
+			Log.error("Inet Server: failed to create socket - " + std::string(strerror(errno)));
+			disabled = true; return (1);
+		}
+		Log.debug("Inet Server: socket created successfully");
+
+		sockaddr_in addr;
+		std::memset(&addr, 0, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(port);
+		if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) != 1) {
+			Log.error("Inet Server: invalid IP address format: " + ip);
+			::close(sockfd); disabled = true; return (1);
+		}
+
+		int opt = 1;
+		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) Log.warning("Inet Server: failed to set SO_REUSEADDR");
+
+		if (bind(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1) {
+			Log.error("Inet Server: failed to bind socket - " + std::string(strerror(errno)));
+			::close(sockfd); disabled = true; return (1);
+		}
+		Log.debug("Inet Server: socket bound to " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
+
+		if (listen(sockfd, 50) == -1) {
+			Log.error("Inet Server: failed to listen on socket - " + std::string(strerror(errno)));
+			::close(sockfd); disabled = true; return (1);
+		}
+		Log.info("Inet Server: started successfully on " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
+
 		return (0);
 	}
 
@@ -132,8 +217,10 @@
 
 #pragma region "Close"
 
-	int InetServer::close() {
-		return (0);
+	void InetServer::close() {
+		if (sockfd == -1) return ;
+		::close(sockfd); sockfd = -1;
+		Log.debug("Inet Server: socket closed successfully");
 	}
 
 #pragma endregion
