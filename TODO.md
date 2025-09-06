@@ -2,15 +2,12 @@
 
 # Configuración
 
-- Reload
-
 - Reload config solo busca program: , group: e include. Resto ignorar o mensaje de unknown section.
 - Luego si hay un programa con el mismo nombre y hay cambios, detiene y cambia. Si no está en los programas nuevos, lo detiene y elimina y si no ha cambiado, lo deja.
 - Con los grupos simplemente borra los que no esten y añade/modifica los que si
 
 - Soportar multi-line en environment si estan indentadas y opcionalmente terminar en ,
 - Revisar environment_validate()
-- Validar opciones
 
 ## Logging
 

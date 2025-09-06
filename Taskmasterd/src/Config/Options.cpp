@@ -6,25 +6,102 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:37:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:12:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Options.hpp"
 	#include "Config/Config.hpp"
 
+	#include <cstring>															// strerror()
 	#include <iostream>															// std::cerr()
 	#include <getopt.h>															// getopt_long()
 
 #pragma endregion
 
+#pragma region "Validate"
+
+	int ConfigOptions::validate_options() const {
+		static std::string	dir;
+		std::string			errors;
+
+		if (options.find_first_of('d') != std::string::npos) {
+			if (!Utils::valid_path(directory, dir, true))
+				errors += "directory:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+			dir = Utils::expand_path(directory, "", true, false);
+		}
+
+		if (options.find_first_of('c') != std::string::npos) {
+			if (!Utils::valid_path(configuration, dir) || Utils::expand_path(configuration, dir, true, false).empty())
+				errors += "configuration:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+		}
+
+		if (options.find_first_of('u') != std::string::npos) {
+			if (!Utils::valid_user(user))
+				errors += "user:\t\t\tinvalid user\n";
+		}
+
+		if (options.find_first_of('m') != std::string::npos) {
+			if (!Utils::valid_umask(umask))
+				errors += "umask:\t\t\tmust be in octal format\n";
+		}
+
+		if (options.find_first_of('l') != std::string::npos) {
+			if (!Utils::valid_path(logfile, dir, false, false, true) || Utils::expand_path(logfile, dir).empty())
+				errors += "logfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+		}
+
+		if (options.find_first_of('y') != std::string::npos) {
+			long bytes = Utils::parse_size(logfile_maxbytes);
+			if (bytes == -1 || !Utils::valid_number(std::to_string(bytes), 0, 1024 * 1024 * 1024))
+				errors += "logfile_maxbytes:\tmust be a value between 0 bytes and 1024 MB\n";
+		}
+
+		if (options.find_first_of('z') != std::string::npos) {
+			if (!Utils::valid_number(logfile_backups, 0, 1000))
+				errors += "logfile_backups:\tmust be a value between 0 and 1000\n";
+		}
+
+		if (options.find_first_of('e') != std::string::npos) {
+			if (!Utils::valid_loglevel(loglevel))
+				errors += "loglevel:\t\tmust be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL\n";
+		}
+
+		if (options.find_first_of('j') != std::string::npos) {
+			if (!Utils::valid_path(pidfile, dir, false, false, true) || Utils::expand_path(pidfile, dir).empty())
+				errors += "pidfile:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+		}
+
+		if (options.find_first_of('q') != std::string::npos) {
+			if (!Utils::valid_path(childlogdir, dir, true))
+				errors += "childlogdir:\t\tpath is invalid - " + std::string(strerror(errno)) + "\n";
+		}
+
+		if (options.find_first_of('a') != std::string::npos) {
+			if (!Utils::valid_number(minfds, 1, 65535))
+				errors += "minfds:\t\t\tmust be a value between 1 and 65535\n";
+		}
+
+		if (options.find_first_of('p') != std::string::npos) {
+			if (!Utils::valid_number(minprocs, 1, 65535))
+				errors += "minprocs:\t\tmust be a value between 1 and 10000\n";
+		}
+
+		if (!errors.empty()) { std::cerr << fullName << ": invalid options: \n\n" <<  errors; return (2); }
+
+		return (0);
+	}
+
+#pragma endregion
+	
 #pragma region "Messages"
 
 	#pragma region "Help"
 
-		int ConfigOptions::help() {
+		int ConfigOptions::help() const {
 			std::cerr << "Usage: " << "taskmasterd: [ OPTION... ] \n";
 			std::cerr << "\n";
 			std::cerr << " Options:\n";
@@ -59,7 +136,7 @@
 
 	#pragma region "Version"
 
-		int ConfigOptions::version() {
+		int ConfigOptions::version() const {
 			std::cerr << "taskmasterd: 1.0 part of Taskmaster\n";
 			std::cerr << "Copyright (C) 2025 Kobayashi Corp ⓒ.\n";
 			std::cerr << "\n";
@@ -76,7 +153,7 @@
 
 	#pragma region "Invalid"
 
-		int ConfigOptions::invalid() {
+		int ConfigOptions::invalid() const {
 			std::cerr << "Try '" << fullName << " --help' for more information.\n";
 			return (2);
 		}
@@ -145,7 +222,7 @@
 			invalid(); return (2);
 		}
 
-		if (Config.validate_options(*this)) { std::cerr << "\n"; invalid(); return (2); }
+		if (validate_options()) { std::cerr << "\n"; invalid(); return (2); }
 
 		return (0);
 	}

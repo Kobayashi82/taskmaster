@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 15:53:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:10:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,10 @@
 		private:
 
 			// Methods
-			int	help();
-			int	version();
-			int	invalid();
+			int	validate_options() const;
+			int	help() const;
+			int	version() const;
+			int	invalid() const;
 
 		public:
 
