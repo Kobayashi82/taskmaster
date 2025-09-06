@@ -46,3 +46,7 @@
 
 - Parser de archivo con soporte de tokens (multi-line)
 - Expansion de variables al estilo python
+
+# Notas:
+
+- Eliminar .pid y .sock al cerrar el programa

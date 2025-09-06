@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:41 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 21:42:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 10:48:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,12 @@
 			std::string		username;
 			std::string		password;
 			bool			disabled;
+			int				sockfd;
 
-			void		initialize();
+			void	initialize();
+			int		start();
+			int		close();
+
 		private:
 
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);

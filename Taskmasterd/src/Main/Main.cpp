@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 22:07:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 11:12:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@
 
 		// Utils::environment_print(TaskMaster.programs[2].process[0].environment);
 
+		TaskMaster.unix_server.close();
 		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);
 		Utils::array_free(args);
@@ -52,6 +53,7 @@
 		// std::cout << TaskMaster.programs[0].groups[0] << "\n";
 		// std::cout << TaskMaster.directory << "\n";
 
+		// TaskMaster.unix_server.close();
 		Log.info("cerrando");
 
 		return (result);

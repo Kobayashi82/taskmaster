@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 17:13:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 11:06:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,6 +141,9 @@
 		Log.set_logfile_stdout(Utils::parse_bool(get_value("taskmasterd", "nodaemon")) && !Utils::parse_bool(get_value("taskmasterd", "silent")));
 		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
+
+		TaskMaster.unix_server.start();
+		TaskMaster.inet_server.start();
 
 		return(result);
 	}

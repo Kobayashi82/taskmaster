@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 21:42:01 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 10:48:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,11 @@
 			std::string		username;
 			std::string		password;
 			bool			disabled;
+			int				sockfd;
 
-			void		initialize();
+			void	initialize();
+			int		start();
+			int		close();
 
 		private:
 
