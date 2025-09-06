@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:35:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:41:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 	#include <unistd.h>															// gethostname()
 	#include <filesystem>														// std::filesystem::path()
 
+	#include <iostream>
+	
 #pragma endregion
 
 #pragma region "Getters"
@@ -63,30 +65,32 @@
 #pragma region "Parse"
 
 	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename, bool start_space) {
+		bool ignore = (start_space && in_environment);
+
 		std::string check_inv_chars = line;
 		size_t open_sec = check_inv_chars.find_first_of("[");
 		size_t equal_char = check_inv_chars.find_first_of("=");
-		if (open_sec < equal_char) {
+		if (!ignore && open_sec < equal_char) {
 			Utils::error_add(filename, line + " invalid section", WARNING, line_number, order);
 			currentSection = ""; return (2);
 		}
 
-		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order);					return (1); }
+		if (currentSection.empty())						{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order);					return (1); }
 
 		size_t pos = line.find('=');
-		if (!start_space && !in_environment && pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order);		return (1); }
+		if (!ignore && pos == std::string::npos)		{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order);		return (1); }
 
 		std::string key   = Utils::trim(Utils::toLower(line.substr(0, pos)));
 		std::string value = Utils::trim(line.substr(pos + 1));
 
-		if (key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order);						return (1); }
-		if (!key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order);		return (1); }
-		if (value.empty())						{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
+		if (!ignore && key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order);						return (1); }
+		if (!ignore && !key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order);		return (1); }
+		if (!ignore && value.empty())					{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
 
-		if (key == "stdout_events_enabled")		{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
-		if (key == "stdout_capture_maxbytes")	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
-		if (key == "stderr_events_enabled")		{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
-		if (key == "stderr_capture_maxbytes")	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stdout_events_enabled")				{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stdout_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stderr_events_enabled")				{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
+		if (key == "stderr_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 
 		ConfigEntry entry;
 		if (currentSection == "include" && key == "files") {
@@ -107,8 +111,10 @@
 			ConfigEntry *e_entry = get_value_entry(currentSection, "environment");
 			if (e_entry) {
 				if (value.back() == '\n' || value.back() == ',') value.pop_back();
-				e_entry->value += ", " + value;
+				if (e_entry->value.back() == '\n' || e_entry->value.back() == ',') e_entry->value.pop_back();
+				e_entry->value += ", " + line;
 			}
+			return (0);
 		}
 		else if (key == "environment" && (currentSection == "taskmasterd" || currentSection.substr(0, 8) == "program:")) in_environment = true;
 		else in_environment = false;

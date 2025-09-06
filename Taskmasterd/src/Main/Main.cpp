@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:20:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:34:50 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 
 		TaskMaster.unix_server.close();
 		TaskMaster.inet_server.close();
-		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
+		// execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);
 		Utils::array_free(args);
 

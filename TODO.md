@@ -6,7 +6,6 @@
 - Luego si hay un programa con el mismo nombre y hay cambios, detiene y cambia. Si no está en los programas nuevos, lo detiene y elimina y si no ha cambiado, lo deja.
 - Con los grupos simplemente borra los que no esten y añade/modifica los que si
 
-- Soportar multi-line en environment si estan indentadas y opcionalmente terminar en ,
 - Revisar environment_validate()
 
 ## Logging
@@ -19,11 +18,6 @@
 - taskmasterctl start group myapp → Ejecuta el grupo
 - taskmasterctl start program myapp → Ejecuta el program
 - También podria añadir taskmasterctl list, taskmasterctl list programs y taskmasterctl list groups
-
-## Not Implemented (for compability with supervisor config files)
-
-- Parser de archivo con soporte de tokens (multi-line)
-- Expansion de variables al estilo python
 
 # Notas:
 
