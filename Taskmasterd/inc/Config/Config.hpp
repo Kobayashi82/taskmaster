@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 18:49:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:21:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,14 +63,6 @@
 			// Load
 			int				load(int argc, char **argv);
 
-			// Validation
-			int				validate_options(ConfigOptions& Options) const;
-			void			validate_program();
-			void			validate_group();
-			void			validate_unix_server();
-			void			validate_inet_server();
-			void			validate();
-
 		private:
 
 			// Variables
@@ -78,6 +70,7 @@
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::set<std::string>										validSections;
 			std::string													currentSection;
+			bool														in_environment;
 
 			// Include
 			int							include_load_file(const std::string& filePath);
@@ -86,7 +79,7 @@
 
 			// Keys
 			bool						key_valid(const std::string& section, const std::string& key) const;
-			int							key_parse(const std::string& line, int line_number, std::string& filename);
+			int							key_parse(const std::string& line, int line_number, std::string& filename, bool start_space);
 
 			// Section
 			bool						is_section(const std::string& line) const;

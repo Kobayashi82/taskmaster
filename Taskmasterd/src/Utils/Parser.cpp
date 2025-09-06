@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 19:05:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:18:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 		trim(str);
 		for (char c : str) {
 			if (escaped)								{ escaped = false;	result += c;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;					continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;					continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;					continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;					continue; }
 
@@ -56,7 +56,7 @@
 			char c = line[i];
 
 			if (escaped)								{ escaped = false;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;	continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	continue; }
 
@@ -219,7 +219,7 @@
 
 		for (char c : value) {
 			if (escaped)											{ escaped = false;	current += c;	continue; }
-			if (!quoteChar && c == '\\')							{ escaped = true;	current += c;	continue; }
+			if (quoteChar != '\'' && c == '\\')						{ escaped = true;	current += c;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c; 	current += c;	continue; }
 			if (quoteChar && c == quoteChar)						{ quoteChar = 0;	current += c;	continue; }
 			if (!quoteChar && split.find(c) != std::string::npos)	{ pushToken();						continue; }
@@ -243,7 +243,7 @@
 
 		for (char c : val) {
 			if (escaped)									{ escaped = false;	command += c;	continue; }
-			if (!quoteChar && c=='\\')						{ escaped = true;					continue; }
+			if (quoteChar != '\'' && c == '\\')				{ escaped = true;					continue; }
 			if (!quoteChar && (c == '"' || c == '\''))		{ quoteChar = c;					continue; }
 			if (quoteChar && c == quoteChar)				{ quoteChar = 0;					continue; }
 			if (!quoteChar && isspace((unsigned char)c))										break;

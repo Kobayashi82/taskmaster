@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:50:20 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:42:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:03:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@
 			char c = str[i];
 
 			if (escaped)								{ escaped = false;	last = i;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;	last = i;	continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;	last = i;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	last = i;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	last = i;	continue; }
 			if (!std::isspace(c))						{ last = i; }
@@ -61,7 +61,7 @@
 			char c = str[i];
 
 			if (escaped)								{ escaped = false;	last = i;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;	last = i;	continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;	last = i;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	last = i;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	last = i;	continue; }
 			if (!std::isspace(c))						{ last = i; }

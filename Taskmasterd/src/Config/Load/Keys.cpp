@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 20:01:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:35:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@
 
 #pragma region "Parse"
 
-	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename) {
+	int ConfigParser::key_parse(const std::string& line, int line_number, std::string& filename, bool start_space) {
 		std::string check_inv_chars = line;
 		size_t open_sec = check_inv_chars.find_first_of("[");
 		size_t equal_char = check_inv_chars.find_first_of("=");
@@ -74,7 +74,7 @@
 		if (currentSection.empty())				{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order);					return (1); }
 
 		size_t pos = line.find('=');
-		if (pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order);		return (1); }
+		if (!start_space && !in_environment && pos == std::string::npos)			{ Utils::error_add(filename, "[" + currentSection + "] " + line + ": invalid key", ERROR, line_number, order);		return (1); }
 
 		std::string key   = Utils::trim(Utils::toLower(line.substr(0, pos)));
 		std::string value = Utils::trim(line.substr(pos + 1));
@@ -103,6 +103,16 @@
 			}
 			env.clear();
 		}
+		else if (start_space && in_environment) {
+			ConfigEntry *e_entry = get_value_entry(currentSection, "environment");
+			if (e_entry) {
+				if (value.back() == '\n' || value.back() == ',') value.pop_back();
+				e_entry->value += ", " + value;
+			}
+		}
+		else if (key == "environment" && (currentSection == "taskmasterd" || currentSection.substr(0, 8) == "program:")) in_environment = true;
+		else in_environment = false;
+
 		entry.value = value;
 		entry.filename = filename;
 		entry.line = line_number;

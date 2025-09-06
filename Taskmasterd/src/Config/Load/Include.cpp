@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 17:14:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:58:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@
 			bool		invalidSection = false;
 
 			while (std::getline(file, line)) { lineNumber++; order += 2;
+				bool start_space = (!line.empty() && isspace(line[0]));
 				if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 
 				if (is_section(line)) {
@@ -48,7 +49,7 @@
 					}
 					invalidSection = section_parse(line, lineNumber, configFile);
 				}
-				else if (!invalidSection) invalidSection = key_parse(line, lineNumber, configFile) == 2;
+				else if (!invalidSection) invalidSection = key_parse(line, lineNumber, configFile, start_space) == 2;
 			}
 
 			return (0);
@@ -81,7 +82,7 @@
 
 			for (char c : fileString) {
 				if (escaped)											{ escaped = false;			current += c;							continue; }
-				if (!quoteChar && c == '\\')							{ escaped = true;			current += c;							continue; }
+				if (quoteChar != '\'' && c == '\\')						{ escaped = true;			current += c;							continue; }
 				if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c;			current += c;	quotedToken = true; 	continue; }
 				if (quoteChar && c == quoteChar)						{ quoteChar = 0;			current += c;							continue; }
 				if (!quoteChar && split.find(c) != std::string::npos)	{ pushToken(quotedToken);					quotedToken = false;	continue; }

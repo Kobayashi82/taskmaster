@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 19:03:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:14:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 
 		for (char c : pattern) {
 			if (escaped)								{ escaped = false;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;	continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;	continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	continue; }
 			if (!quoteChar && (c == '*' || c == '?' || c == '['))			return (true);
@@ -131,7 +131,7 @@
 
 		for (char c : expanded_pattern) {
 			if (escaped)								{ escaped = false;	processed += '\\';	processed += c;	original += c;	continue; }
-			if (!quoteChar && c == '\\')				{ escaped = true;														continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;														continue; }
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;														continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;														continue; }
 
@@ -202,8 +202,10 @@
 			if (globbing_has_glob(pattern)) {
 				auto matches = globbing_expand_glob(pattern);
 				result.insert(result.end(), matches.begin(), matches.end());
-			} else
-				result.push_back(globbing_expand_tilde(pattern));
+			} else {
+				std::string clean_pattern = remove_quotes(pattern);
+				result.push_back(globbing_expand_tilde(clean_pattern));
+			}
 		}
 
 		return (result);

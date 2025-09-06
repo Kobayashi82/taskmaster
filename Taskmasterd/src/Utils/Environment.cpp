@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:40:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:03:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,7 @@
 				char c = line[i];
 
 				if (escaped)								{ escaped = false;	result += c;	continue; }
-				if (!quoteChar && c == '\\')				{ escaped = true;	result += c;	continue; }
+				if (quoteChar != '\'' && c == '\\')			{ escaped = true;	result += c;	continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	result += c;	continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;	result += c;	continue; }
 
@@ -208,6 +208,7 @@
 #pragma region "Validate"
 
 	bool Utils::environment_validate(const std::string& env_string) {
+		return (true);
 		static const std::regex env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)(=|\+=)(.*)$)");
 
 		std::string current;
@@ -277,7 +278,7 @@
 
 			for (char c : batch) {
 				if (escaped)								{ escaped = false;			current += c;		continue; }
-				if (!quoteChar && c == '\\')				{ escaped = true;								continue; }
+				if (quoteChar != '\'' && c == '\\')			{ escaped = true;								continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;								continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;								continue; }
 				if (!quoteChar && (c == '\n' || c == ','))	{ pairs.push_back(current);	current.clear();	continue; }

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 10:17:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:08:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:05:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@
 
 		for (char c : src) {
 			if (escaped)											{ escaped = false;	current += c;	continue; }
-			if (!quoteChar && c == '\\')							{ escaped = true;					continue; }
+			if (quoteChar != '\'' && c == '\\')						{ escaped = true;					continue; }
 			if (!quoteChar && (c == '"' || c == '\''))				{ quoteChar = c; 					continue; }
 			if (quoteChar && c == quoteChar)						{ quoteChar = 0;					continue; }
 			if (!quoteChar && split.find(c) != std::string::npos)	{ pushToken();						continue; }

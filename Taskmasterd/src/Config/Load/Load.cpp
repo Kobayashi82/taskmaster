@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 11:06:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:21:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,17 +85,19 @@
 		Utils::errors.clear();
 		Utils::errors_maxLevel = 0;
 		order = 0;
+		in_environment = false;
 
 		std::string	line;
 		int			lineNumber = 0;
 		bool		invalidSection = false;
 
 		while (std::getline(file, line)) { lineNumber++; order += 2;
+			bool start_space = (!line.empty() && isspace(line[0]));
 			if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 
 			if		(currentSection == "include" && is_section(line))	include_process(configFile);
 			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
-			else if	(!invalidSection)									invalidSection = key_parse(line, lineNumber, configFile) == 2;
+			else if	(!invalidSection)									invalidSection = key_parse(line, lineNumber, configFile, start_space) == 2;
 		}
 
 		if (currentSection == "include")								include_process(configFile);
