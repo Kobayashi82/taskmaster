@@ -354,9 +354,7 @@ El sistema de variables de Taskmaster permite una configuración dinámica y fle
 
 | Sintaxis                    | Descripción                                                     | Ejemplo             |
 |-----------------------------|-----------------------------------------------------------------|---------------------|
-| **${VAR-default}**          | Si `VAR` no está definida, devuelve `default`                   | ${PORT-8080}        |
 | **${VAR:-default}**         | Si `VAR` no está definida o está vacía, devuelve `default`      | ${PORT:-8080}       |
-| **${VAR+default}**          | Si `VAR` está definida, devuelve `default`                      | ${DEBUG:+--verbose} |
 | **${VAR:+default}**         | Si `VAR` está definida y no está vacía, devuelve `default`      | ${DEBUG:+--verbose} |
 |
 
@@ -372,8 +370,7 @@ El sistema de variables de Taskmaster permite una configuración dinámica y fle
 | **${VAR:^^}**               | Convertir todo a mayúsculas                                     | ${USER:^^}          |
 | **${VAR:,}**                | Convertir primera letra a minúsculas                            | ${USER:,}           |
 | **${VAR:,,}**               | Convertir todo a minúsculas                                     | ${USER:,,}          |
-| **${VAR:~}**                | Invertir `case` de la primera letra                             | ${USER:~}           |
-| **${VAR:~~}**               | Invertir `case` de toda la cadena                               | ${USER:~~}          |
+| **${VAR:~}**                | Elimina desde el inicio hasta la última / (solo nombre archivo) | ${USER:~~}          |
 |
 
 #### Formateo Numérico

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:16:11 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 16:36:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@
 			static std::string					environment_expand(std::map<std::string, std::string>& env, const std::string& str);
 			static bool							environment_validate(const std::string& env_string);
 			static void							environment_del(std::map<std::string, std::string>& env, const std::string& key);
-			static void							environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value);
+			static void							environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value, bool append = false);
 			static void							environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite = false);
 			static void							environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch);
 			static std::string					environment_get(const std::map<std::string, std::string>& env, const std::string& key);

@@ -16,24 +16,7 @@
 
 ## Variables
 
-- ${VAR-default}
-- ${VAR+default}
-- ${VAR: -offset:len}
-- ${VAR:^}
-- ${VAR:^^}
-- ${VAR:,}
-- ${VAR:,,}
-- ${VAR:~}
-- ${VAR:~~}
-- ${#VAR}
-- ${VAR:d}
-- ${VAR:02d}
-- ${VAR:x}
-- ${VAR:X}
-- ${VAR:#x}
-- ${VAR:#X}
-- ${VAR:o}
-- +=
+- Revisar environment_validate()
 
 ## Cliente
 

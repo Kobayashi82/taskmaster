@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 21:12:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 18:20:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 16:14:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@
 #pragma region "Comments"
 
 	std::string Utils::remove_comments(const std::string& line) {
-		char	quoteChar = 0;
+		char	quoteChar = 0, lastChar;
 		bool	escaped = false;
 
 		for (size_t i = 0; i < line.length(); ++i) {
@@ -60,7 +60,8 @@
 			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;	continue; }
 			if (quoteChar && c == quoteChar)			{ quoteChar = 0;	continue; }
 
-			if (!quoteChar && (c == '#' || c == ';'))	return (line.substr(0, i));
+			if (!quoteChar && ((c == '#' && (lastChar != '{') && lastChar != ':') || c == ';'))	return (line.substr(0, i));
+			lastChar = c;
 		}
 
 		return (line);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:11:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 16:40:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,27 +32,45 @@
 	#pragma region "Format"
 
 		std::string Utils::environment_apply_format(const std::string& value, const std::string& modifier) {
-			if (modifier.empty() || modifier[0] != '*') return (value);
-			std::string fmt = modifier.substr(1);
+			if (modifier.empty()) return (value);
+			std::string fmt = modifier;
 
 			// String
-			if (fmt == "upper") return (toUpper(value));
-			if (fmt == "lower") return (toLower(value));
+			if (fmt == "^^") return (toUpper(value));
+			if (fmt == ",,") return (toLower(value));
+			if (fmt == "^") {
+				if (value.empty()) return (value);
+				std::string result = value;
+				result[0] = std::toupper(result[0]);
+				return (result);
+			}
+			if (fmt == ",") {
+				if (value.empty()) return (value);
+				std::string result = value;
+				result[0] = std::tolower(result[0]);
+				return (result);
+			}
+			
+			// Path
+			if (fmt == "~") {
+				size_t slash = value.rfind('/');
+				return ((slash != std::string::npos) ? value.substr(slash + 1) : value);
+			}
 
 			// Numeric
 			try {
 				int num = std::stoi(value);
 
-				if (fmt == "d")																						return (std::to_string(num));
+				if (fmt == "d")																						return (((num > 0) ? "+" : "-") + std::to_string(num));
 				if (fmt == "x")		{ std::stringstream ss; 	ss << std::hex << num;								return (ss.str()); }
-				if (fmt == "#x")	{ std::stringstream ss; 	ss << "0x" << std::hex << num;						return (ss.str()); }
 				if (fmt == "X")		{ std::stringstream ss;		ss << std::hex << std::uppercase << num;			return (ss.str()); }
+				if (fmt == "#x")	{ std::stringstream ss; 	ss << "0x" << std::hex << num;						return (ss.str()); }
 				if (fmt == "#X")	{ std::stringstream ss; 	ss << "0X" << std::hex << std::uppercase << num;	return (ss.str()); }
 				if (fmt == "o")		{ std::stringstream ss;		ss << std::oct << num;								return (ss.str()); }
 
 				if (fmt.length() >= 2 && fmt.back() == 'd') {
 					std::string padding = fmt.substr(0, fmt.length() - 1);
-					if (std::all_of(padding.begin(), padding.end(), ::isdigit)) {
+					if (isDigit(padding)) {
 						int width = std::stoi(padding);
 						std::stringstream ss;
 						if (padding[0] == '0')	ss << std::setw(width) << std::setfill('0') << num;
@@ -72,11 +90,19 @@
 		std::string Utils::environment_apply_substring(const std::string& value, const std::string& modifier) {
 			size_t colon = modifier.find(':');
 
-			if (modifier[0] == ' ' && modifier[1] == '-') {							// ${VAR: -n}
+			if (modifier[0] == ' ' && modifier[1] == '-') {
 				try {
-					int count = std::stoi(modifier.substr(2));
-					if (count >= (int)value.length()) return (value);
-					return (value.substr(value.length() - count));
+					if (colon == std::string::npos) {								// ${VAR: -n}
+						int count = std::stoi(modifier.substr(2));
+						if (count >= (int)value.length()) return (value);
+						return (value.substr(value.length() - count));
+					} else {														// ${VAR: -n:n}
+						int start = std::stoi(modifier.substr(2, colon));
+						int len   = std::stoi(modifier.substr(colon + 1));
+						int start_pos = value.length() - start;
+						if (start_pos < 0) start_pos = 0;
+						return (value.substr(start_pos, len));
+					}
 				} catch (...) { return (value); }
 			}
 
@@ -99,6 +125,11 @@
 	#pragma region "Expression"
 
 		std::string Utils::environment_expand_expr(std::map<std::string, std::string>& env, const std::string& var_expr) {
+			if (!var_expr.empty() && var_expr[0] == '#') {																		// ${#VAR}
+				auto it = env.find(var_expr.substr(1));
+				return ((it != env.end()) ? std::to_string(it->second.length()) : "0");
+			}
+
 			size_t		colon = var_expr.find(':');
 			std::string	var_name = (colon == std::string::npos) ? var_expr : var_expr.substr(0, colon);
 			std::string	modifier = (colon == std::string::npos) ? "" : var_expr.substr(colon + 1);
@@ -110,10 +141,10 @@
 			else					value = "";
 
 			if (modifier.empty()) 									return (value);												// No modifier
-			if (modifier.substr(0, 1) == "-")						return (value.empty() ? modifier.substr(1) : value);		// ${VAR:-default}
-			if (modifier.substr(0, 1) == "+")						return (value.empty() ? "" : modifier.substr(1));			// ${VAR:+value}
+			if (modifier[0] == '-')									return (value.empty() ? modifier.substr(1) : value);		// ${VAR:-default}  
+			if (modifier[0] == '+')									return (value.empty() ? "" : modifier.substr(1));			// ${VAR:+value}
+			if (modifier.find_last_of("dxXo^,~") != std::string::npos)	return (environment_apply_format(value, modifier));			// {$VAR:02d}
 			if (std::isdigit(modifier[0]) || modifier[0] == ' ')	return (environment_apply_substring(value, modifier));		// ${VAR:substring}
-			if (modifier[0] == '*')									return (environment_apply_format(value, modifier));			// ${VAR:*format}
 
 			return (value);
 		}
@@ -161,6 +192,7 @@
 						}
 					}
 				}
+
 				result += c;
 			}
 
@@ -176,19 +208,15 @@
 #pragma region "Validate"
 
 	bool Utils::environment_validate(const std::string& env_string) {
-		static const std::regex env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)=(.+)$)");
+		static const std::regex env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)(=|\+=)(.*)$)");
 
 		std::string current;
 		for (char c : env_string) {
-			if (c == '\n') {
+			if (c == '\n' || ',') {
 				std::string trimmed = trim(current);
-				if (!trimmed.empty() && !std::regex_match(trimmed, env_regex)) {
-					return false;
-				}
+				if (!trimmed.empty() && !std::regex_match(trimmed, env_regex)) return (false);
 				current.clear();
-			} else {
-				current += c;
-			}
+			} else current += c;
 		}
 
 		std::string trimmed = trim(current);
@@ -219,8 +247,14 @@
 
 	#pragma region "Add"
 
-		void Utils::environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value) {
-			if (!key.empty() && !value.empty()) env[key] = value;
+		void Utils::environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value, bool append) {
+			if (key.empty()) return ;
+
+			if (append && !value.empty()) {
+				auto it = env.find(key);
+				if (it != env.end())	env[key] = it->second + value;
+				else					env[key] = value;
+			} else if (!value.empty())	env[key] = value;
 		}
 
 		void Utils::environment_add(std::map<std::string, std::string>& env, const std::map<std::string, std::string>& src, bool overwrite) {
@@ -246,13 +280,25 @@
 				if (!quoteChar && c == '\\')				{ escaped = true;								continue; }
 				if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;								continue; }
 				if (quoteChar && c == quoteChar)			{ quoteChar = 0;								continue; }
-				if (!quoteChar && c == '\n')				{ pairs.push_back(current);	current.clear();	continue; }
+				if (!quoteChar && (c == '\n' || c == ','))	{ pairs.push_back(current);	current.clear();	continue; }
 
 				current += c;
 			}
 			if (!current.empty()) pairs.push_back(current);
 
 			for (const std::string& pair : pairs) {
+
+				size_t plus_pos = pair.find("+=");
+				if (plus_pos != std::string::npos) {
+					std::string	key		= trim(pair.substr(0, plus_pos));
+					std::string	value	= trim(pair.substr(plus_pos + 2));
+
+					auto it = env.find(key);
+					if (it != env.end())	env[key] = it->second + value;
+					else					env[key] = value;
+					continue;
+				}
+
 				size_t pos = pair.find('=');
 				if (pos != std::string::npos) {
 					std::string	key   = trim(pair.substr(0, pos));
