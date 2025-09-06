@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 17:50:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 18:43:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@
 		char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
 		char **args = Utils::toArray(TaskMaster.programs[2].process[0].arguments);
 
-		Utils::environment_print(TaskMaster.programs[2].process[0].environment);
+		// Utils::environment_print(TaskMaster.programs[2].process[0].environment);
 
 		TaskMaster.unix_server.close();
 		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);

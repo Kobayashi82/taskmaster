@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:36:16 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 18:33:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,7 @@
 			static uint8_t						parse_signal(const std::string& value);
 			static int							parse_bool(const std::string &value, bool unexpected = false);
 			static uint8_t						parse_loglevel(const std::string &value);
+			static std::vector<std::string>		parse_arguments(const std::string& value);
 			static std::string 					parse_executable(const std::string& value);
 
 			// Array

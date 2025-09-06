@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 13:11:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 18:51:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,22 +134,21 @@
 
 		try {
 			std::error_code ec;
-			auto it = std::filesystem::recursive_directory_iterator(base, ec);
+			auto it = std::filesystem::directory_iterator(base, ec);
 			if (ec) { matches.push_back(original); return (matches); }
 
-			while (it != std::filesystem::recursive_directory_iterator{}) {
-				std::error_code file_ec;
-				auto entry_path = it->path();  // copia segura
-				bool is_file = it->is_regular_file(file_ec);
+			for (const auto& entry : it) {
+				std::error_code entry_ec;
+				auto entry_path = entry.path();
+				auto filename = entry_path.filename().string();
 
-				std::error_code increment_ec;
-				it.increment(increment_ec);
+				if (!filename.empty() && filename[0] == '.') continue;
 
-				if (increment_ec) continue;
-				if (!file_ec && is_file) {
-					std::filesystem::path rel = std::filesystem::relative(entry_path, base, file_ec);
-					if (!file_ec && globbing_match_glob(glob_pattern, rel.string()))
-						matches.push_back(entry_path.string());
+				std::filesystem::path rel = std::filesystem::relative(entry_path, base, entry_ec);
+				if (!entry_ec && globbing_match_glob(glob_pattern, rel.string())) {
+					if (base == "." && original.substr(0, 2) == "./")						matches.push_back("./" + filename);
+					else if (base == "." && glob_pattern.find('/') == std::string::npos)	matches.push_back(filename);
+					else																	matches.push_back(entry_path.string());
 				}
 			}
 			std::sort(matches.begin(), matches.end());
