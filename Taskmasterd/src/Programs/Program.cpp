@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:37:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 17:57:44 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,12 +282,13 @@
 		if (!entry)	  configFile = Utils::expand_path(".", "", true, false);
 		else		{ configFile = entry->filename; order = entry->order + 1; }
 
-
 		std::map<std::string, std::string> env;
 		Utils::environment_clone(env, TaskMaster.environment);
 
 		std::string HERE			= Utils::environment_get(env, "HERE");
 		std::string HOST_NAME		= Utils::environment_get(env, "HOST_NAME");
+		std::string GROUP_NAME		= Utils::environment_get(env, "GROUP_NAME");
+		std::string GROUP_NAMES		= Utils::environment_get(env, "GROUP_NAMES");
 		std::string PROGRAM_NAME	= Utils::environment_get(env, "PROGRAM_NAME");
 		std::string NUMPROCS		= Utils::environment_get(env, "NUMPROCS");
 		std::string PROCESS_NUM		= Utils::environment_get(env, "PROCESS_NUM");
@@ -296,11 +297,50 @@
 		Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 		if (!configFile.empty()) Utils::environment_add(env, "HERE", std::filesystem::path(configFile).parent_path());
 
-		// Si pertenece a grupos, ponerlo aqui?
-		Utils::environment_add(env, "TASKMASTER_ENABLED", "1");
-		Utils::environment_add(env, "TASKMASTER_PROCESS_GROUP", "");
+		std::string	g_programs, group_name, group_names;
+		uint16_t	g_order = 65535;
+
+		for (auto& [group, keys] : Config.sections) {
+			if (group.substr(0, 6) == "group:") {
+				ConfigParser::ConfigEntry *g_entry = Config.get_value_entry(group, "programs");
+				if (!g_entry || g_entry->value.empty()) continue;
+
+				try {
+					std::map<std::string, std::string> g_env;
+					Utils::environment_initialize(g_env);
+					g_programs = Utils::environment_expand(g_env, g_entry->value);
+					g_programs = Utils::remove_quotes(g_programs);
+				}
+				catch(const std::exception& e) { g_programs = entry->value; }
+
+				if (group.substr(6) == name) Utils::error_add(configFile, "[" + section + "] programs: Program '" + name + "' has same name as group '" + group.substr(0, 6) + "'. Program will take precedence in ambiguous commands", WARNING, 0, order);
+
+				std::set<std::string> program_names;
+				std::stringstream ss(g_programs); std::string token;
+				while (std::getline(ss, token, ',')) program_names.insert(Utils::trim(token));
+
+				if (program_names.find(name) != program_names.end()) {
+					if (g_entry->order < g_order) {
+						g_order = g_entry->order;
+						group_name = group.substr(6);
+					}
+					if (group_names.empty())	group_names = group.substr(6);
+					else						group_names = group_names + ", " + group.substr(6);
+				}
+			}
+		}
+
 		Utils::environment_del(env, "TASKMASTER_PROCESS_NAME");
 		Utils::environment_del(env, "TASKMASTER_SERVER_URL");
+		Utils::environment_add(env, "TASKMASTER_ENABLED", "1");
+		if (!group_name.empty()) {
+			Utils::environment_add(env, "TASKMASTER_GROUP_NAME", group_name);
+			Utils::environment_add(env, "GROUP_NAME", group_name);
+		}
+		if (!group_names.empty()) {
+			Utils::environment_add(env, "TASKMASTER_GROUP_NAMES", group_names);
+			Utils::environment_add(env, "GROUP_NAMES", group_name);
+		}
 
 		numprocs		= Utils::parse_number(expand_vars(env, "numprocs"), 0, 10000, 1);
 		numprocs_start	= Utils::parse_number(expand_vars(env, "numprocs_start"), 0, 65535, 0);
@@ -384,8 +424,10 @@
 				else							Utils::environment_add(proc.environment, "HERE", HERE);
 				if (HOST_NAME.empty())			Utils::environment_del(proc.environment, "HOST_NAME");
 				else							Utils::environment_add(proc.environment, "HOST_NAME", HOST_NAME);
-				if (PROGRAM_NAME.empty())		Utils::environment_del(proc.environment, "PROGRAM_NAME");
-				else							Utils::environment_add(proc.environment, "PROGRAM_NAME", PROGRAM_NAME);
+				if (GROUP_NAME.empty())			Utils::environment_del(proc.environment, "GROUP_NAME");
+				else							Utils::environment_add(proc.environment, "GROUP_NAME", GROUP_NAME);
+				if (GROUP_NAMES.empty())		Utils::environment_del(proc.environment, "GROUP_NAMES");
+				else							Utils::environment_add(proc.environment, "GROUP_NAMES", GROUP_NAMES);
 				if (NUMPROCS.empty())			Utils::environment_del(proc.environment, "NUMPROCS");
 				else							Utils::environment_add(proc.environment, "NUMPROCS", NUMPROCS);
 				if (PROCESS_NUM.empty())		Utils::environment_del(proc.environment, "PROCESS_NUM");

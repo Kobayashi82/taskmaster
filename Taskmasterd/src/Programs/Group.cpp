@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 16:41:26 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 17:42:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,20 +114,11 @@
 		if (!disabled) {
 			std::set<std::string> program_names;
 			std::stringstream ss(entry->value); std::string token;
-			while (std::getline(ss, token, ',')) {
-				program_names.insert(Utils::trim(token));
-			}
+			while (std::getline(ss, token, ',')) program_names.insert(Utils::trim(token));
 
 			for (auto& program : TaskMaster.programs) {
 				if (program_names.find(program.name) != program_names.end()) {
 					if (!program.disabled) {
-						for (auto& process : program.process) {
-							if (program.name == name) Utils::error_add(configFile, "[" + section + "] programs: Program '" + program.name + "' has same name as group '" + name + "'. Program will take precedence in ambiguous commands", WARNING, 0, order);
-
-							std::string current = Utils::environment_get(process.environment, "TASKMASTER_GROUP_NAME");
-							if (current.empty())	Utils::environment_add(process.environment, "TASKMASTER_GROUP_NAME", name);
-							else					Utils::environment_add(process.environment, "TASKMASTER_GROUP_NAME", current + ", " + name);
-						}
 						programs.push_back(program.name);
 						program.groups.push_back(name);
 					}

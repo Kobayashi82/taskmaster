@@ -2,7 +2,6 @@
 
 ## Program
 
-- Variable de configuración de Grupos
 - Globbing en comando
 
 # Servers
