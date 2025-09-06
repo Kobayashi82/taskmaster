@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 19:54:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:05:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,15 +48,17 @@
 			bool			disabled;
 			int				sockfd;
 
+			// Methods
 			void	initialize();
 			int		start();
 			void	close();
 
 		private:
 
-			std::string	resolve_host(const std::string& host);
+			// Methods
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
+			std::string	resolve_host(const std::string& host);
 
 	};
 

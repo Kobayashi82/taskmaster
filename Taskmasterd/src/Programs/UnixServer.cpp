@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 21:10:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:03:29 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname(), close()
+	#include <sys/stat.h>														// chmod()
 	#include <pwd.h>															// struct passwd, getpwuid(), getpwnam()
 	#include <grp.h>															// getgrgid()
 	#include <filesystem>														// std::filesistem::path()
@@ -34,81 +35,6 @@
 
 	UnixServer::~UnixServer() {
 		close();
-	}
-
-#pragma endregion
-
-#pragma region "User"
-
-	bool UnixServer::resolve_user(const std::string& value) {
-		if (value.empty() || Utils::toLower(value) == "do not switch") {
-			chown_uid = chown_gid = -1; return (true);
-		}
-
-		std::string	user_part, group_part;
-		size_t		colon_pos = value.find(':');
-
-		if (colon_pos != std::string::npos) {
-			user_part  = value.substr(0, colon_pos);
-			group_part = value.substr(colon_pos + 1);
-		} else
-			user_part = value;
-
-		struct passwd *pw = nullptr; char *endptr = nullptr; errno = 0;
-		long uid = std::strtol(user_part.c_str(), &endptr, 10);
-		if (!*endptr && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
-		else														pw = getpwnam(user_part.c_str());
-
-		if (!pw || (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos)) {
-			Log.error("Unix Server: invalid or restricted user: " + user_part);
-			return (false);
-		}
-
-		chown_uid = pw->pw_uid;
-
-		if (group_part.empty())
-			chown_gid = pw->pw_gid;
-		else {
-			struct group *gr = nullptr; errno = 0;
-			long gid = std::strtol(group_part.c_str(), &endptr, 10);
-			if (!*endptr && errno == 0 && gid >= 0 && gid <= INT_MAX)	gr = getgrgid(static_cast<gid_t>(gid));
-			else														gr = getgrnam(group_part.c_str());
-
-			if (!gr) {
-				Log.error("Unix Server: invalid group: " + group_part);
-				return (false);
-			}
-			
-			chown_gid = gr->gr_gid;
-		}
-
-		struct group *gr = getgrgid(chown_gid);
-		std::string group_msg;
-		if (gr)	group_msg = "and group '" + std::string(gr->gr_name) + "' (GID:" + std::to_string(chown_gid) + ")";
-		else	group_msg = "and GID:" + std::to_string(chown_gid);
-		
-		Log.debug("Unix Server: user '" + std::string(pw->pw_name) + "' (UID:" + std::to_string(chown_uid) + ") " + group_msg);
-		
-		return (true);
-	}
-
-	bool UnixServer::apply_ownership(uid_t uid, gid_t gid) {
-		uid_t target_uid = (uid == static_cast<uid_t>(-1)) ? chown_uid : uid;
-		gid_t target_gid = (gid == static_cast<gid_t>(-1)) ? chown_gid : gid;
-		
-		if (target_uid != static_cast<uid_t>(-1) || target_gid != static_cast<gid_t>(-1)) {
-			if (chown(file.c_str(), target_uid, target_gid) == -1) {
-				Log.error("Unix Server: failed to change socket ownership - " + std::string(strerror(errno)));
-				return (false);
-			}
-
-			std::string group_msg;
-			if (target_uid += static_cast<uid_t>(-1))	group_msg = " to UID:" + std::to_string(target_uid);
-			if (target_gid += static_cast<gid_t>(-1))	group_msg = " GID:" + std::to_string(target_gid);
-			Log.debug("Unix Server: changed socket ownership " + group_msg);
-		}
-
-		return (true);
 	}
 
 #pragma endregion
@@ -244,6 +170,80 @@
 
 #pragma endregion
 
+#pragma region "Resolve User"
+
+	bool UnixServer::resolve_user(const std::string& value) {
+		if (value.empty()) {
+			chown_uid = -1;
+			chown_gid = -1;
+			return (false);
+		}
+
+		if (Utils::toLower(value) == "do not switch") {
+			chown_uid = getuid();
+			chown_gid = getgid();
+			return (true);
+		}
+
+		std::string	user_part, group_part;
+		size_t		colon_pos = value.find(':');
+
+		if (colon_pos != std::string::npos) {
+			user_part  = value.substr(0, colon_pos);
+			group_part = value.substr(colon_pos + 1);
+		} else
+			user_part = value;
+
+		struct passwd *pw = nullptr; char *endptr = nullptr; errno = 0;
+		long uid = std::strtol(user_part.c_str(), &endptr, 10);
+		if (!*endptr && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
+		else														pw = getpwnam(user_part.c_str());
+		chown_uid = pw->pw_uid;
+
+		if (group_part.empty())
+			chown_gid = pw->pw_gid;
+		else {
+			struct group *gr = nullptr; errno = 0;
+			long gid = std::strtol(group_part.c_str(), &endptr, 10);
+			if (!*endptr && errno == 0 && gid >= 0 && gid <= INT_MAX)	gr = getgrgid(static_cast<gid_t>(gid));
+			else														gr = getgrnam(group_part.c_str());
+
+			if (!gr) { chown_gid = -1; return (false); }
+			chown_gid = gr->gr_gid;
+		}
+
+		return (true);
+	}
+
+#pragma endregion
+
+#pragma region "Apply Ownership"
+
+	bool UnixServer::apply_ownership(uid_t uid, gid_t gid) {
+		if (uid == getuid() && gid == getgid()) return (true);
+
+		if (uid != static_cast<uid_t>(-1) || gid != static_cast<gid_t>(-1)) {
+			if (chown(file.c_str(), uid, gid) == -1) {
+				Log.warning("Unix Server: unable to change socket ownership - " + std::string(strerror(errno)));
+				chown_uid = chown_gid = -2; return (false);
+			}
+
+			struct passwd *pw = getpwuid(uid);
+			struct group *gr = getgrgid(gid);
+
+			std::string user_name = pw ? pw->pw_name : std::to_string(uid);
+			std::string group_msg;
+			if (gr) group_msg = "and group '" + std::string(gr->gr_name) + "' (GID:" + std::to_string(gid) + ")";
+			else    group_msg = "and GID:" + std::to_string(gid);
+
+			Log.debug("Unix Server: changed socket ownership to '" + user_name + "' (UID:" + std::to_string(uid) + ") " + group_msg);
+		}
+
+		return (true);
+	}
+
+#pragma endregion
+
 #pragma region "Start"
 
 	int UnixServer::start() {
@@ -266,6 +266,10 @@
 			::close(sockfd); disabled = true; return (1);
 		}
 		Log.debug("Unix Server: socket bound to path " + file);
+
+		if (::chmod(file.c_str(), chmod) == -1) {
+			Log.warning("Unix Server: failed to set socket permissions: " + std::string(strerror(errno)));
+		}
 
 		apply_ownership(chown_uid, chown_gid);
 

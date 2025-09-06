@@ -10,10 +10,7 @@
 
 - Soportar multi-line en environment si estan indentadas y opcionalmente terminar en ,
 - Revisar environment_validate()
-
-# Servers
-
-- Unix: Separar chown_str en chown_user y chown_group
+- Validar opciones
 
 ## Logging
 

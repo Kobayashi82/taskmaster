@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 21:12:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 21:44:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,12 +186,12 @@
 
 		if (!valid_user(username))						return (false);
 
-		// Obtener información del usuario
 		struct passwd *pw = nullptr; char *endptr = nullptr; errno = 0;
 		long uid = std::strtol(username.c_str(), &endptr, 10);
 		if (*endptr == '\0' && errno == 0 && uid >= 0 && uid <= INT_MAX)	pw = getpwuid(static_cast<uid_t>(uid));
 		else																pw = getpwnam(username.c_str());
 		if (!pw)										return (false);
+		if (pw->pw_shell && std::string(pw->pw_shell).find("nologin") != std::string::npos) return (false);
 
 		struct group *gr = nullptr; endptr = nullptr; errno = 0;
 		long gid = std::strtol(group.c_str(), &endptr, 10);

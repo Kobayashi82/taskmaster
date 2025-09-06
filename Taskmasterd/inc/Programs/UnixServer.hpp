@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:41 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 20:34:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 22:05:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,16 +48,19 @@
 			bool			disabled;
 			int				sockfd;
 
-			bool	apply_ownership(uid_t uid = -1, gid_t gid = -1);
+			// Methods
 			void	initialize();
 			int		start();
 			void	close();
 
 		private:
 
-			bool		resolve_user(const std::string& value);
+			// Methods
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
+			bool		resolve_user(const std::string& value);
+			bool		apply_ownership(uid_t uid, gid_t gid);
+
 
 	};
 
