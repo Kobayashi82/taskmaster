@@ -6,8 +6,6 @@
 - Luego si hay un programa con el mismo nombre y hay cambios, detiene y cambia. Si no está en los programas nuevos, lo detiene y elimina y si no ha cambiado, lo deja.
 - Con los grupos simplemente borra los que no esten y añade/modifica los que si
 
-- Revisar environment_validate()
-
 ## Logging
 
 - En rotacion verificar si es un dispositivo especial y no rotar

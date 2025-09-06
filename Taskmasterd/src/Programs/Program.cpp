@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:20:49 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:51:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -251,7 +251,7 @@
 			if (key == "environment") {
 				if (!Utils::environment_validate(entry->value)) {
 					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid variable format", ERROR, entry->line, entry->order);
-					entry->value = "";
+					entry->value = ""; original_value = "";
 				} else Utils::environment_add_batch(env, entry->value);
 			}
 			else entry->value = Utils::remove_quotes(entry->value);
@@ -261,7 +261,7 @@
 			if (key != "environment") {
 				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, 0, entry->order + 1);
 				entry->value = Config.defaultValues[section][key];
-			} else entry->value = "";
+			} else { entry->value = ""; original_value = ""; }
 		}
 
 		std::string final_value = validate(key, entry);

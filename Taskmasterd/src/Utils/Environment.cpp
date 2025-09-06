@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:03:03 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/06 23:57:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,20 +208,47 @@
 #pragma region "Validate"
 
 	bool Utils::environment_validate(const std::string& env_string) {
-		return (true);
-		static const std::regex env_regex(R"(^([a-zA-Z_][a-zA-Z0-9_]*)(=|\+=)(.*)$)");
+		if (env_string.empty()) return (true);
 
-		std::string current;
+		std::vector<std::string>	pairs;
+		std::string					current;
+		char						quoteChar = 0;
+		bool						escaped = false;
+
 		for (char c : env_string) {
-			if (c == '\n' || ',') {
-				std::string trimmed = trim(current);
-				if (!trimmed.empty() && !std::regex_match(trimmed, env_regex)) return (false);
-				current.clear();
-			} else current += c;
+			if (escaped)								{ escaped = false;			current += c;		continue; }
+			if (quoteChar != '\'' && c == '\\')			{ escaped = true;								continue; }
+			if (!quoteChar && (c == '"' || c == '\''))	{ quoteChar = c;								continue; }
+			if (quoteChar && c == quoteChar)			{ quoteChar = 0;								continue; }
+			if (!quoteChar && (c == '\n' || c == ','))	{ pairs.push_back(current);	current.clear();	continue; }
+
+			current += c;
+		}
+		if (!current.empty()) pairs.push_back(current);
+
+		if (quoteChar || escaped) return (false);
+
+		for (const std::string& pair : pairs) {
+			std::string trimmed = trim(pair);
+			if (trimmed.empty()) continue;
+
+			size_t plus_pos = trimmed.find("+=");
+			size_t eq_pos   = trimmed.find('=');
+
+			std::string key;
+			if (plus_pos != std::string::npos)		key = trim(trimmed.substr(0, plus_pos));
+			else if (eq_pos != std::string::npos)	key = trim(trimmed.substr(0, eq_pos));
+			else											return (false);
+
+			if (key.empty())								return (false);
+			if (!std::isalpha(key[0]) && key[0] != '_')		return (false);
+
+			for (size_t i = 1; i < key.length(); ++i) {
+				if (!std::isalnum(key[i]) && key[i] != '_')	return (false);
+			}
 		}
 
-		std::string trimmed = trim(current);
-		return (trimmed.empty() || std::regex_match(trimmed, env_regex));
+		return (true);
 	}
 
 #pragma endregion
