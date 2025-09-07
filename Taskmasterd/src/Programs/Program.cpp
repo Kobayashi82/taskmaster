@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 13:45:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:09:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -442,7 +442,7 @@
 			} catch(const std::exception& e) {
 				disabled = true;
 				Utils::error_add(entry->filename, "[" + section + "] program '" + name + "' is disabled due to configuration errors", ERROR, entry->line, entry->order);
-				return ;
+				return;
 			}
 		}
 	}

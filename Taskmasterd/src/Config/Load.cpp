@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 13:58:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:16:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,14 +71,14 @@
 		if (configFile.empty()) {
 			Log.error("no configuration file found");
 			Log.warning("tasksmasterd is running without a configuration file");
-			return ;
+			return;
 		}
 
 		std::ifstream file(configFile);
 		if (!file.is_open()) {
 			Log.error("cannot open config file: " + configFile + " - " + strerror(errno));
 			Log.warning("tasksmasterd is running without a configuration file");
-			return ;
+			return;
 		}
 
 		currentSection.clear();
@@ -103,7 +103,7 @@
 
 		if (currentSection == "include")								include_process(configFile);
 
-		return ;
+		return;
 	}
 
 #pragma endregion
@@ -141,8 +141,11 @@
 		}
 		else Log.info("configuration loaded succesfully");
 
-		Log.set_logfile_stdout(Utils::parse_bool(get_value("taskmasterd", "nodaemon")) && !Utils::parse_bool(get_value("taskmasterd", "silent")));
+		Log.set_logfile_maxbytes(TaskMaster.logfile_maxbytes);
+		Log.set_logfile_backups(TaskMaster.logfile_backups);
 		Log.set_logfile_level(TaskMaster.loglevel);
+		Log.set_logfile_syslog(TaskMaster.logfile_syslog);
+		Log.set_logfile_stdout(Utils::parse_bool(get_value("taskmasterd", "nodaemon")) && !Utils::parse_bool(get_value("taskmasterd", "silent")));
 		Log.set_logfile(get_value("taskmasterd", "logfile"));
 		Log.set_logfile_ready(true);
 

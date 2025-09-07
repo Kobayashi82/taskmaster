@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 13:56:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:01:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,8 @@ void reload_signal(int signum) {
 
 		TaskMaster.unix_server.close();
 		TaskMaster.inet_server.close();
-		unlink(TaskMaster.unix_server.file.c_str());
-		unlink(TaskMaster.pidfile.c_str());
+		std::remove(TaskMaster.unix_server.file.c_str());
+		std::remove(TaskMaster.pidfile.c_str());
 
 		// execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 
@@ -60,6 +60,9 @@ void reload_signal(int signum) {
 		// Utils::array_free(args);
 		
 		Log.info("cerrando");
+
+		for (auto& log : Log.get_log(3))
+			std::cerr << log;
 		Log.close();
 
 		return (result);

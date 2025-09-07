@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/28 12:25:58 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:57:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:09:29 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,7 +276,7 @@
 	#pragma region "Add"
 
 		void Utils::environment_add(std::map<std::string, std::string>& env, const std::string& key, const std::string& value, bool append) {
-			if (key.empty()) return ;
+			if (key.empty()) return;
 
 			if (append && !value.empty()) {
 				auto it = env.find(key);
@@ -296,7 +296,7 @@
 	#pragma region "Add Batch"
 
 		void Utils::environment_add_batch(std::map<std::string, std::string>& env, const std::string& batch) {
-			if (batch.empty()) return ;
+			if (batch.empty()) return;
 
 			std::vector<std::string>	pairs;
 			std::string					current;

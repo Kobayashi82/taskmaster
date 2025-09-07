@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 10:37:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:55:27 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 	#include <cstring>															// strerror()
 	#include <iostream>															// std::cout
-	#include <chrono>															// 
+	#include <chrono>															// std::chrono
 
 #pragma endregion
 
@@ -30,33 +30,27 @@
 
 #pragma region "Constructors"
 
+	TaskmasterLog::TaskmasterLog() :
+		_logfile(""), _logfile_maxbytes(0), _logfile_backups(0), _logfile_level(INFO),
+		_logfile_syslog(false), _logfile_stdout(false), _logfile_ready(false),
+		_buffer_max_size(255)
+	{
+		_logRotate.setReopenCallback([this]() {
+			if (!_logfile.empty()) open();
+		});
+	}
+
+	TaskmasterLog::TaskmasterLog(const std::string& logFile, size_t maxSize, uint16_t maxBackups, uint8_t level, bool syslog, bool _stdout, bool ready) :
+		_logfile(logFile), _logfile_maxbytes(maxSize), _logfile_backups(maxBackups), _logfile_level(level),
+		_logfile_syslog(syslog), _logfile_stdout(_stdout), _logfile_ready(ready),
+		_buffer_max_size(255)
+	{
+		_logRotate.setReopenCallback([this]() {
+			if (!_logfile.empty()) open();
+		});
+	}
+
 	TaskmasterLog::~TaskmasterLog() {
-		if (_logfile_stream.is_open()) _logfile_stream.close();
-	}
-
-#pragma endregion
-
-#pragma region "Open"
-
-	int TaskmasterLog::open() {
-		if (_logfile.empty() || Utils::toUpper(_logfile) == "NONE") return (0);
-		if (_logfile_stream.is_open()) _logfile_stream.close();
-
-		_logfile_stream.open(_logfile, std::ios::app);
-		if (!_logfile_stream.is_open()) {
-			error("cannot open log file: " + _logfile + " - " + strerror(errno));
-			return (1);
-		}
-		
-		_logfile_stream << std::unitbuf;
-		return (0);
-	}
-
-#pragma endregion
-
-#pragma region "Close"
-
-	void TaskmasterLog::close() {
 		if (_logfile_stream.is_open()) _logfile_stream.close();
 	}
 
@@ -120,6 +114,25 @@
 
 	#pragma endregion
 
+	#pragma region "Buffer"
+
+		size_t TaskmasterLog::get_buffer_size() const {
+			return (_logfile_buffer.size());
+		}
+
+		size_t TaskmasterLog::get_buffer_max_size() const {
+			return (_buffer_max_size);
+		}
+	
+		std::deque<std::string> TaskmasterLog::get_log(size_t n) const {
+			if (n == 0) return {};
+
+			if (n >= _logfile_buffer.size()) return (_logfile_buffer);
+			return (std::deque<std::string>(_logfile_buffer.end() - n, _logfile_buffer.end()));
+		}
+
+	#pragma endregion
+
 #pragma endregion
 
 #pragma region "Setters"
@@ -129,6 +142,7 @@
 		void TaskmasterLog::set_logfile(const std::string& logfile) {
 			if (_logfile == logfile) return;
 			_logfile = logfile;
+			_logRotate.setLogPath(logfile);
 			open();
 		}
 
@@ -136,33 +150,23 @@
 
 	#pragma region "Max Bytes"
 
-		void TaskmasterLog::set_logfile_maxbytes(std::string logfile_maxbytes) {
-			_logfile_maxbytes = Utils::parse_size(logfile_maxbytes);
-		}
-
 		void TaskmasterLog::set_logfile_maxbytes(long logfile_maxbytes) {
 			_logfile_maxbytes = logfile_maxbytes;
+			_logRotate.setMaxSize(static_cast<size_t>(logfile_maxbytes));
 		}
 
 	#pragma endregion
 
 	#pragma region "Backups"
 
-		void TaskmasterLog::set_logfile_backups(std::string logfile_backups) {
-			_logfile_backups = std::atoi(logfile_backups.c_str());
-		}
-
 		void TaskmasterLog::set_logfile_backups(uint16_t logfile_backups) {
 			_logfile_backups = logfile_backups;
+			_logRotate.setMaxBackups(logfile_backups);
 		}
 
 	#pragma endregion
 
 	#pragma region "Level"
-
-		void TaskmasterLog::set_logfile_level(std::string logfile_level) {
-			_logfile_level = Utils::parse_loglevel(logfile_level);
-		}
 
 		void TaskmasterLog::set_logfile_level(uint8_t logfile_level) {
 			_logfile_level = logfile_level;
@@ -172,10 +176,6 @@
 
 	#pragma region "Syslog"
 
-		void TaskmasterLog::set_logfile_syslog(std::string logfile_syslog) {
-			_logfile_syslog = Utils::parse_bool(logfile_syslog);
-		}
-
 		void TaskmasterLog::set_logfile_syslog(bool logfile_syslog) {
 			_logfile_syslog = logfile_syslog;
 		}
@@ -183,10 +183,6 @@
 	#pragma endregion
 
 	#pragma region "Stdout"
-
-		void TaskmasterLog::set_logfile_stdout(std::string logfile_stdout) {
-			_logfile_stdout = Utils::parse_bool(logfile_stdout);
-		}
 
 		void TaskmasterLog::set_logfile_stdout(bool logfile_stdout) {
 			_logfile_stdout = logfile_stdout;
@@ -196,11 +192,9 @@
 
 	#pragma region "Ready"
 
-		void TaskmasterLog::set_logfile_ready(std::string logfile_ready) {
-			set_logfile_ready(Utils::parse_bool(logfile_ready));
-		}
-
 		void TaskmasterLog::set_logfile_ready(bool logfile_ready) {
+			if (_logfile_ready == logfile_ready) return;
+
 			_logfile_ready = logfile_ready;
 
 			if (_logfile_ready == true && !_logfile_buffer.empty()) {
@@ -215,14 +209,51 @@
 					}
 
 					if (!ignore) {
-						if (log.substr(0, 9) == "[GENERIC]") log = log.substr(9);
-						if (_logfile_stream.is_open())	_logfile_stream << log;
-						if (_logfile_stdout)			std::cout << log;
+						std::string output_log = log;
+						if (output_log.substr(0, 9) == "[GENERIC]") output_log = output_log.substr(9);
+						if (_logfile_stream.is_open())	_logfile_stream << output_log;
+						if (_logfile_stdout)			std::cout << output_log;
 					}
 				}
-
-				_logfile_buffer.clear();
 			}
+		}
+
+	#pragma endregion
+
+	#pragma region "Buffer"
+
+		void TaskmasterLog::set_buffer_max_size(size_t size) {
+			_buffer_max_size = size;
+		}
+
+	#pragma endregion
+
+#pragma endregion
+
+#pragma region "Manage"
+
+	#pragma region "Open"
+
+		int TaskmasterLog::open() {
+			if (_logfile.empty() || Utils::toUpper(_logfile) == "NONE") return (0);
+			if (_logfile_stream.is_open()) _logfile_stream.close();
+
+			_logfile_stream.open(_logfile, std::ios::app);
+			if (!_logfile_stream.is_open()) {
+				error("cannot open log file: " + _logfile + " - " + strerror(errno));
+				return (1);
+			}
+
+			_logfile_stream << std::unitbuf;
+			return (0);
+		}
+
+	#pragma endregion
+
+	#pragma region "Close"
+
+		void TaskmasterLog::close() {
+			if (_logfile_stream.is_open()) _logfile_stream.close();
 		}
 
 	#pragma endregion
@@ -236,13 +267,21 @@
 		void TaskmasterLog::log(const std::string& msg, const std::string& level, bool add_level) {
 			std::string log;
 
-			if (add_level)	log = getTimestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
+			if (add_level)	log = get_timestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
 			else			log = ((_logfile_ready) ? "" : "[GENERIC]") + msg + "\n";
 
-			if (!_logfile_ready) { _logfile_buffer.push_back(log); return ; }
+			add_buffer(log);
 
-			if (_logfile_stream.is_open())	_logfile_stream << log;
-			if (_logfile_stdout)			std::cout << log;
+			if (_logfile_ready) {
+				if (log.substr(0, 9) == "[GENERIC]") log = log.substr(9);
+
+				if (_logfile_stream.is_open()) {
+					_logfile_stream << log;
+					_logfile_stream.flush();
+					_logRotate.rotate(_logfile_stream);
+				}
+				if (_logfile_stdout) std::cout << log;
+			}
 		}
 
 	#pragma endregion
@@ -303,27 +342,34 @@
 
 #pragma endregion
 
-#pragma region "Get Time Stamp"
+#pragma region "Utils"
 
-	std::string TaskmasterLog::getTimestamp() const {
-		auto		now = std::chrono::system_clock::now();
-		auto		time_t = std::chrono::system_clock::to_time_t(now);
-		auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-		struct tm	*timeinfo = localtime(&time_t);
-		char		buffer[24], ms_buffer[4];
+	#pragma region "Get Time Stamp"
 
-		strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-		sprintf(ms_buffer, "%03d", (int)ms.count());
+		std::string TaskmasterLog::get_timestamp() const {
+			auto		now = std::chrono::system_clock::now();
+			auto		time_t = std::chrono::system_clock::to_time_t(now);
+			auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+			struct tm	*timeinfo = localtime(&time_t);
+			char		buffer[24], ms_buffer[4];
 
-		return (std::string(buffer) + "," + ms_buffer);
-	}
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+			sprintf(ms_buffer, "%03d", (int)ms.count());
+
+			return (std::string(buffer) + "," + ms_buffer);
+		}
+
+	#pragma endregion
+
+	#pragma region "Add To Buffer"
+
+		void TaskmasterLog::add_buffer(const std::string& log) {
+			if (log.substr(0, 9) == "[GENERIC]")	_logfile_buffer.push_back(log.substr(9));
+			else									_logfile_buffer.push_back(log);
+
+			if (_logfile_buffer.size() > _buffer_max_size) _logfile_buffer.pop_front();
+		}
+
+	#pragma endregion
 
 #pragma endregion
-			
-// 0. Parsear opciones y mostrar errores en stderr
-// 1. Crear clase vacia
-// 2. Si logfile_ready = false, log todo a logfile_buffer
-// 3. Al terminar la carga de configuracion, crear archivo si se debe
-// 4. Guardar log del level (ignorar los que no son del level) en archivo
-// 5. Si nodaemon y !silent imprimir log del level (ignorar los que no son del level) en stdout
-// 6. logfile_ready = true... ya se procesan los logs normalmente

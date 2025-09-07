@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:03:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 17:09:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,7 +218,7 @@
 #pragma region "Close"
 
 	void InetServer::close() {
-		if (sockfd == -1) return ;
+		if (sockfd == -1) return;
 		::close(sockfd); sockfd = -1;
 		Log.debug("Inet Server: socket closed successfully");
 	}
