@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/06 22:11:04 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/07 13:50:07 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,9 +64,9 @@ SRCS		= Main/Main.cpp Main/Signals.cpp					\
 																\
 			  Config/Options.cpp								\
 																\
-			  Config/Load/Initialize.cpp Config/Load/Load.cpp	\
-			  Config/Load/Section.cpp Config/Load/Keys.cpp		\
-			  Config/Load/Include.cpp							\
+			  Config/Initialize.cpp Config/Load.cpp				\
+			  Config/Section.cpp Config/Keys.cpp				\
+			  Config/Include.cpp								\
 																\
 			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp	\
 			  Logging/ProcessOutput.cpp							\
