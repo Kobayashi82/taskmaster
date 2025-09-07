@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 11:35:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 00:27:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 	#include "Config/Options.hpp"
 
-	#include <cstdint>															// uint16_t
+	#include <cstdint>															// uint16_t, uint32_t
 	#include <set>																// std::set
 	#include <map>																// std::map
 	#include <vector>															// std::vector
@@ -44,7 +44,7 @@
 				std::string	value;
 				std::string	filename;
 				uint16_t	line;
-				uint16_t	order;
+				uint32_t	order;
 			};
 
 			// Variables

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 21:44:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 01:17:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@
 
 #pragma region "Path"
 
-	bool Utils::valid_path(const std::string& value, const std::string current_path, bool is_directory, bool allow_auto, bool allow_none) {
+	bool Utils::valid_path(const std::string& value, const std::string current_path, bool is_directory, bool allow_auto, bool allow_none, bool allow_special) {
 		std::string fullPath;
 
 		if (value.empty())											{ errno = EINVAL;	return (false); }
@@ -62,9 +62,9 @@
 		std::filesystem::path p(fullPath);
 
 		auto st = std::filesystem::status(p);
-		if (std::filesystem::is_character_file(st))										return (true);
-		if (std::filesystem::is_block_file(st))											return (true);
-		if (std::filesystem::is_fifo(st))												return (true);
+		if (std::filesystem::is_character_file(st))					return (allow_special ? true : (errno = EACCES, false));
+		if (std::filesystem::is_block_file(st))						return (allow_special ? true : (errno = EACCES, false));
+		if (std::filesystem::is_fifo(st))							return (allow_special ? true : (errno = EACCES, false));
 
 		if (is_directory) {
 			if (!std::filesystem::exists(p))						{ errno = ENOENT;	return (false); }
@@ -141,12 +141,28 @@
 #pragma region "Umask"
 
 	bool Utils::valid_umask(const std::string& value) {
+		if (value.length() < 1 || value.length() > 3) return (false);
+
+		for (size_t i = 0; i < value.length(); ++i) {
+			if (value[i] < '0' || value[i] > '7') return (false);
+		}
+
+		return (true);
+	}
+
+#pragma endregion
+
+#pragma region "Chmod"
+
+	bool Utils::valid_chmod(const std::string& value) {
 		if (value.length() < 1 || value.length() > 4) return (false);
 
 		for (size_t i = 0; i < value.length(); ++i) {
 			if (value[i] < '0' || value[i] > '7') return (false);
 		}
 
+		if (value.length() == 4) if (value[0] > '4') return (false);
+		
 		return (true);
 	}
 

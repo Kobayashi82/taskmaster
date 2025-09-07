@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:58:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 00:37:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 			int			lineNumber = 0;
 			bool		invalidSection = false;
 
-			while (std::getline(file, line)) { lineNumber++; order += 2;
+			while (std::getline(file, line)) { lineNumber++; order += 7;
 				bool start_space = (!line.empty() && isspace(line[0]));
 				if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 

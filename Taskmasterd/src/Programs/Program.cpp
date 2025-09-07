@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 17:09:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 22:58:25 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,7 +254,14 @@
 					entry->value = ""; original_value = "";
 				} else Utils::environment_add_batch(env, entry->value);
 			}
-			else entry->value = Utils::remove_quotes(entry->value);
+			else {
+				entry->value = Utils::remove_quotes(entry->value);
+				if (entry->value.empty()) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, 0, entry->order + 1);
+					entry->value = Config.defaultValues[section][key];
+				}
+			}
 		}
 		catch(const std::exception& e) {
 			Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);

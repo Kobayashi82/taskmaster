@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 11:57:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 01:08:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,12 +121,13 @@
 			// Validation
 			static bool							valid_bool(const std::string& value);
 			static bool							valid_number(const std::string& value, long min = 0, long max = LONG_MAX);
-			static bool							valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false);
+			static bool							valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false, bool allow_special = false);
 			static bool							valid_signal(const std::string& value);
 			static bool							valid_code(const std::string& value);
 			static bool							valid_loglevel(const std::string& value);
 			static bool							valid_autorestart(const std::string& value);
 			static bool							valid_umask(const std::string& value);
+			static bool							valid_chmod(const std::string& value);
 			static bool							valid_user(const std::string& value);
 			static bool							valid_chown(const std::string& value);
 			static bool							valid_password(const std::string& value);
