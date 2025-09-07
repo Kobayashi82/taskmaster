@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/07 16:45:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 18:02:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:19:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,7 @@
 			// Methods
 			void	clear_log();
 			void	rotate_files();
-			bool	should_rotate(std::ofstream& logFile) const;
-			bool	should_rotate(const std::string& filePath) const;
+			bool	should_rotate(const std::string& filePath);
 
 		public:
 
@@ -67,7 +66,6 @@
 			void		set_ReopenCallback(std::function<void()> callback);
 
 			// Methods
-			void		rotate(std::ofstream& logFile);
 			void		rotate(const std::string& filePath);
 
 	};

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 18:00:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:23:21 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@
 			std::string	get_timestamp() const;
 			void		add_buffer(const std::string& log);
 			void		log(const std::string& msg, const std::string& level, bool add_level = true);
+			void		send_syslog(const std::string& msg, const std::string& level);
 
 
 		public:

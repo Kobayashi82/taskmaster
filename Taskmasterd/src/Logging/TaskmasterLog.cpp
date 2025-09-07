@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 18:00:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:43:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 	#include <cstring>															// strerror()
 	#include <iostream>															// std::cout
 	#include <chrono>															// std::chrono
+	#include <syslog.h>															// syslog functions
 
 #pragma endregion
 
@@ -35,7 +36,7 @@
 		_logfile_syslog(false), _logfile_stdout(false), _logfile_ready(false),
 		_buffer_max_size(255)
 	{
-		_logRotate.setReopenCallback([this]() {
+		_logRotate.set_ReopenCallback([this]() {
 			if (!_logfile.empty()) open();
 		});
 	}
@@ -45,13 +46,14 @@
 		_logfile_syslog(syslog), _logfile_stdout(_stdout), _logfile_ready(ready),
 		_buffer_max_size(255)
 	{
-		_logRotate.setReopenCallback([this]() {
+		_logRotate.set_ReopenCallback([this]() {
 			if (!_logfile.empty()) open();
 		});
 	}
 
 	TaskmasterLog::~TaskmasterLog() {
 		if (_logfile_stream.is_open()) _logfile_stream.close();
+		if (_logfile_syslog) closelog();
 	}
 
 #pragma endregion
@@ -142,7 +144,7 @@
 		void TaskmasterLog::set_logfile(const std::string& logfile) {
 			if (_logfile == logfile) return;
 			_logfile = logfile;
-			_logRotate.setLogPath(logfile);
+			_logRotate.set_LogPath(logfile);
 			open();
 		}
 
@@ -152,7 +154,7 @@
 
 		void TaskmasterLog::set_logfile_maxbytes(long logfile_maxbytes) {
 			_logfile_maxbytes = logfile_maxbytes;
-			_logRotate.setMaxSize(static_cast<size_t>(logfile_maxbytes));
+			_logRotate.set_MaxSize(static_cast<size_t>(logfile_maxbytes));
 		}
 
 	#pragma endregion
@@ -161,7 +163,7 @@
 
 		void TaskmasterLog::set_logfile_backups(uint16_t logfile_backups) {
 			_logfile_backups = logfile_backups;
-			_logRotate.setMaxBackups(logfile_backups);
+			_logRotate.set_MaxBackups(logfile_backups);
 		}
 
 	#pragma endregion
@@ -213,6 +215,16 @@
 						if (output_log.substr(0, 9) == "[GENERIC]") output_log = output_log.substr(9);
 						if (_logfile_stream.is_open())	_logfile_stream << output_log;
 						if (_logfile_stdout)			std::cout << output_log;
+						if (_logfile_syslog ) {
+							std::string level;
+							if (output_log.find("DEBU") != std::string::npos) level = "DEBUG";
+							if (output_log.find("INFO") != std::string::npos) level = "INFO";
+							if (output_log.find("WARN") != std::string::npos) level = "WARNING";
+							if (output_log.find("ERRO") != std::string::npos) level = "ERROR";
+							if (output_log.find("CRIT") != std::string::npos) level = "CRITICAL";
+
+							if (!level.empty()) send_syslog(output_log.substr(29), level);
+						}
 					}
 				}
 			}
@@ -254,6 +266,7 @@
 
 		void TaskmasterLog::close() {
 			if (_logfile_stream.is_open()) _logfile_stream.close();
+			if (_logfile_syslog) closelog();
 		}
 
 	#pragma endregion
@@ -261,6 +274,28 @@
 #pragma endregion
 
 #pragma region "Logging"
+
+	#pragma region "Syslog"
+
+		void TaskmasterLog::send_syslog(const std::string& msg, const std::string& level) {
+			static bool syslog_opened = false;
+
+			if (!syslog_opened) {
+				openlog("taskmasterd", LOG_PID | LOG_CONS, LOG_DAEMON);
+				syslog_opened = true;
+			}
+
+			int priority = LOG_INFO;
+			if (level == "DEBUG")		priority = LOG_DEBUG;
+			if (level == "INFO")		priority = LOG_INFO;
+			if (level == "WARNING")		priority = LOG_WARNING;
+			if (level == "ERROR")		priority = LOG_ERR;
+			if (level == "CRITICAL")	priority = LOG_CRIT;
+
+			syslog(priority, "%s", msg.c_str());
+		}
+
+	#pragma endregion
 
 	#pragma region "Get Time Stamp"
 
@@ -306,9 +341,10 @@
 				if (_logfile_stream.is_open()) {
 					_logfile_stream << log;
 					_logfile_stream.flush();
-					_logRotate.rotate(_logfile_stream);
+					_logRotate.rotate(_logfile);
 				}
 				if (_logfile_stdout) std::cout << log;
+				if (_logfile_syslog && add_level) send_syslog(log.substr(29), level);
 			}
 		}
 

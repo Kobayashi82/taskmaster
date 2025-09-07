@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 18:02:12 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:19:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,18 +123,21 @@ void LogRotate::rotate_files() {
 
 #pragma region "Should Rotate"
 
-bool LogRotate::should_rotate(std::ofstream& logFile) const {
-	if (!enabled || !_maxSize || !logFile.is_open()) return (false);
-
-	std::streampos currentPos = logFile.tellp();
-	return (static_cast<size_t>(currentPos) > _maxSize);
-}
-
-bool LogRotate::should_rotate(const std::string& filePath) const {
+bool LogRotate::should_rotate(const std::string& filePath) {
 	if (!enabled || !_maxSize || filePath.empty()) return (false);
 
 	try {
 		if (!std::filesystem::exists(filePath)) return (false);
+		
+		auto st = std::filesystem::status(filePath);
+		if (std::filesystem::is_character_file(st) || 
+			std::filesystem::is_block_file(st) || 
+			std::filesystem::is_fifo(st))
+		{
+			enabled = false;
+			return (false);
+		}
+		
 		size_t fileSize = std::filesystem::file_size(filePath);
 		return (fileSize > _maxSize);
 	} catch (const std::filesystem::filesystem_error& ex) { return (false); }
@@ -143,17 +146,6 @@ bool LogRotate::should_rotate(const std::string& filePath) const {
 #pragma endregion
 
 #pragma region "Rotate"
-
-void LogRotate::rotate(std::ofstream& logFile) {
-	if (!_maxSize || _logPath.empty()) return;
-
-	if (should_rotate(logFile)) {
-		logFile.close();
-		rotate_files();
-
-		if (_reopenCallback) _reopenCallback();
-	}
-}
 
 void LogRotate::rotate(const std::string& filePath) {
 	if (!_maxSize || filePath.empty()) return;

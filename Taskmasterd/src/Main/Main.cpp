@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 17:01:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:48:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,8 +61,6 @@ void reload_signal(int signum) {
 		
 		Log.info("cerrando");
 
-		for (auto& log : Log.get_log(3))
-			std::cerr << log;
 		Log.close();
 
 		return (result);
