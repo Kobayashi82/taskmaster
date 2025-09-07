@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:34:51 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 19:59:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:02:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,14 +82,22 @@
 		std::string section		= section_extract(line);
 		std::string sectionType	= section_type(section);
 
-		if (section.empty())													{ currentSection = ""; Utils::error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);			return (1); }
-		if (section == "include" && sections.find(section) != sections.end())	{ currentSection = ""; Utils::error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);		return (1); }
-		if (section == "program:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);	return (1); }
-		if (section == "group:")												{ currentSection = ""; Utils::error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);	return (1); }
-		if (section == "taskmasterctl") 										{ currentSection = "";																										return (1); }
-		if (section.substr(0, 13) == "fcgi-program:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
-		if (section.substr(0, 14) == "eventlistener:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
-		if (section.substr(0, 13) == "rpcinterface:")							{ currentSection = ""; Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);		return (1); }
+		if (in_reloading) {
+			if (sectionType.empty())													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);			return (1); }
+			if (section == "program:")													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);		return (1); }
+			if (section == "group:")													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);		return (1); }
+			if (section == "include" && sections.find(section) != sections.end())		{ currentSection = "";																											return (1); }
+			if (section != "include" && section.substr(0, 8) != "program:" && section.substr(0, 6) != "group:")	{ currentSection = "";																											return (1); }
+		} else {
+			if (sectionType.empty())													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] unkown section", WARNING, line_number, order);			return (1); }
+			if (section == "include" && sections.find(section) != sections.end())		{ currentSection = "";	Utils::error_add(filename, "[" + section + "] invalid section", WARNING, line_number, order);			return (1); }
+			if (section == "program:")													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] program name is missing", ERROR, line_number, order);		return (1); }
+			if (section == "group:")													{ currentSection = "";	Utils::error_add(filename, "[" + section + "] group name is missing", ERROR, line_number, order);		return (1); }
+			if (section.substr(0, 13) == "fcgi-program:")								{ currentSection = "";	Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);			return (1); }
+			if (section.substr(0, 14) == "eventlistener:")								{ currentSection = "";	Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);			return (1); }
+			if (section.substr(0, 13) == "rpcinterface:")								{ currentSection = "";	Utils::error_add(filename, "[" + section + "] not implemented", WARNING, line_number, order);			return (1); }
+			if (section == "taskmasterctl") 											{ currentSection = "";																											return (1); }
+		}
 
 		std::string check_inv_chars = section;
 		if (section.substr(0, 8) == "program:") check_inv_chars = section.substr(8);

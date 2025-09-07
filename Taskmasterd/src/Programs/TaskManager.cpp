@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:08:26 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:44:57 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -283,8 +283,203 @@
 
 		for (auto& [group, keys] : Config.sections) {
 			if (group.substr(0, 6) == "group:") {
-				if (Config.get_value(group, "programs").empty()) continue;
-				groups.emplace_back(group);
+				bool add_group = false;
+				ConfigParser::ConfigEntry *g_entry = Config.get_value_entry(group, "programs");
+				if (g_entry->value.empty()) continue;
+
+				std::vector<std::string> program_names = Utils::toVector(g_entry->value, ",");
+
+				for (const auto& program_name : program_names) {
+					auto it = std::find_if(programs.begin(), programs.end(), [&program_name](const auto& program) { return (program.name == program_name); });
+
+					if		(it == programs.end())	Utils::error_add(g_entry->filename, "[" + group + "] programs: program '" + program_name + "' not found", ERROR, g_entry->line, g_entry->order);
+					else if	(!it->disabled)			add_group = true;
+				}
+
+				if (add_group) groups.emplace_back(group);
+			}
+		}
+	}
+
+#pragma endregion
+
+#pragma region "reload"
+
+	void TaskManager::reload() {
+		reload_programs.clear();
+		groups.clear();
+
+		for (auto& [program, keys] : Config.sections) {
+			if (program.substr(0, 8) == "program:") {
+				reload_programs.emplace_back(program);
+			}
+		}
+
+		for (auto& [group, keys] : Config.sections) {
+			if (group.substr(0, 6) == "group:") {
+				bool add_group = false;
+				ConfigParser::ConfigEntry *g_entry = Config.get_value_entry(group, "programs");
+				if (g_entry->value.empty()) continue;
+
+				std::vector<std::string> program_names = Utils::toVector(g_entry->value, ",");
+
+				for (const auto& program_name : program_names) {
+					auto it = std::find_if(reload_programs.begin(), reload_programs.end(), [&program_name](const auto& program) { return (program.name == program_name); });
+
+					if		(it == reload_programs.end())	Utils::error_add(g_entry->filename, "[" + group + "] programs: program '" + program_name + "' not found", ERROR, g_entry->line, g_entry->order);
+					else if	(!it->disabled)			add_group = true;
+				}
+
+				if (add_group) groups.emplace_back(group);
+			}
+		}
+	}
+
+#pragma endregion
+
+#pragma region "process_reload"
+
+	void TaskManager::process_reload() {
+		bool is_restart = false;
+
+		auto programs_it = programs.begin();
+		while (programs_it != programs.end()) {
+			bool found = false;
+			for (auto& rld_program : reload_programs) {
+				if (programs_it->name == rld_program.name) {
+					found = true;
+					// Hay cambios en un programa
+					if (has_changes(*programs_it, rld_program)) {
+						programs_it->needs_restart = true;
+						is_restart = true;
+						Log.info("Program '" + programs_it->name + "' marked for restart due to config changes");
+					}
+					update_program(*programs_it, std::move(rld_program)); break;
+				}
+			}
+			if (!found) {
+				// El programa se ha eliminado
+				Log.info("Program '" + programs_it->name + "' removed");
+				// si esta en ejecucion, detener antes de borrar
+				programs_it = programs.erase(programs_it);
+			} else	programs_it++;
+		}
+
+		// Hay programas nuevos
+		for (auto& rld_program : reload_programs) {
+			bool found = false;
+			for (const auto& program : programs) {
+				if (rld_program.name == program.name) { found = true; break; }
+			}
+			if (!found) {
+				// Programa nuevo, añadirlo
+				Log.info("New program '" + rld_program.name + "' added");
+				programs.emplace_back(std::move(rld_program));
+			}
+		}
+
+		// Si hay cambios críticos, programar restart de procesos afectados
+		if (is_restart) process_restarts();
+		
+		reload_programs.clear();
+	}
+
+#pragma endregion
+
+#pragma region "Arreglar"
+
+	bool TaskManager::has_changes(const Program& old_prog, const Program& new_prog) {
+		// Comparar campos básicos del programa
+		if (old_prog.name != new_prog.name ||
+			old_prog.numprocs != new_prog.numprocs ||
+			old_prog.numprocs_start != new_prog.numprocs_start ||
+			old_prog.disabled != new_prog.disabled) {
+			return true;
+		}
+
+		// Si no hay procesos en alguno de los programas, hay cambios
+		if (old_prog.process.empty() || new_prog.process.empty()) {
+			return old_prog.process.size() != new_prog.process.size();
+		}
+
+		// Comparar solo el primer proceso
+		const auto& old_proc = old_prog.process[0];
+		const auto& new_proc = new_prog.process[0];
+
+		// Cambios críticos que requieren reinicio
+		return (old_proc.command != new_proc.command ||
+				old_proc.arguments != new_proc.arguments ||
+				old_proc.directory != new_proc.directory ||
+				old_proc.user != new_proc.user ||
+				old_proc.umask != new_proc.umask ||
+				old_proc.environment != new_proc.environment ||
+				old_proc.tty_mode != new_proc.tty_mode ||
+				old_proc.redirect_stderr != new_proc.redirect_stderr ||
+				old_proc.autostart != new_proc.autostart ||
+				old_proc.autorestart != new_proc.autorestart ||
+				old_proc.startsecs != new_proc.startsecs ||
+				old_proc.startretries != new_proc.startretries ||
+				old_proc.exitcodes != new_proc.exitcodes ||
+				old_proc.stopsignal != new_proc.stopsignal ||
+				old_proc.stopwaitsecs != new_proc.stopwaitsecs ||
+				old_proc.stopasgroup != new_proc.stopasgroup ||
+				old_proc.killasgroup != new_proc.killasgroup ||
+				old_proc.stdout_logfile != new_proc.stdout_logfile ||
+				old_proc.stdout_logfile_maxbytes != new_proc.stdout_logfile_maxbytes ||
+				old_proc.stdout_logfile_backups != new_proc.stdout_logfile_backups ||
+				old_proc.stdout_logfile_syslog != new_proc.stdout_logfile_syslog ||
+				old_proc.stderr_logfile != new_proc.stderr_logfile ||
+				old_proc.stderr_logfile_maxbytes != new_proc.stderr_logfile_maxbytes ||
+				old_proc.stderr_logfile_backups != new_proc.stderr_logfile_backups ||
+				old_proc.stderr_logfile_syslog != new_proc.stderr_logfile_syslog ||
+				old_proc.serverurl != new_proc.serverurl ||
+				old_proc.priority != new_proc.priority);
+	}
+	
+	void TaskManager::update_program(Program& existing_prog, Program&& new_prog) {
+		std::vector<Process> runtime_backup;
+		for (const auto& proc : existing_prog.process) {
+			Process backup;
+			backup.pid = proc.pid;
+			backup.status = proc.status;
+			backup.start_time = proc.start_time;
+			backup.stop_time = proc.stop_time;
+			backup.change_time = proc.change_time;
+			backup.uptime = proc.uptime;
+			backup.process_num = proc.process_num;
+			backup.name = proc.name;
+			runtime_backup.push_back(backup);
+		}
+
+		existing_prog.section = std::move(new_prog.section);
+		existing_prog.name = std::move(new_prog.name);
+		existing_prog.numprocs = new_prog.numprocs;
+		existing_prog.numprocs_start = new_prog.numprocs_start;
+		existing_prog.disabled = new_prog.disabled;
+		existing_prog.groups = std::move(new_prog.groups);
+		existing_prog.process = std::move(new_prog.process);
+
+		for (auto& new_proc : existing_prog.process) {
+			for (const auto& backup : runtime_backup) {
+				if (new_proc.name == backup.name || new_proc.process_num == backup.process_num) {
+					new_proc.pid = backup.pid;
+					new_proc.status = backup.status;
+					new_proc.start_time = backup.start_time;
+					new_proc.stop_time = backup.stop_time;
+					new_proc.change_time = backup.change_time;
+					new_proc.uptime = backup.uptime;
+					break;
+				}
+			}
+		}
+	}
+
+	void TaskManager::process_restarts() {
+		for (auto& program : programs) {
+			if (program.needs_restart) {
+				// parada y reinicio de procesos
+				Log.info("process restart for program: " + program.name);
+				program.needs_restart = false;
 			}
 		}
 	}

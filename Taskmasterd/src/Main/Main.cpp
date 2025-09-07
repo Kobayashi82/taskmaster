@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:57:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:46:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,15 @@
 
 	#include <iostream>															// std::cerr()
 	#include <unistd.h>															// execvpe()
+	#include <signal.h>
 
 #pragma endregion
+
+void reload_signal(int signum) {
+	(void) signum;
+	Config.reload();
+	TaskMaster.silent = true;
+}
 
 #pragma region "Main"
 
@@ -29,11 +36,14 @@
 
 		if ((result = Config.load(argc, argv))) return (result) - 1;
 
-		// for (auto& program : TaskMaster.programs) {
-		// 	for (auto& process : program.process) {
-		// 		std::cerr << process.name << "-\n";
-		// 	}
-		// }
+		std::cerr << getpid() << "\n";
+		std::cerr << TaskMaster.programs[2].process[0].name << "\n";
+		
+		signal(SIGHUP, reload_signal);
+
+		while (!TaskMaster.silent) ;
+
+		std::cerr << TaskMaster.programs[2].process[0].name << "\n";
 
 		Log.close();
 		char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
@@ -43,15 +53,12 @@
 
 		TaskMaster.unix_server.close();
 		TaskMaster.inet_server.close();
-		// execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
+		unlink(TaskMaster.unix_server.file.c_str());
+		unlink(TaskMaster.pidfile.c_str());
+		execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
 		Utils::array_free(envp);
 		Utils::array_free(args);
-
-		// std::cout << TaskMaster.programs[1].process[0].command << "\n";
-		// std::cout << TaskMaster.programs[0].groups[0] << "\n";
-		// std::cout << TaskMaster.directory << "\n";
-
-		// TaskMaster.unix_server.close();
+		
 		Log.info("cerrando");
 
 		return (result);

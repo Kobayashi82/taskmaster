@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/05 19:32:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:45:26 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@
 			uint16_t        			numprocs;
 			uint16_t        			numprocs_start;
 			bool						disabled;
+			bool						needs_restart;
 			std::vector<Process>		process;
 			std::vector<std::string>	groups;
 

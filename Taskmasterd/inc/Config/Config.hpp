@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:21:39 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 11:35:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@
 
 			// Load
 			int				load(int argc, char **argv);
+			int				reload();
 
 		private:
 
@@ -70,7 +71,9 @@
 			std::map<std::string, std::set<std::string>>				validKeys;
 			std::set<std::string>										validSections;
 			std::string													currentSection;
+			std::string													mainConfigFile;
 			bool														in_environment;
+			bool														in_reloading;
 
 			// Include
 			int							include_load_file(const std::string& filePath);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 18:55:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 11:57:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@
 			static std::string					toLower(const std::string& str);
 			static std::string					toUpper(const std::string& str);
 			static bool							isDigit(const std::string& str);
+			static std::vector<std::string>		toVector(const std::string& src, const std::string& split = " \f\v\t\r\n");
 
 			// Path
 			static std::string					expand_path(const std::string& path, const std::string current_path = "", bool expand_symbolic = true, bool weakly = true);

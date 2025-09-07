@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:51:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:45:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,6 +277,7 @@
 		std::string configFile;
 		uint16_t	order = 0;
 		disabled = false;
+		needs_restart = false;
 
 		ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "directory");
 		if (!entry)	  configFile = Utils::expand_path(".", "", true, false);
@@ -437,9 +438,11 @@
 				expand_vars(proc.environment, "environment");
 
 				current_process++;
+				if (disabled) Utils::error_add(entry->filename, "[" + section + "] program '" + name + "' is disabled due to configuration errors", ERROR, entry->line, entry->order);
 			} catch(const std::exception& e) {
 				disabled = true;
-				return;
+				Utils::error_add(entry->filename, "[" + section + "] program '" + name + "' is disabled due to configuration errors", ERROR, entry->line, entry->order);
+				return ;
 			}
 		}
 	}

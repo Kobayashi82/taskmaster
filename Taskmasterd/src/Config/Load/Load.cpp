@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:21:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:08:33 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 
 	void ConfigParser::load_file(const std::string& filePath) {
 		std::string configFile = filePath;
+		mainConfigFile = filePath;
 
 		if (configFile.empty()) {
 			const std::string candidates[] = {
@@ -146,6 +147,32 @@
 
 		TaskMaster.unix_server.start();
 		TaskMaster.inet_server.start();
+
+		return(result);
+	}
+
+#pragma endregion
+
+#pragma region "Reload"
+
+	int ConfigParser::reload() {
+		int result = 0;
+
+		in_reloading = true;
+		load_file(mainConfigFile);
+
+		TaskMaster.reload();
+
+		Utils::error_print();
+
+		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
+			if (Utils::errors_maxLevel == WARNING)	  Log.warning	("configuration reloaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)	  Log.error		("configuration reloaded with errors");
+			if (Utils::errors_maxLevel == CRITICAL)	{ Log.critical	("configuration reloaded with critical errors"); result = 2; }
+		}
+		else Log.info("configuration reloaded succesfully");
+
+		TaskMaster.process_reload();
 
 		return(result);
 	}
