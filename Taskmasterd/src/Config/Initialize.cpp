@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:17:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 13:59:50 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@
 				{"logfile_maxbytes", "50MB"},
 				{"logfile_backups", "10"},
 				{"logfile_syslog", "false"},
-				{"loglevel", "DEBUG"},
+				{"loglevel", "INFO"},
 				{"pidfile", "taskmasterd.pid"},
 				{"identifier", "taskmaster"},
 				{"childlogdir", childlogdir},
