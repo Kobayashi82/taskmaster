@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 17:55:27 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:00:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -262,6 +262,34 @@
 
 #pragma region "Logging"
 
+	#pragma region "Get Time Stamp"
+
+		std::string TaskmasterLog::get_timestamp() const {
+			auto		now = std::chrono::system_clock::now();
+			auto		time_t = std::chrono::system_clock::to_time_t(now);
+			auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+			struct tm	*timeinfo = localtime(&time_t);
+			char		buffer[24], ms_buffer[4];
+
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+			sprintf(ms_buffer, "%03d", (int)ms.count());
+
+			return (std::string(buffer) + "," + ms_buffer);
+		}
+
+	#pragma endregion
+
+	#pragma region "Add To Buffer"
+
+		void TaskmasterLog::add_buffer(const std::string& log) {
+			if (log.substr(0, 9) == "[GENERIC]")	_logfile_buffer.push_back(log.substr(9));
+			else									_logfile_buffer.push_back(log);
+
+			if (_logfile_buffer.size() > _buffer_max_size) _logfile_buffer.pop_front();
+		}
+
+	#pragma endregion
+
 	#pragma region "Log"
 
 		void TaskmasterLog::log(const std::string& msg, const std::string& level, bool add_level) {
@@ -336,38 +364,6 @@
 		void TaskmasterLog::critical(const std::string& msg) {
 			if (_logfile_level > CRITICAL) return;
 			log(msg, "CRITICAL");
-		}
-
-	#pragma endregion
-
-#pragma endregion
-
-#pragma region "Utils"
-
-	#pragma region "Get Time Stamp"
-
-		std::string TaskmasterLog::get_timestamp() const {
-			auto		now = std::chrono::system_clock::now();
-			auto		time_t = std::chrono::system_clock::to_time_t(now);
-			auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-			struct tm	*timeinfo = localtime(&time_t);
-			char		buffer[24], ms_buffer[4];
-
-			strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-			sprintf(ms_buffer, "%03d", (int)ms.count());
-
-			return (std::string(buffer) + "," + ms_buffer);
-		}
-
-	#pragma endregion
-
-	#pragma region "Add To Buffer"
-
-		void TaskmasterLog::add_buffer(const std::string& log) {
-			if (log.substr(0, 9) == "[GENERIC]")	_logfile_buffer.push_back(log.substr(9));
-			else									_logfile_buffer.push_back(log);
-
-			if (_logfile_buffer.size() > _buffer_max_size) _logfile_buffer.pop_front();
 		}
 
 	#pragma endregion

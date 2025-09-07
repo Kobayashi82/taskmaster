@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 17:31:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/07 18:00:21 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,11 @@
 			size_t					_buffer_max_size;
 			LogRotate				_logRotate;
 
-			// Methods
+			// Logging
 			std::string	get_timestamp() const;
 			void		add_buffer(const std::string& log);
+			void		log(const std::string& msg, const std::string& level, bool add_level = true);
+
 
 		public:
 
@@ -86,8 +88,7 @@
 			void					set_logfile_ready(bool logfile_ready);
 			void					set_buffer_max_size(size_t size);
 
-			// Log
-			void					log(const std::string& msg, const std::string& level, bool add_level = true);
+			// Logging
 			void					generic(const std::string& msg);
 			void					debug(const std::string& msg);
     		void					info(const std::string& msg);
