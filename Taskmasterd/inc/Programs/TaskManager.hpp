@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:46:45 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 20:35:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,8 +67,6 @@
 			UnixServer							unix_server;
 			InetServer							inet_server;
 
-			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
-			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
 			void		initialize();
 			void		reload();
 			void		process_reload();
@@ -88,8 +86,11 @@
 			std::string	validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry);
 
+			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
+
 			bool		has_changes(const Program& old_prog, const Program& new_prog);
-			void		update_program(Program& existing_prog, Program&& new_prog);
+			void		update_programs(Program& existing_prog, Program&& new_prog);
 			void		process_restarts();
 
 	};

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:07:18 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 19:05:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,8 @@
 		if (key == "stdout_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 		if (key == "stderr_events_enabled")				{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 		if (key == "stderr_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
-		
+		if (key == "environment" && value.empty())		{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
+
 		if (currentSection == "include" && key == "files") {
 			if (value.empty())							{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
 

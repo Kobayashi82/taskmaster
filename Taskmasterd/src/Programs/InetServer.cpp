@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 17:09:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 20:44:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,6 @@
 	#include <netdb.h>															// getaddrinfo(), freeaddrinfo()
 	#include <arpa/inet.h>														// inet_pton(), inet_ntoa()
 	#include <sstream>															// std::stringstream
-	#include <iostream>
 
 #pragma endregion
 
@@ -38,7 +37,7 @@
 
 #pragma endregion
 
-#pragma region "Initialize"
+#pragma region "Configuration"
 
 	#pragma region "Validate"
 
@@ -46,7 +45,7 @@
 			if (key.empty() || !entry) return {};
 
 			if (key == "password" && !entry->value.empty() && !Utils::valid_password(entry->value)) {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid SHA format", ERROR, entry->line, entry->order);
+				Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid SHA format", ERROR, entry->line, entry->order + 2);
 				entry->value = "";
 			}
 
@@ -55,7 +54,7 @@
 
 	#pragma endregion
 
-	#pragma region "Expand Vars (cambiar)"
+	#pragma region "Expand Vars"
 
 		std::string InetServer::expand_vars(std::map<std::string, std::string>& env, const std::string& key) {
 			if (key.empty()) return {};
@@ -63,23 +62,24 @@
 			ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, key);
 			if (!entry) return {};
 
-			std::string original_value = entry->value;
-
 			try {
 				entry->value = Utils::environment_expand(env, entry->value);
 				entry->value = Utils::remove_quotes(entry->value);
+				if (entry->value.empty() && key != "username" && key != "password") {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 1);
+					entry->value = Config.defaultValues[section][key];
+				}
 			}
 			catch(const std::exception& e) {
 				Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
 				if (key != "username" && key != "password") {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, 0, entry->order + 1);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 1);
 					entry->value = Config.defaultValues[section][key];
 				}
 			}
 
-			std::string final_value = validate(key, entry);
-			entry->value = original_value;
-			return (final_value);
+			return (validate(key, entry));
 		}
 
 	#pragma endregion
@@ -97,7 +97,7 @@
 			if (!Config.has_section("inet_http_server")) { disabled = true; return; }
 
 			ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "username");
-			if (entry) { configFile = entry->filename; order = entry->order + 1; }
+			if (entry) { configFile = entry->filename; order = entry->order; }
 
 			std::map<std::string, std::string> env;
 			Utils::environment_clone(env, TaskMaster.environment);

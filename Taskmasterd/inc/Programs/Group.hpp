@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:46:26 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 19:40:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,10 @@
 			std::string					section;
 			std::string					name;
 			uint16_t					priority;
-			bool						disabled;
 			std::vector<std::string>	programs;
 
 		private:
 
-			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
 			void		initialize();
 

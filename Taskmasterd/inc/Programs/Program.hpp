@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:46:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 20:28:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@
 
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
+			void		add_groups(std::map<std::string, std::string>& env, std::string& configFile, uint16_t order);
 			void		initialize();
 
 	};
