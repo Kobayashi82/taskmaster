@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 23:54:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:12:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 
 	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
+
+	#include <unistd.h>															// getuid()
 
 #pragma endregion
 
@@ -25,7 +27,7 @@
 
 #pragma region "Constructors"
 
-	ConfigParser::ConfigParser() {
+	ConfigParser::ConfigParser() : is_root(getuid() == 0), in_reloading(false) {
 		initialize();
 		default_values();
 	}
@@ -148,7 +150,7 @@
 				{"user", "do not switch"},
 				{"umask", "022"},
 				{"directory", "do not change"},
-				{"logfile", "logfile.log"},
+				{"logfile", "taskmasterd.log"},
 				{"logfile_maxbytes", "50MB"},
 				{"logfile_backups", "10"},
 				{"logfile_syslog", "false"},

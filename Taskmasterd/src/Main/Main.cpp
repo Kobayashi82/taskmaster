@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 01:19:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:47:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,9 @@
 	#include "Programs/TaskManager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
-	#include <iostream>															// std::cerr()
 	#include <unistd.h>															// execvpe()
-	#include <signal.h>
+	#include <signal.h>															// signal()
+	#include <iostream>															// std::cerr()
 
 #pragma endregion
 

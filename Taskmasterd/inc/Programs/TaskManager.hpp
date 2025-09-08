@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 13:41:35 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:46:45 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 	#include "Programs/InetServer.hpp"
 
 	#include <cstdint>															// uint8_t, uint16_t
+	#include <climits>															// LONG_MIN, LONG_MAX
 	#include <vector>															// std::vector
 
 #pragma endregion
@@ -32,7 +33,7 @@
 		public:
 
 			// Constructors
-			TaskManager() = default;
+			TaskManager();
 			TaskManager(const TaskManager&) = delete;
 			~TaskManager() = default;
 
@@ -59,6 +60,7 @@
 			uint16_t							minprocs;
 			std::map<std::string, std::string>	environment;
 
+			std::string							section;
 			std::vector<Program>				reload_programs;
 			std::vector<Program>				programs;
 			std::vector<Group>					groups;
@@ -72,6 +74,19 @@
 			void		process_reload();
 
 		private:
+
+			std::string	validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_boolean(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_number(const std::string& key, ConfigParser::ConfigEntry *entry, long min = 0, long max = LONG_MAX);
+			std::string	validate_umask(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_user(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_logfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir);
+			std::string	validate_size(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_loglevel(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_pidfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir);
+			std::string	validate_childlogdir(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir);
+			std::string	validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry);
+			std::string	validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry);
 
 			bool		has_changes(const Program& old_prog, const Program& new_prog);
 			void		update_program(Program& existing_prog, Program&& new_prog);

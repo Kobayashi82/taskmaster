@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:47:54 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 01:08:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:47:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 #pragma region "Includes"
 
 	#include <string>															// std::string
+	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
-	#include <cstdint>															// uint8_t
 	#include <map>																// std::map
 	#include <vector>															// std::vector
 
@@ -63,7 +63,6 @@
 			// Variables
 			static std::vector<ErrorInfo>				errors;
 			static uint16_t								errors_maxLevel;
-			static std::map<std::string, std::string>	environment;
 
 			// String
 			static std::string					trim(const std::string& str);
@@ -101,35 +100,28 @@
 			// Parser
 			static std::string					remove_quotes(const std::string& str);
 			static std::string					remove_comments(const std::string& line);
+			static int							parse_boolean(const std::string &value, bool unexpected = false);
+			static long							parse_number(const std::string& value, long min = LONG_MIN, long max = LONG_MAX, long default_value = 0);
+			static long							parse_size(const std::string &value);
+			static uint8_t						parse_loglevel(const std::string &value);
+			static uint8_t						parse_signal(const std::string& value);
 			static int							parse_fd_limit(uint16_t minfds);
 			static int							parse_process_limit(uint16_t minprocs);
-			static long							parse_size(const std::string &value);
-			static long							parse_number(const std::string& value, long min = LONG_MIN, long max = LONG_MAX, long default_value = 0);
-			static uint8_t						parse_signal(const std::string& value);
-			static int							parse_bool(const std::string &value, bool unexpected = false);
-			static uint8_t						parse_loglevel(const std::string &value);
 			static std::vector<std::string>		parse_arguments(const std::string& value);
 			static std::string 					parse_executable(const std::string& value);
 
-			// Array
-			static char**						toArray(const std::string& src);
-			static char**						toArray(const std::initializer_list<std::string>& src);
-			static char**						toArray(const std::map<std::string, std::string>& src);
-			static char**						toArray(const std::vector<std::string>& src);
-			static void							array_free(char **array);
-
 			// Validation
-			static bool							valid_bool(const std::string& value);
+			static bool							valid_boolean(const std::string& value);
 			static bool							valid_number(const std::string& value, long min = 0, long max = LONG_MAX);
 			static bool							valid_path(const std::string& value, const std::string current_path = "", bool is_directory = false, bool allow_auto = false, bool allow_none = false, bool allow_special = false);
+			static bool							valid_exitcodes(const std::string& value);
 			static bool							valid_signal(const std::string& value);
-			static bool							valid_code(const std::string& value);
 			static bool							valid_loglevel(const std::string& value);
 			static bool							valid_autorestart(const std::string& value);
 			static bool							valid_umask(const std::string& value);
-			static bool							valid_chmod(const std::string& value);
 			static bool							valid_user(const std::string& value);
 			static bool							valid_chown(const std::string& value);
+			static bool							valid_chmod(const std::string& value);
 			static bool							valid_password(const std::string& value);
 			static bool							valid_port(const std::string& value);
 			static bool							valid_serverurl(const std::string &value);
@@ -137,6 +129,13 @@
 			// Error
 			static void							error_add(std::string& filename, std::string msg, uint8_t level, uint16_t line, uint16_t order);
 			static void							error_print();
+
+			// Array
+			static char**						toArray(const std::string& src);
+			static char**						toArray(const std::initializer_list<std::string>& src);
+			static char**						toArray(const std::map<std::string, std::string>& src);
+			static char**						toArray(const std::vector<std::string>& src);
+			static void							array_free(char **array);
 
 	};
 

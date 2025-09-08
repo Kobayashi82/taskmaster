@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 10:17:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:05:16 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:40:25 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 #pragma endregion
 
-#pragma region "To Array"
+#pragma region "Array from String"
 
 	char** Utils::toArray(const std::string& src) {
 		static std::string split = " \f\v\t\r\n";
@@ -56,6 +56,10 @@
 		return (array);
 	}
 
+#pragma endregion
+
+#pragma region "Array from List"
+
 	char** Utils::toArray(const std::initializer_list<std::string>& src) {
 		char **array = new char*[src.size() + 1];
 
@@ -66,6 +70,10 @@
 		return (array);
 	}
 
+#pragma endregion
+
+#pragma region "Array from Map"
+
 	char** Utils::toArray(const std::map<std::string, std::string>& src) {
 		char **array = new char *[src.size() + 1];
 
@@ -75,6 +83,10 @@
 
 		return (array);
 	}
+
+#pragma endregion
+
+#pragma region "Array from Vector"
 
 	char** Utils::toArray(const std::vector<std::string>& src) {
 		char **array = new char *[src.size() + 1];

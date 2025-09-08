@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:32:25 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 01:17:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:26:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@
 
 #pragma endregion
 
-#pragma region "Bool"
+#pragma region "Boolean"
 
-	bool Utils::valid_bool(const std::string& value) {
+	bool Utils::valid_boolean(const std::string& value) {
 		std::string lower = toLower(value);
 		return (lower == "true" || lower == "false" || lower == "1" || lower == "0" || lower == "yes" || lower == "no");
 	}
@@ -90,19 +90,9 @@
 
 #pragma endregion
 
-#pragma region "Signal"
-
-	bool Utils::valid_signal(const std::string& value) {
-		std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
-
-		return (validSignals.count(toUpper(value)) > 0);
-	}
-
-#pragma endregion
-
 #pragma region "Exit Code"
 
-	bool Utils::valid_code(const std::string& value) {
+	bool Utils::valid_exitcodes(const std::string& value) {
 		if (value.empty()) return (false);
 
 		std::istringstream	ss(value);
@@ -114,6 +104,16 @@
 		}
 
 		return (true);
+	}
+
+#pragma endregion
+
+#pragma region "Signal"
+
+	bool Utils::valid_signal(const std::string& value) {
+		std::set<std::string> validSignals = { "1", "HUP", "SIGHUP", "2", "INT", "SIGINT", "3", "QUIT", "SIGQUIT", "9", "KILL", "SIGKILL", "15", "TERM", "SIGTERM", "10", "USR1", "SIGUSR1", "12", "USR2", "SIGUSR2" };
+
+		return (validSignals.count(toUpper(value)) > 0);
 	}
 
 #pragma endregion
@@ -147,22 +147,6 @@
 			if (value[i] < '0' || value[i] > '7') return (false);
 		}
 
-		return (true);
-	}
-
-#pragma endregion
-
-#pragma region "Chmod"
-
-	bool Utils::valid_chmod(const std::string& value) {
-		if (value.length() < 1 || value.length() > 4) return (false);
-
-		for (size_t i = 0; i < value.length(); ++i) {
-			if (value[i] < '0' || value[i] > '7') return (false);
-		}
-
-		if (value.length() == 4) if (value[0] > '4') return (false);
-		
 		return (true);
 	}
 
@@ -234,6 +218,22 @@
 		}
 
 		return (false);
+	}
+
+#pragma endregion
+
+#pragma region "Chmod"
+
+	bool Utils::valid_chmod(const std::string& value) {
+		if (value.length() < 1 || value.length() > 4) return (false);
+
+		for (size_t i = 0; i < value.length(); ++i) {
+			if (value[i] < '0' || value[i] > '7') return (false);
+		}
+
+		if (value.length() == 4) if (value[0] > '4') return (false);
+		
+		return (true);
 	}
 
 #pragma endregion

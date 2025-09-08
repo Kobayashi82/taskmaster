@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/04 12:03:15 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/04 12:13:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:30:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@
 #pragma region "Print"
 
 	void Utils::error_print() {
-		std::vector<std::string>						validLevels = { "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "GENERAL" };
+		std::vector<std::string>						validLevels = { "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" };
 		std::map<std::string, std::vector<ErrorInfo>>	errorsByFile;
 		std::vector<std::string>						fileOrder;
 
@@ -67,7 +67,6 @@
 					case WARNING:	Log.warning		(filename + "\n" + all_errors);	break;
 					case ERROR:		Log.error		(filename + "\n" + all_errors);	break;
 					case CRITICAL:	Log.critical	(filename + "\n" + all_errors);	break;
-					case GENERIC:	Log.generic		(filename + "\n" + all_errors);	break;
 					default:		Log.generic		(filename + "\n" + all_errors);	break;
 				}
 			}

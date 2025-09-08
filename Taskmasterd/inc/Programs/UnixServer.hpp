@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:41 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:05:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:46:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 #pragma region "Includes"
 
-	#include <cstdint>															// uint16_t
 	#include <string>															// std::string
+	#include <cstdint>															// uint16_t
 	#include <map>																// std::map
 	#include <vector>															// std::vector
 

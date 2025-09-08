@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:50:20 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 11:58:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:32:52 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 
 	#include "Utils/Utils.hpp"
 
-	#include <algorithm>														// std::transform()
-	#include <stdexcept>														// std::runtime_error()
+	#include <algorithm>														// std::transform(), std::all_of()
 
 #pragma endregion
 
@@ -102,6 +101,8 @@
 
 #pragma endregion
 
+#pragma region "To Vector"
+
 	std::vector<std::string> Utils::toVector(const std::string& src, const std::string& split) {
 		std::vector<std::string>	vec;
 		std::string					current;
@@ -129,3 +130,5 @@
 
 		return (vec);
 	}
+
+#pragma endregion

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 14:53:31 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 23:14:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:43:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,6 @@
 	#include <regex>															// std::regex_match()
 	#include <filesystem>														// std::filesystem::path()
 	#include <pwd.h>															// struct passwd, getpwuid()
-
-	#include <iostream>
-	#include <cstdlib>															// std::getenv()
 
 #pragma endregion
 

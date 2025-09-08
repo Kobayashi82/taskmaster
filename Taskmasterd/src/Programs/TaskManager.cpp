@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 01:12:34 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:23:36 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,296 +31,437 @@
 
 #pragma endregion
 
-#pragma region "Validate"
+#pragma region "Constructors"
 
-	std::string TaskManager::validate(const std::string& key, ConfigParser::ConfigEntry *entry) {
-		if (key.empty() || !entry) return {};
+	TaskManager::TaskManager() : section("taskmasterd") {}
 
-		static std::string			dir = "";
-		std::string					section = "taskmasterd";
-		std::vector<std::string>	bool_values = { "nodaemon", "silent", "logfile_syslog", "strip_ansi", "nocleanup" };
+#pragma endregion
 
-		if (key == "directory") {
-			std::string default_dir = Utils::expand_path(".", "", true, false);
-			if (!entry->value.empty() && entry->value != "do not change") {
-				entry->value = Utils::expand_path(entry->value, "", true, false);
-				if (!Utils::valid_path(entry->value, "", true)) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
-					if (!Utils::valid_path(default_dir, "", true)) {
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 3);
-						entry->value = "";
-					}else {
+#pragma region "Initialization"
+
+	#pragma region "Validate Helpers"
+
+		#pragma region "Directory"
+
+			std::string TaskManager::validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				std::string default_dir = Utils::expand_path(".", "", true, false);
+				if (!entry->value.empty() && entry->value != "do not change") {
+					entry->value = Utils::expand_path(entry->value, "", true, false);
+					if (!Utils::valid_path(entry->value, "", true)) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
+						if (!Utils::valid_path(default_dir, "", true)) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 3);
+							entry->value = "";
+						}else {
+							entry->value = default_dir;
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + ((entry->value.empty()) ? "current directory" : entry->value), WARNING, 0, entry->order + 4);
+						}
+					}
+				} else {
+					if (entry->value.empty()) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order + 2);
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + ((entry->value.empty()) ? "current directory" : entry->value), WARNING, 0, entry->order + 3);
 						entry->value = default_dir;
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + ((entry->value.empty()) ? "current directory" : entry->value), WARNING, 0, entry->order + 4);
+					}
+					if (!Utils::valid_path(default_dir, "", true)) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 4);
+						entry->value = "";
+					}
+					else entry->value = default_dir;
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Boolean"
+
+			std::string TaskManager::validate_boolean(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_boolean(entry->value)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be true or false", ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Number"
+
+			std::string TaskManager::validate_number(const std::string& key, ConfigParser::ConfigEntry *entry, long min, long max) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_number(entry->value, min, max)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between " + std::to_string(min) + " and " + std::to_string(max), ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Umask"
+
+			std::string TaskManager::validate_umask(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_umask(entry->value)) {
+				Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be in octal format", ERROR, entry->line, entry->order + 2);
+				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+				entry->value = Config.defaultValues[section][key];
+			}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+		
+		#pragma region "User"
+
+			std::string TaskManager::validate_user(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_user(entry->value)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid user", CRITICAL, entry->line, entry->order + 2);
+					entry->value = "";
+				} else {
+					if (!Config.is_root && Utils::toLower(entry->value) != "do not switch") {
+						struct passwd* pw = getpwuid(getuid());
+						if (pw && pw->pw_name != entry->value && entry->value != std::to_string(getuid()))
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry->line, entry->order + 2);
 					}
 				}
-			} else {
-				if (entry->value.empty()) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order + 2);
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + ((entry->value.empty()) ? "current directory" : entry->value), WARNING, 0, entry->order + 3);
-					entry->value = default_dir;
-				}
-				if (!Utils::valid_path(default_dir, "", true)) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 4);
-					entry->value = "";
-				}
-				else entry->value = default_dir;
+
+				return (entry->value);
 			}
-			dir = entry->value;
-		}
 
-		if (std::find(bool_values.begin(), bool_values.end(), key) != bool_values.end() && !Utils::valid_bool(entry->value)) {
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be true or false", ERROR, entry->line, entry->order + 2);
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-			entry->value = Config.defaultValues[section][key];
-		}
+		#pragma endregion
 
-		if (key == "user") {
-			if (!Utils::valid_user(entry->value)) {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid user", CRITICAL, entry->line, entry->order + 2);
-				entry->value = "";
-			} else {
-				if (!Config.is_root && Utils::toLower(entry->value) != "do not switch") {
-					struct passwd* pw = getpwuid(getuid());
-					if (pw && pw->pw_name != entry->value && entry->value != std::to_string(getuid()))
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry->line, entry->order + 2);
+		#pragma region "Logfile"
+
+			std::string TaskManager::validate_logfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+				if (key.empty() || !entry) return {};
+
+				if (Utils::toUpper(entry->value) != "NONE") {
+					entry->value = Utils::expand_path(entry->value, dir);
+					std::string default_val = Utils::expand_path(Config.defaultValues[section][key], dir);
+					if (!Utils::valid_path(entry->value, dir, false, false, false, true)) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
+						if (entry->value != default_val) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+							entry->value = default_val;
+							if (!Utils::valid_path(entry->value, dir, false, false, false, true)) {
+								Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 4);
+								entry->value = "NONE";
+							}
+						} else entry->value = "NONE";
+					}
 				}
+
+				return (entry->value);
 			}
-		}
 
-		if (key == "umask" && !Utils::valid_umask(entry->value)) {
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be in octal format", ERROR, entry->line, entry->order + 2);
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-			entry->value = Config.defaultValues[section][key];
-		}
+		#pragma endregion
 
-		if (key == "logfile") {
-			if (Utils::toUpper(entry->value) != "NONE") {
+		#pragma region "Size"
+
+			std::string TaskManager::validate_size(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				long bytes = Utils::parse_size(entry->value);
+				if (bytes == -1 || !Utils::valid_number(std::to_string(bytes), 0, 1024 * 1024 * 1024)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 0 bytes and 1024 MB", ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Log Level"
+
+			std::string TaskManager::validate_loglevel(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_loglevel(entry->value)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL", ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Pidfile"
+
+			std::string TaskManager::validate_pidfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+				if (key.empty() || !entry) return {};
+
 				entry->value = Utils::expand_path(entry->value, dir);
 				std::string default_val = Utils::expand_path(Config.defaultValues[section][key], dir);
-				if (!Utils::valid_path(entry->value, dir, false, false, false, true)) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
+				if (!Utils::valid_path(entry->value, dir)) {
 					if (entry->value != default_val) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
 						entry->value = default_val;
-						if (!Utils::valid_path(entry->value, dir, false, false, false, true)) {
+						if (!Utils::valid_path(entry->value, dir)) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 4);
+						}
+					} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 2);
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Childlogdir"
+
+			std::string TaskManager::validate_childlogdir(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+				if (key.empty() || !entry) return {};
+
+				entry->value = Utils::expand_path(entry->value, dir, true, false);
+				std::string default_val = Utils::expand_path(Config.defaultValues[section][key], dir);
+				if (!Utils::valid_path(entry->value, dir, true)) {
+					if (entry->value != default_val) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+						entry->value = default_val;
+						if (!Utils::valid_path(entry->value, dir, true)) {
 							Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 4);
 							entry->value = "NONE";
 						}
-					} else entry->value = "NONE";
-				}
-			}
-		}
-
-		if (key == "logfile_maxbytes") {
-			long bytes = Utils::parse_size(entry->value);
-			if (bytes == -1 || !Utils::valid_number(std::to_string(bytes), 0, 1024 * 1024 * 1024)) {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 0 bytes and 1024 MB", ERROR, entry->line, entry->order + 2);
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-				entry->value = Config.defaultValues[section][key];
-			}
-		}
-		if (key == "logfile_backups" && !Utils::valid_number(entry->value, 0, 1000)) {
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 0 and 1000", ERROR, entry->line, entry->order + 2);
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-			entry->value = Config.defaultValues[section][key];
-		}
-
-		if (key == "loglevel" && !Utils::valid_loglevel(entry->value)) {
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL", ERROR, entry->line, entry->order + 2);
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-			entry->value = Config.defaultValues[section][key];
-		}
-
-		if (key == "pidfile") {
-			entry->value = Utils::expand_path(entry->value, dir);
-			std::string default_val = Utils::expand_path(Config.defaultValues[section][key], dir);
-			if (!Utils::valid_path(entry->value, dir)) {
-				if (entry->value != default_val) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-					entry->value = default_val;
-					if (!Utils::valid_path(entry->value, dir)) {
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 4);
-					}
-				} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 2);
-			}
-		}
-
-		if (key == "childlogdir") {
-			entry->value = Utils::expand_path(entry->value, dir, true, false);
-			std::string default_val = Utils::expand_path(Config.defaultValues[section][key], dir);
-			if (!Utils::valid_path(entry->value, dir, true)) {
-				if (entry->value != default_val) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-					entry->value = default_val;
-					if (!Utils::valid_path(entry->value, dir, true)) {
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 4);
+					} else {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
 						entry->value = "NONE";
 					}
+				}
+				if (entry->value != "NONE") entry->value = Utils::expand_path(entry->value, dir, true, false);
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Minfds"
+
+			std::string TaskManager::validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_number(entry->value, 1, 65535)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 1 and 65535", ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+				if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
+					if (std::stoul(entry->value) > std::stoul(Config.defaultValues[section][key])) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry->line, entry->order + 4);
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 5);
+						entry->value = Config.defaultValues[section][key];
+						if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 6);
+						}
+					} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 5);
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+		#pragma region "Minprocs"
+
+			std::string TaskManager::validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry) {
+				if (key.empty() || !entry) return {};
+
+				if (!Utils::valid_number(entry->value, 1, 65535)) {
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 1 and 65535", ERROR, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
+					entry->value = Config.defaultValues[section][key];
+				}
+				if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
+					if (std::stoul(entry->value) > std::stoul(Config.defaultValues[section][key])) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry->line, entry->order + 4);
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 5);
+						entry->value = Config.defaultValues[section][key];
+						if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 6);
+						}
+					} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 5);
+				}
+
+				return (entry->value);
+			}
+
+		#pragma endregion
+
+	#pragma endregion
+
+	#pragma region "Validate"
+
+		std::string TaskManager::validate(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			if (key.empty() || !entry) return {};
+
+			static std::string dir = "";
+
+			if (key == "directory")			dir = validate_directory(key, entry);
+
+			if (key == "nodaemon")			validate_boolean(key, entry);
+			if (key == "silent")			validate_boolean(key, entry);
+			if (key == "strip_ansi")		validate_boolean(key, entry);
+			if (key == "nocleanup")			validate_boolean(key, entry);
+
+			if (key == "umask")				validate_umask(key, entry);
+			if (key == "user")				validate_user(key, entry);
+
+			if (key == "logfile")			validate_logfile(key, entry, dir);
+			if (key == "logfile_maxbytes")	validate_size(key, entry);
+			if (key == "logfile_backups")	validate_number(key, entry, 0, 1000);
+			if (key == "logfile_syslog")	validate_boolean(key, entry);
+			if (key == "loglevel")			validate_loglevel(key, entry);
+
+			if (key == "pidfile")			validate_pidfile(key, entry, dir);
+			if (key == "childlogdir")		validate_childlogdir(key, entry, dir);
+
+			if (key == "minfds")			validate_minfds(key, entry);
+			if (key == "minprocs")			validate_minprocs(key, entry);
+
+			return (entry->value);
+		}
+
+	#pragma endregion
+
+	#pragma region "Expand Vars (cambiar)"
+
+		std::string TaskManager::expand_vars(std::map<std::string, std::string>& env, const std::string& key) {
+			if (key.empty()) return {};
+
+			ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, key);
+			if (!entry) return {};
+
+			try {
+				entry->value = Utils::environment_expand(env, entry->value);
+				if (key == "environment") {
+					if (!Utils::environment_validate(entry->value)) {
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid variable format", ERROR, entry->line, entry->order);
+						entry->value = "";
+					} else Utils::environment_add_batch(env, entry->value);
 				} else {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
-					entry->value = "NONE";
+					entry->value = Utils::remove_quotes(entry->value);
+					if (entry->value.empty() && key != "directory") {
+						std::string default_value = Config.defaultValues[section][key];
+						if (key == "user" && default_value == "do not switch") default_value = "current user";
+						if (key == "logfile" && default_value == "taskmasterd.log") default_value = Utils::expand_path(default_value);
+						if (key == "pidfile" && default_value == "taskmasterd.pid") default_value = Utils::expand_path(default_value);
+						if (default_value.empty()) default_value = Config.defaultValues[section][key];
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order);
+						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + default_value, WARNING, entry->line, entry->order + 1);
+						entry->value = Config.defaultValues[section][key];
+					}
 				}
 			}
-			if (entry->value != "NONE") entry->value = Utils::expand_path(entry->value, dir, true, false);
-		}
-
-		if (key == "minfds") {
-			if (!Utils::valid_number(entry->value, 1, 65535)) {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 1 and 65535", ERROR, entry->line, entry->order + 2);
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-				entry->value = Config.defaultValues[section][key];
-			}
-			if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
-				if (std::stoul(entry->value) > std::stoul(Config.defaultValues[section][key])) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry->line, entry->order + 4);
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 5);
-					entry->value = Config.defaultValues[section][key];
-					if (Utils::parse_fd_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 6);
-					}
-				} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 5);
-			}
-		}
-
-		if (key == "minprocs") {
-			if (!Utils::valid_number(entry->value, 1, 65535)) {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": must be a value between 1 and 65535", ERROR, entry->line, entry->order + 2);
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 3);
-				entry->value = Config.defaultValues[section][key];
-			}
-			if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
-				if (std::stoul(entry->value) > std::stoul(Config.defaultValues[section][key])) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", ERROR, entry->line, entry->order + 4);
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 5);
-					entry->value = Config.defaultValues[section][key];
-					if (Utils::parse_process_limit(static_cast<uint16_t>(std::stoul(entry->value)))) {
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 6);
-					}
-				} else Utils::error_add(entry->filename, "[" + section + "] " + key + ": limit could not be applied - system limit too low or insufficient permissions", CRITICAL, entry->line, entry->order + 5);
-			}
-		}
-
-		return (entry->value);
-	}
-
-#pragma endregion
-
-#pragma region "Expand Vars (cambiar)"
-
-	std::string TaskManager::expand_vars(std::map<std::string, std::string>& env, const std::string& key) {
-		if (key.empty()) return {};
-
-		std::string section = "taskmasterd";
-
-		ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, key);
-		if (!entry) return {};
-
-		try {
-			entry->value = Utils::environment_expand(env, entry->value);
-			if (key == "environment") {
-				if (!Utils::environment_validate(entry->value)) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid variable format", ERROR, entry->line, entry->order);
-					entry->value = "";
-				} else Utils::environment_add_batch(env, entry->value);
-			} else {
-				entry->value = Utils::remove_quotes(entry->value);
-				if (entry->value.empty() && key != "directory") {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order);
+			catch(const std::exception& e) {
+				Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
+				if (key != "environment") {
 					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 1);
 					entry->value = Config.defaultValues[section][key];
+				} else entry->value = "";
+			}
+
+			return (validate(key, entry));
+		}
+
+	#pragma endregion
+
+	#pragma region "Initialize"
+
+		void TaskManager::initialize() {
+			std::string configFile;
+			ConfigParser::ConfigEntry *entry = Config.get_value_entry("taskmasterd", "directory");
+			if (!entry)	configFile = Utils::expand_path(".", "", true, false);
+			else		configFile = entry->filename;
+
+			Utils::environment_initialize(environment);
+
+			std::string HERE			= Utils::environment_get(environment, "HERE");
+			std::string HOST_NAME		= Utils::environment_get(environment, "HOST_NAME");
+
+			char hostname[255];
+			Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
+			if (!configFile.empty()) Utils::environment_add(environment, "HERE", std::filesystem::path(configFile).parent_path());
+
+			directory			= expand_vars(environment, "directory");
+			nodaemon			= Utils::parse_boolean(expand_vars(environment, "nodaemon"));
+			silent				= Utils::parse_boolean(expand_vars(environment, "silent"));
+			user				= expand_vars(environment, "user");
+			umask				= static_cast<uint16_t>(std::stoi(expand_vars(environment, "umask"), nullptr, 8));
+			logfile				= expand_vars(environment, "logfile");
+			logfile_maxbytes	= Utils::parse_size(expand_vars(environment, "logfile_maxbytes"));
+			logfile_backups		= Utils::parse_number(expand_vars(environment, "logfile_backups"), 0, 1000, 10);
+			logfile_syslog		= Utils::parse_boolean(expand_vars(environment, "logfile_syslog"));
+			loglevel			= Utils::parse_loglevel(expand_vars(environment, "loglevel"));
+			pidfile				= expand_vars(environment, "pidfile");
+			childlogdir			= expand_vars(environment, "childlogdir");
+			strip_ansi			= Utils::parse_boolean(expand_vars(environment, "strip_ansi"));
+			nocleanup			= Utils::parse_boolean(expand_vars(environment, "nocleanup"));
+			minfds				= Utils::parse_number(expand_vars(environment, "minfds"), 1, 65535, 1024);
+			minprocs			= Utils::parse_number(expand_vars(environment, "minprocs"), 1, 10000, 200);
+			identifier			= expand_vars(environment, "identifier");
+			
+			if (HERE.empty())		Utils::environment_del(environment, "HERE");
+			else					Utils::environment_add(environment, "HERE", HERE);
+			if (HOST_NAME.empty())	Utils::environment_del(environment, "HOST_NAME");
+			else					Utils::environment_add(environment, "HOST_NAME", HOST_NAME);
+
+			expand_vars(environment, "environment");
+
+			unix_server.initialize();
+			inet_server.initialize();
+
+			for (auto& [program, keys] : Config.sections) {
+				if (program.substr(0, 8) == "program:") {
+					programs.emplace_back(program);
+				}
+			}
+
+			for (auto& [group, keys] : Config.sections) {
+				if (group.substr(0, 6) == "group:") {
+					bool add_group = false;
+					ConfigParser::ConfigEntry *g_entry = Config.get_value_entry(group, "programs");
+					if (g_entry->value.empty()) continue;
+
+					std::vector<std::string> program_names = Utils::toVector(g_entry->value, ",");
+
+					for (const auto& program_name : program_names) {
+						auto it = std::find_if(programs.begin(), programs.end(), [&program_name](const auto& program) { return (program.name == program_name); });
+
+						if		(it == programs.end())	Utils::error_add(g_entry->filename, "[" + group + "] programs: program '" + program_name + "' not found", ERROR, g_entry->line, g_entry->order);
+						else if	(!it->disabled)			add_group = true;
+					}
+
+					if (add_group) groups.emplace_back(group);
 				}
 			}
 		}
-		catch(const std::exception& e) {
-			Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
-			if (key != "environment") {
-				Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 1);
-				entry->value = Config.defaultValues[section][key];
-			} else entry->value = "";
-		}
 
-		return (validate(key, entry));
-	}
+	#pragma endregion
 
 #pragma endregion
 
-#pragma region "Initialize"
-
-	void TaskManager::initialize() {
-		std::string configFile;
-		ConfigParser::ConfigEntry *entry = Config.get_value_entry("taskmasterd", "directory");
-		if (!entry)	configFile = Utils::expand_path(".", "", true, false);
-		else		configFile = entry->filename;
-
-		Utils::environment_initialize(environment);
-
-		std::string HERE			= Utils::environment_get(environment, "HERE");
-		std::string HOST_NAME		= Utils::environment_get(environment, "HOST_NAME");
-
-		char hostname[255];
-		Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
-		if (!configFile.empty()) Utils::environment_add(environment, "HERE", std::filesystem::path(configFile).parent_path());
-
-		directory			= expand_vars(environment, "directory");
-		nodaemon			= Utils::parse_bool(expand_vars(environment, "nodaemon"));
-		silent				= Utils::parse_bool(expand_vars(environment, "silent"));
-		user				= expand_vars(environment, "user");
-		umask				= static_cast<uint16_t>(std::stoi(expand_vars(environment, "umask"), nullptr, 8));
-		logfile				= expand_vars(environment, "logfile");
-		logfile_maxbytes	= Utils::parse_size(expand_vars(environment, "logfile_maxbytes"));
-		logfile_backups		= Utils::parse_number(expand_vars(environment, "logfile_backups"), 0, 1000, 10);
-		logfile_syslog		= Utils::parse_bool(expand_vars(environment, "logfile_syslog"));
-		loglevel			= Utils::parse_loglevel(expand_vars(environment, "loglevel"));
-		pidfile				= expand_vars(environment, "pidfile");
-		childlogdir			= expand_vars(environment, "childlogdir");
-		strip_ansi			= Utils::parse_bool(expand_vars(environment, "strip_ansi"));
-		nocleanup			= Utils::parse_bool(expand_vars(environment, "nocleanup"));
-		minfds				= Utils::parse_number(expand_vars(environment, "minfds"), 1, 65535, 1024);
-		minprocs			= Utils::parse_number(expand_vars(environment, "minprocs"), 1, 10000, 200);
-		identifier			= expand_vars(environment, "identifier");
-		
-		if (HERE.empty())		Utils::environment_del(environment, "HERE");
-		else					Utils::environment_add(environment, "HERE", HERE);
-		if (HOST_NAME.empty())	Utils::environment_del(environment, "HOST_NAME");
-		else					Utils::environment_add(environment, "HOST_NAME", HOST_NAME);
-
-		expand_vars(environment, "environment");
-
-		unix_server.initialize();
-		inet_server.initialize();
-
-		for (auto& [program, keys] : Config.sections) {
-			if (program.substr(0, 8) == "program:") {
-				programs.emplace_back(program);
-			}
-		}
-
-		for (auto& [group, keys] : Config.sections) {
-			if (group.substr(0, 6) == "group:") {
-				bool add_group = false;
-				ConfigParser::ConfigEntry *g_entry = Config.get_value_entry(group, "programs");
-				if (g_entry->value.empty()) continue;
-
-				std::vector<std::string> program_names = Utils::toVector(g_entry->value, ",");
-
-				for (const auto& program_name : program_names) {
-					auto it = std::find_if(programs.begin(), programs.end(), [&program_name](const auto& program) { return (program.name == program_name); });
-
-					if		(it == programs.end())	Utils::error_add(g_entry->filename, "[" + group + "] programs: program '" + program_name + "' not found", ERROR, g_entry->line, g_entry->order);
-					else if	(!it->disabled)			add_group = true;
-				}
-
-				if (add_group) groups.emplace_back(group);
-			}
-		}
-	}
-
-#pragma endregion
-
-#pragma region "reload"
+#pragma region "Reload"
 
 	void TaskManager::reload() {
 		reload_programs.clear();
@@ -354,7 +495,7 @@
 
 #pragma endregion
 
-#pragma region "process_reload"
+#pragma region "Process Reload"
 
 	void TaskManager::process_reload() {
 		bool is_restart = false;

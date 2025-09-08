@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 18:23:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:46:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,11 @@
 
 	#include "Logging/LogRotate.hpp"
 
-	#include <cstdint>															// uint8_t, uint16_t
 	#include <string>															// std::string
+	#include <cstdint>															// uint8_t, uint16_t
+	#include <fstream>															// std::ofstream
 	#include <map>																// std::map
 	#include <deque>															// std::deque
-	#include <fstream>															// std::ofstream
 
 #pragma endregion
 

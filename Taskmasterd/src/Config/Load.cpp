@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 00:37:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:14:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 	#include "Programs/TaskManager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
 
-	#include <unistd.h>															// getuid()
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
 
@@ -49,8 +48,7 @@
 #pragma region "Load File"
 
 	void ConfigParser::load_file(const std::string& filePath) {
-		std::string configFile = filePath;
-		mainConfigFile = filePath;
+		std::string configFile = mainConfigFile = filePath;
 
 		if (configFile.empty()) {
 			const std::string candidates[] = {
@@ -81,11 +79,10 @@
 			return;
 		}
 
-		currentSection.clear();
 		sections.clear();
+		currentSection.clear();
 		Utils::errors.clear();
-		Utils::errors_maxLevel = 0;
-		order = 0;
+		Utils::errors_maxLevel = order = 0;
 		in_environment = false;
 
 		std::string	line;
@@ -96,7 +93,7 @@
 			bool start_space = (!line.empty() && isspace(line[0]));
 			if ((line = Utils::trim(Utils::remove_comments(line))).empty()) continue;
 
-			if		(currentSection == "include" && is_section(line))	include_process(configFile);
+			if		(is_section(line) && currentSection == "include")	invalidSection = include_process(configFile);
 			if		(is_section(line))									invalidSection = section_parse(line, lineNumber, configFile);
 			else if	(!invalidSection)									invalidSection = key_parse(line, lineNumber, configFile, start_space) == 2;
 		}
@@ -112,7 +109,6 @@
 
 	int ConfigParser::load(int argc, char **argv) {
 		int result = 0;
-		is_root = getuid() == 0;
 
 		ConfigOptions Options;
 		if ((result = Options.parse(argc, argv))) return (result);
@@ -124,7 +120,6 @@
 
 		load_file(Options.configuration);
 		merge_options(Options);
-		TaskMaster.initialize();
 
 		std::string user = get_value("taskmasterd", "user");
 		if (is_root && (user.empty() || Utils::toLower(user) == "do not switch")) {
@@ -132,14 +127,14 @@
 			Utils::errors_maxLevel = WARNING;
 		}
 
-		Utils::error_print();
+		TaskMaster.initialize();
 
+		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
-			if (Utils::errors_maxLevel == WARNING)	  Log.warning	("configuration loaded with warnings. Review recommended");
-			if (Utils::errors_maxLevel == ERROR)	  Log.error		("configuration loaded with errors. Execution can continue");
-			if (Utils::errors_maxLevel == CRITICAL)	{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
-		}
-		else Log.info("configuration loaded succesfully");
+			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("configuration loaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)		  Log.error		("configuration loaded with errors. Execution can continue");
+			if (Utils::errors_maxLevel == CRITICAL)		{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
+		} else											  Log.info("configuration loaded succesfully");
 
 		Log.set_logfile_maxbytes(TaskMaster.logfile_maxbytes);
 		Log.set_logfile_backups(TaskMaster.logfile_backups);
@@ -170,13 +165,11 @@
 		TaskMaster.reload();
 
 		Utils::error_print();
-
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
-			if (Utils::errors_maxLevel == WARNING)	  Log.warning	("configuration reloaded with warnings. Review recommended");
-			if (Utils::errors_maxLevel == ERROR)	  Log.error		("configuration reloaded with errors");
-			if (Utils::errors_maxLevel == CRITICAL)	{ Log.critical	("configuration reloaded with critical errors"); result = 2; }
-		}
-		else Log.info("configuration reloaded succesfully");
+			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("configuration reloaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)		  Log.error		("configuration reloaded with errors");
+			if (Utils::errors_maxLevel == CRITICAL) 	{ Log.critical	("configuration reloaded with critical errors"); result = 2; }
+		} else											  Log.info("configuration reloaded succesfully");
 
 		TaskMaster.process_reload();
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/07 22:36:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/08 17:07:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,6 @@
 
 	#include <unistd.h>															// gethostname()
 	#include <filesystem>														// std::filesystem::path()
-
-	#include <iostream>
 	
 #pragma endregion
 
@@ -70,10 +68,7 @@
 		std::string check_inv_chars = line;
 		size_t open_sec = check_inv_chars.find_first_of("[");
 		size_t equal_char = check_inv_chars.find_first_of("=");
-		if (!ignore && open_sec < equal_char) {
-			Utils::error_add(filename, line + " invalid section", WARNING, line_number, order);
-			currentSection = ""; return (2);
-		}
+		if (!ignore && open_sec < equal_char)			{ Utils::error_add(filename, line + " invalid section", WARNING, line_number, order);	currentSection = "";		return (2); }
 
 		if (currentSection.empty())						{ Utils::error_add(filename, "key found outside of a section: " + line, ERROR, line_number, order);					return (1); }
 
@@ -85,26 +80,22 @@
 
 		if (!ignore && key.empty())						{ Utils::error_add(filename, "[" + currentSection + "] Empty key", ERROR, line_number, order);						return (1); }
 		if (!ignore && !key_valid(currentSection, key))	{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": invalid key", ERROR, line_number, order);		return (1); }
-
 		if (key == "stdout_events_enabled")				{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 		if (key == "stdout_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 		if (key == "stderr_events_enabled")				{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
 		if (key == "stderr_capture_maxbytes")			{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": not implemented", WARNING, line_number, order);	return (1); }
-
-		ConfigEntry entry;
+		
 		if (currentSection == "include" && key == "files") {
+			if (value.empty())							{ Utils::error_add(filename, "[" + currentSection + "] " + key + ": empty value", ERROR, line_number, order);		return (1); }
+
 			char hostname[255];
 			std::map<std::string, std::string> env;
 			Utils::environment_initialize(env);
 			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 			Utils::environment_add(env, "HERE", Utils::expand_path(std::filesystem::path(filename).parent_path(), "", true, false));
 
-			try { value = Utils::environment_expand(env, value);
-			} catch (const std::exception& e) {
-				Utils::error_add(entry.filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry.line, entry.order);
-				value = "";
-			}
-			env.clear();
+			try { value = Utils::environment_expand(env, value); }
+			catch (const std::exception& e) { Utils::error_add(filename, "[" + currentSection + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, line_number, order); value = ""; }
 		}
 		else if (start_space && in_environment) {
 			ConfigEntry *e_entry = get_value_entry(currentSection, "environment");
@@ -115,9 +106,10 @@
 			}
 			return (0);
 		}
-		else if (key == "environment" && (currentSection == "taskmasterd" || currentSection.substr(0, 8) == "program:")) in_environment = true;
-		else in_environment = false;
+		else if (key == "environment" && (currentSection == "taskmasterd" || currentSection.substr(0, 8) == "program:"))	in_environment = true;
+		else																												in_environment = false;
 
+		ConfigEntry entry;
 		entry.value = value;
 		entry.filename = filename;
 		entry.line = line_number;
