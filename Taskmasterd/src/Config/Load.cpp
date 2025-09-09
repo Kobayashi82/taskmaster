@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 15:00:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 17:29:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,10 +129,6 @@
 
 		TaskMaster.initialize();
 
-		// REMOVE
-		std::remove(TaskMaster.logfile.c_str());
-		// REMOVE
-
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
 			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("Taskmasterd: configuration loaded with warnings. Review recommended");
@@ -145,8 +141,6 @@
 		Log.set_logfile_level(TaskMaster.loglevel);
 		Log.set_logfile_syslog(TaskMaster.logfile_syslog);
 		Log.set_logfile_stdout(TaskMaster.nodaemon && !TaskMaster.silent);
-		Log.set_logfile(TaskMaster.logfile);
-		Log.set_logfile_ready(true);
 
 		return(result);
 	}

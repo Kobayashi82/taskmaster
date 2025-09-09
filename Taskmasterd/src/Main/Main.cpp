@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 14:58:49 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 17:38:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,23 @@ void reload_signal(int signum) {
 
 		signal(SIGHUP, reload_signal);
 
-		if ((result = Config.load(argc, argv))) return (result) - 1;
+		if ((result = Config.load(argc, argv))) {
+			Log.set_logfile(TaskMaster.logfile);
+			Log.set_logfile_ready(true);
+			return (result - 1);
+		}
 
 		Pidfile pidfile(TaskMaster.pidfile);
 		if (pidfile.is_locked()) {
-			Log.critical("Pidfile: lock already in use");
+			std::cerr << "Error: another taskmasterd instance is already running\n";
 			return (1);
 		}
+
+		// REMOVE
+		std::remove(TaskMaster.logfile.c_str());
+		// REMOVE
+		Log.set_logfile(TaskMaster.logfile);
+		Log.set_logfile_ready(true);
 
 		// Daemonize
 		result = daemonize(pidfile);
