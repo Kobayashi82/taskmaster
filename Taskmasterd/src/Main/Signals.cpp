@@ -6,21 +6,24 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/16 11:44:57 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 18:37:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 20:08:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Config/Signals.hpp"
+	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
+	#include "Main/Signals.hpp"
 
-	#include <iostream>															// std::getline(), std::cerr(), std::exit()
+	#include <iostream>															// std::exit()
 	#include <unistd.h>															// close()
 	#include <csignal>															// std::signal()
 	#include <sys/wait.h>														// waitpid()
 
 #pragma endregion
+
+	volatile sig_atomic_t Signals::signum = 0;
 
 #pragma region "Handlers"
 
@@ -53,9 +56,9 @@
 
 	#pragma region "SIGHUP"
 
-		void Signals::sighup_handler(int sig) {
-			Log.info("Signal: SIGHUP received. eload configuration required");
-			signum = sig;
+		void Signals::sighup_handler(int sig) { (void) sig;
+			Log.info("Signal: SIGHUP received. Reloading configuration");
+			Config.reload();
 		}
 
 	#pragma endregion
@@ -65,6 +68,7 @@
 		void Signals::sigsev_handler(int sig) {
 			Log.critical("Signal: SIGSEV received. Segmentation fault");
 
+			// Cleanup
 			signal(SIGSEGV, SIG_DFL);
 			raise(SIGSEGV);
 			std::exit(128 + sig);
@@ -74,15 +78,16 @@
 
 	#pragma region "SIGPIPE"
 
-		void Signals::sigpipe_handler(int sig) { signum = sig;
-			Log.info("Signal: SIGPIPE received. Shell or client connection closed");
+		void Signals::sigpipe_handler(int sig) { (void) sig;
+
 		}
 
 	#pragma endregion
 
 	#pragma region "SIGCHLD"
 
-		void Signals::sigchld_handler(int sig) { signum = sig;
+		void Signals::sigchld_handler(int sig) { (void) sig;
+
 		}
 
 	#pragma endregion
@@ -91,18 +96,13 @@
 
 #pragma region "Set"
 
-	int Signals::set() {
-		int result = 0;
-
-		if (std::signal(SIGINT,  sigint_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGINT failed");  }	// Interrupt from keyboard (Ctrl+C)
-		if (std::signal(SIGTERM, sigterm_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGTERM failed"); }	// Request to terminate the program gracefully (sent by 'kill' or system shutdown)
-		if (std::signal(SIGHUP,  sighup_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGHUP failed");  }	// Terminal hangup or controlling process terminated (often used to reload config)
-		if (std::signal(SIGQUIT, sigquit_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGQUIT failed"); }	// Quit from keyboard (Ctrl+\)
-		if (std::signal(SIGPIPE, sigpipe_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGPIPE failed"); }	// Broken pipe (write to pipe with no readers)
-		if (std::signal(SIGSEGV, sigsev_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGSEGV failed"); }	// Invalid memory reference (segmentation fault)
-		if (std::signal(SIGCHLD, sigchld_handler)	== SIG_ERR) { result++; } // Log.warning("Signal: SIGCHLD failed"); }	// Child process stopped or terminated (used to reap zombies)
-
-		return (result);
+	void Signals::set_for_load() {
+		std::signal(SIGQUIT, sigquit_handler);
+		std::signal(SIGINT, sigint_handler);
+		std::signal(SIGTERM, sigterm_handler);
+		std::signal(SIGHUP, SIG_IGN);
+		std::signal(SIGSEGV, sigsev_handler);
+		std::signal(SIGPIPE, SIG_IGN);
 	}
 
 #pragma endregion

@@ -6,13 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 17:38:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 20:18:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Main/Taskmasterd.hpp"
+	#include "Main/Signals.hpp"
 
 	#include <unistd.h>															// execvpe()
 	#include <signal.h>															// signal()
@@ -20,18 +21,12 @@
 
 #pragma endregion
 
-void reload_signal(int signum) {
-	(void) signum;
-	Config.reload();
-	TaskMaster.silent = true;
-}
-
 #pragma region "Main"
 
 	int main(int argc, char **argv) {
 		int result = 0;
 
-		signal(SIGHUP, reload_signal);
+		Signals::set_for_load();
 
 		if ((result = Config.load(argc, argv))) {
 			Log.set_logfile(TaskMaster.logfile);
@@ -45,16 +40,29 @@ void reload_signal(int signum) {
 			return (1);
 		}
 
-		// REMOVE
-		std::remove(TaskMaster.logfile.c_str());
-		// REMOVE
+		sleep(5);
+		std::remove(TaskMaster.logfile.c_str());		// REMOVE
 		Log.set_logfile(TaskMaster.logfile);
 		Log.set_logfile_ready(true);
 
 		// Daemonize
 		result = daemonize(pidfile);
 		if (result == -1)	return (0);
-		if (result)			return (result);
+		if (result)			{
+			pidfile.unlock();
+			Log.info("Taskmasterd: closed");
+			Log.close();
+			return (result);
+		}
+
+		if (Signals::signum) {
+			pidfile.unlock();
+			Log.info("Taskmasterd: closed");
+			Log.close();
+			return (128 + Signals::signum);
+		}
+
+		Log.info("Taskmasterd: started with pid " + std::to_string(getpid()));
 
 		TaskMaster.unix_server.start();
 		TaskMaster.inet_server.start();
@@ -80,11 +88,11 @@ void reload_signal(int signum) {
 		// Utils::array_free(envp);
 		// Utils::array_free(args);
 
-		Log.info("Taskmasterd: closing");
-		Log.close();
 		pidfile.unlock();
+		Log.info("Taskmasterd: closed");
+		Log.close();
 
-		// if (!result && TaskMaster.signum) result = 128 + TaskMaster.signum;
+		if (!result && Signals::signum) result = 128 + Signals::signum;
 		return (result);
 	}
 

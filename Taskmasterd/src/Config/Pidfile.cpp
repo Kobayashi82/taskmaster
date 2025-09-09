@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:41:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 14:55:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 20:26:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@
 		if (!locked) return;
 		if (_pidfd >= 0) ::close(_pidfd); _pidfd = -1;
 		if (std::remove(_pidfile.c_str()) && errno != ENOENT)	Log.error("Pidfile: failed to unlock - " + std::string(strerror(errno)));
-		else													Log.debug("Pidfile: unlock");
+		else													Log.debug("Pidfile: unlocked at " + _pidfile);
 		locked = false;
 	}
 
@@ -80,7 +80,7 @@
 		}
 
 		locked = true;
-		Log.debug("Pidfile: locked");
+		Log.debug("Pidfile: locked at " + _pidfile);
 
 		return (0);
 	}
