@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:44:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 14:56:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@
 			std::string configFile;
 			uint16_t	order = 0;
 			disabled = false;
-			sockfd = 0;
+			sockfd = -1;
 			port = 9001;
 
 			section = "inet_http_server";
@@ -184,7 +184,7 @@
 			Log.error("Inet Server: failed to create socket - " + std::string(strerror(errno)));
 			disabled = true; return (1);
 		}
-		Log.debug("Inet Server: socket created successfully");
+		Log.debug("Inet Server: socket created");
 
 		sockaddr_in addr;
 		std::memset(&addr, 0, sizeof(addr));
@@ -208,7 +208,7 @@
 			Log.error("Inet Server: failed to listen on socket - " + std::string(strerror(errno)));
 			::close(sockfd); disabled = true; return (1);
 		}
-		Log.info("Inet Server: started successfully on " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
+		Log.info("Inet Server: started on " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
 
 		return (0);
 	}
@@ -220,7 +220,7 @@
 	void InetServer::close() {
 		if (sockfd == -1) return;
 		::close(sockfd); sockfd = -1;
-		Log.debug("Inet Server: socket closed successfully");
+		Log.debug("Inet Server: socket closed");
 	}
 
 #pragma endregion

@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/07 13:50:07 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/09 14:38:56 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,10 +60,9 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp Main/Signals.cpp					\
+SRCS		= Main/Main.cpp Main/Signals.cpp Main/Daemon.cpp	\
 																\
-			  Config/Options.cpp								\
-																\
+			  Config/Options.cpp Config/Pidfile.cpp				\
 			  Config/Initialize.cpp Config/Load.cpp				\
 			  Config/Section.cpp Config/Keys.cpp				\
 			  Config/Include.cpp								\

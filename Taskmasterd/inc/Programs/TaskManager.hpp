@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:35:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:50:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,12 @@
 			// Constructors
 			TaskManager();
 			TaskManager(const TaskManager&) = delete;
+			TaskManager(TaskManager&&) = delete;
 			~TaskManager() = default;
 
 			// Overloads
 			TaskManager& operator=(const TaskManager&) = delete;
+			TaskManager& operator=(TaskManager&&) = delete;
 
 			// Variables
 			bool								nodaemon;

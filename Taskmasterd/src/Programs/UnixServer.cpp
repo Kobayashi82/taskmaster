@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:43:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:00:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@
 			std::string configFile;
 			uint16_t	order = 0;
 			disabled = false;
-			sockfd = 0;
+			sockfd = -1;
 			chown_uid = -1;
 			chown_gid = -1;
 
@@ -253,7 +253,7 @@
 			Log.error("Unix Server: failed to create socket - " + std::string(strerror(errno)));
 			disabled = true; return (1);
 		}
-		Log.debug("Unix Server: socket created successfully");
+		Log.debug("Unix Server: socket created");
 
 		sockaddr_un addr;
 		std::memset(&addr, 0, sizeof(addr));
@@ -278,7 +278,7 @@
 			Log.error("Unix Server: failed to listen on socket - " + std::string(strerror(errno)));
 			::close(sockfd); disabled = true; return (1);
 		}
-		Log.info("Unix Server: started successfully");
+		Log.info("Unix Server: started on " + file);
 
 		return (0);
 	}
@@ -290,7 +290,7 @@
 	void UnixServer::close() {
 		if (sockfd == -1) return;
 		::close(sockfd); sockfd = -1;
-		Log.debug("Unix Server: socket closed successfully");
+		Log.debug("Unix Server: socket closed");
 	}
 
 #pragma endregion

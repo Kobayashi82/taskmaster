@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:14:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 15:00:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,12 +129,16 @@
 
 		TaskMaster.initialize();
 
+		// REMOVE
+		std::remove(TaskMaster.logfile.c_str());
+		// REMOVE
+
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
-			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("configuration loaded with warnings. Review recommended");
-			if (Utils::errors_maxLevel == ERROR)		  Log.error		("configuration loaded with errors. Execution can continue");
-			if (Utils::errors_maxLevel == CRITICAL)		{ Log.critical	("configuration loaded with critical errors. Execution aborted"); result = 2; }
-		} else											  Log.info("configuration loaded succesfully");
+			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("Taskmasterd: configuration loaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)		  Log.error		("Taskmasterd: configuration loaded with errors. Execution can continue");
+			if (Utils::errors_maxLevel == CRITICAL)		{ Log.critical	("Taskmasterd: configuration loaded with critical errors. Execution aborted"); result = 2; }
+		} else											  Log.info("Taskmasterd: configuration loaded");
 
 		Log.set_logfile_maxbytes(TaskMaster.logfile_maxbytes);
 		Log.set_logfile_backups(TaskMaster.logfile_backups);
@@ -143,11 +147,6 @@
 		Log.set_logfile_stdout(TaskMaster.nodaemon && !TaskMaster.silent);
 		Log.set_logfile(TaskMaster.logfile);
 		Log.set_logfile_ready(true);
-
-		if (!result) {
-			TaskMaster.unix_server.start();
-			TaskMaster.inet_server.start();
-		}
 
 		return(result);
 	}

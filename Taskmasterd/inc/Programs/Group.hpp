@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 19:40:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:45:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 		public:
 
 			// Constructors
+			Group() = delete;
 			Group(const std::string _name);
 			Group(const Group&) = default;
 			Group(Group&&) = default;

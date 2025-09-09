@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:28:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 12:45:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 		public:
 
 			// Constructors
+			Program() = delete;
 			Program(const std::string _name);
 			Program(const Program&) = default;
 			Program(Program&&) = default;

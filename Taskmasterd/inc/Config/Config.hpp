@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:05:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 13:43:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@
 			std::map<std::string, std::map<std::string, ConfigEntry>>	sections;
 			std::map<std::string, std::map<std::string, std::string>>	defaultValues;
 			bool														is_root;
+			
 
 			// Keys
 			ConfigEntry*	get_value_entry(const std::string& section, const std::string& key);
