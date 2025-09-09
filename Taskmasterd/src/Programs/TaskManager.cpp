@@ -6,15 +6,17 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 12:50:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:56:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
 	#include "Utils/Utils.hpp"
+	#include "Config/Pidfile.hpp"
 	#include "Programs/TaskManager.hpp"
 	#include "Logging/TaskmasterLog.hpp"
+	#include "Main/Signal.hpp"
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname()
@@ -33,7 +35,7 @@
 
 #pragma region "Constructors"
 
-	TaskManager::TaskManager() : section("taskmasterd") {}
+	TaskManager::TaskManager() : running(true), pid(0), pidfile_ptr(nullptr), section("taskmasterd") {}
 
 #pragma endregion
 
@@ -657,5 +659,18 @@
 		}
 
 	#pragma endregion
+
+#pragma endregion
+
+#pragma region "Clean-Up"
+
+	void TaskManager::clean_up() {
+		unix_server.close();
+		inet_server.close();
+		pidfile_ptr->unlock();
+		Signal::close_fd();
+		Log.info("Taskmasterd: closed\n");
+		Log.close();
+	}
 
 #pragma endregion

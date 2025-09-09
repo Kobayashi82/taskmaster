@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Signals.hpp                                        :+:      :+:    :+:   */
+/*   Signal.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 18:09:55 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 19:51:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:04:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,14 @@
 
 #pragma endregion
 
-#pragma region "Signals"
+#pragma region "Signal"
 
-	class Signals {
+	class Signal {
 
 		private:
+
+			//Variables
+			static int	sigfd;
 
 			static void	sigquit_handler(int sig);
 			static void	sigint_handler(int sig);
@@ -35,18 +38,23 @@
 		public:
 
 			// Constructors
-			Signals() = delete;
-			Signals(const Signals&) = delete;
-			Signals(Signals&&) = delete;
-			~Signals() = delete;
+			Signal() = delete;
+			Signal(const Signal&) = delete;
+			Signal(Signal&&) = delete;
+			~Signal() = delete;
 
 			// Overloads
-			Signals& operator=(const Signals&) = delete;
-			Signals& operator=(Signals&&) = delete;
+			Signal& operator=(const Signal&) = delete;
+			Signal& operator=(Signal&&) = delete;
 
 			static volatile sig_atomic_t signum;
 
-			static void set_for_load();
+			static void	set_for_load();
+			static void	set_default();
+			static void	set_ignore();
+
+			static int	create_fd();
+			static void	close_fd();
 
 	};
 

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:43:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 13:46:11 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 21:33:07 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 			// Variables
 			std::string	_pidfile;
 			int			_pidfd;
-			bool		locked;
+			bool		_locked;
 
 		public:
 

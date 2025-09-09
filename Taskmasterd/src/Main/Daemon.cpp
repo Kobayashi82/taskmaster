@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 13:53:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 14:54:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 21:27:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 	#include "Main/Taskmasterd.hpp"
 
-	#include <unistd.h>															// fork(), setsid(), chdir(), close()
+	#include <unistd.h>															// fork(), setsid(), chdir(), close(), getpid()
 	#include <sys/stat.h>														// umask()
 	#include <sstream>															// std::ostringstream
 	#include <iomanip>															// std::setw(), std::setfill()
@@ -71,6 +71,8 @@
 
 		// 7. flock()
 		if (pidfile.lock()) return (1);
+
+		TaskMaster.pid = getpid();
 
 		return (0);
 	}

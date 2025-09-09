@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:41:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 20:26:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:08:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 
 #pragma region "Constructors"
 
-	Pidfile::Pidfile(const std::string& pidfile) : _pidfile(pidfile), _pidfd(-1), locked(false) {}
+	Pidfile::Pidfile(const std::string& pidfile) : _pidfile(pidfile), _pidfd(-1), _locked(false) {}
 
 	Pidfile::~Pidfile() { unlock(); }
 
@@ -50,11 +50,11 @@
 #pragma region "Unlock"
 
 	void Pidfile::unlock() {
-		if (!locked) return;
+		if (!_locked) return;
 		if (_pidfd >= 0) ::close(_pidfd); _pidfd = -1;
 		if (std::remove(_pidfile.c_str()) && errno != ENOENT)	Log.error("Pidfile: failed to unlock - " + std::string(strerror(errno)));
 		else													Log.debug("Pidfile: unlocked at " + _pidfile);
-		locked = false;
+		_locked = false;
 	}
 
 #pragma endregion
@@ -62,6 +62,8 @@
 #pragma region "Lock"
 
 	int Pidfile::lock() {
+		if (_locked) return (0);
+
 		_pidfd = open(_pidfile.c_str(), O_RDWR|O_CREAT|O_TRUNC, 0640);
 		if (_pidfd < 0) {
 			Log.critical("Pidfile: failed to create lock - " + std::string(strerror(errno)));
@@ -79,7 +81,7 @@
 			Log.error("Pidfile: failed to write PID - " + std::string(strerror(errno)));
 		}
 
-		locked = true;
+		_locked = true;
 		Log.debug("Pidfile: locked at " + _pidfile);
 
 		return (0);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 15:00:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 21:42:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,6 +291,7 @@
 		if (sockfd == -1) return;
 		::close(sockfd); sockfd = -1;
 		Log.debug("Unix Server: socket closed");
+		if (std::remove(file.c_str()) && errno != ENOENT) Log.debug("Unix Server: failed to remove socket file - " + std::string(strerror(errno)));	
 	}
 
 #pragma endregion

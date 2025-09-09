@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 17:29:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:49:21 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
+	#include <iostream>															// std::cerr()
 
 #pragma endregion
 
@@ -131,10 +132,13 @@
 
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
-			if (Utils::errors_maxLevel == WARNING)		  Log.warning	("Taskmasterd: configuration loaded with warnings. Review recommended");
-			if (Utils::errors_maxLevel == ERROR)		  Log.error		("Taskmasterd: configuration loaded with errors. Execution can continue");
-			if (Utils::errors_maxLevel == CRITICAL)		{ Log.critical	("Taskmasterd: configuration loaded with critical errors. Execution aborted"); result = 2; }
-		} else											  Log.info("Taskmasterd: configuration loaded");
+			if (Utils::errors_maxLevel == WARNING)				Log.warning ("Taskmasterd: configuration loaded with warnings. Review recommended");
+			if (Utils::errors_maxLevel == ERROR)				Log.error ("Taskmasterd: configuration loaded with errors. Execution can continue");
+			if (Utils::errors_maxLevel == CRITICAL) { result = 2;
+				if (!TaskMaster.nodaemon || TaskMaster.silent)	std::cerr << "Error: critical errors in the configuration file" << std::endl;
+				else											Log.critical ("Taskmasterd: configuration loaded with critical errors. Execution aborted");
+			}
+		} else													Log.info("Taskmasterd: configuration loaded");
 
 		Log.set_logfile_maxbytes(TaskMaster.logfile_maxbytes);
 		Log.set_logfile_backups(TaskMaster.logfile_backups);

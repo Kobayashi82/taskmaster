@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 12:50:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:22:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 
 #pragma region "TaskManager"
 
+	class Pidfile;
 	class TaskManager {
 
 		public:
@@ -62,6 +63,10 @@
 			uint16_t							minprocs;
 			std::map<std::string, std::string>	environment;
 
+
+			bool								running;
+			pid_t								pid;
+			Pidfile								*pidfile_ptr;
 			std::string							section;
 			std::vector<Program>				reload_programs;
 			std::vector<Program>				programs;
@@ -72,6 +77,7 @@
 			void		initialize();
 			void		reload();
 			void		process_reload();
+			void		clean_up();
 
 		private:
 

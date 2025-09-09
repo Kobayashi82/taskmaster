@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/12 12:15:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/06 22:12:03 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/09 22:38:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@
 			std::cerr << "  -h,  --help                     Display this help message\n";
   			std::cerr << "  -v,  --version                  Show program version\n";
 			std::cerr << "\n";
-			std::cerr << "Report bugs to <kobayashi82@outlook.com>\n";
+			std::cerr << "Report bugs to <kobayashi82@outlook.com>" << std::endl;
 
 			return (1);
 		}
@@ -144,7 +144,7 @@
 			std::cerr << "This is free software: you are free to change and redistribute it.\n";
 			std::cerr << "There is NO WARRANTY, to the extent permitted by law.\n";
 			std::cerr << "\n";
-			std::cerr << "Written by Kobayashi82 (vzurera-).\n";
+			std::cerr << "Written by Kobayashi82 (vzurera-)." << std::endl;
 
 			return (1);
 		}
@@ -154,7 +154,7 @@
 	#pragma region "Invalid"
 
 		int ConfigOptions::invalid() const {
-			std::cerr << "Try '" << fullName << " --help' for more information.\n";
+			std::cerr << "Try '" << fullName << " --help' for more information." << std::endl;
 			return (2);
 		}
 
@@ -218,7 +218,7 @@
 		}
 
 		if (optind < argc) {
-			std::cerr << "taskmasterd: invalid argument: " << argv[optind] << "\n";
+			std::cerr << "taskmasterd: invalid argument: " << argv[optind] << std::endl;
 			invalid(); return (2);
 		}
 
