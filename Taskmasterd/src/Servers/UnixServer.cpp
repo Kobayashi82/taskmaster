@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:10:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:15:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,7 +261,7 @@
 			disabled = true;
 			return (1);
 		}
-		Log.debug("Unix Server: socket created");
+		Log.debug("Unix Server: socket created: " + std::to_string(sockfd));
 
 		sockaddr_un addr;
 		std::memset(&addr, 0, sizeof(addr));

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:11:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:17:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@
 				Log.critical("Epoll: failed to create epoll instance - " + std::string(strerror(errno)));
 				return (1);
 			}
+
+			Log.debug("Epoll: epoll create: " + std::to_string(_epoll_fd));
 
 			return (0);
 	}

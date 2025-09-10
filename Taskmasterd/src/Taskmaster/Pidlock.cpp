@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:41:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:17:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:21:01 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@
 		}
 
 		_locked = true;
-		Log.debug("Pidlock: locked at " + _pidfile);
+		Log.debug("Pidlock: locked at " + _pidfile + " (FD: " + std::to_string(_pidfd) + ")");
 
 		return (0);
 	}
