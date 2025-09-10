@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:33:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:59:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,9 @@
 			Taskmaster& operator=(const Taskmaster&) = delete;
 			Taskmaster& operator=(Taskmaster&&) = delete;
 
-			// Variables
+			// --- VARIABLES ---
+
+			// Configuration
 			bool								nodaemon;
 			bool								silent;
 			std::string							user;
@@ -67,26 +69,38 @@
 			uint16_t							minprocs;
 			std::map<std::string, std::string>	environment;
 			std::string							section;
+			std::vector<Program>				programs;
+			std::vector<Group>					groups;
+			std::vector<Program>				reload_programs;
 
+			// Servers
+			UnixServer							unix_server;
+			InetServer							inet_server;
+
+			// Taskmaster
 			bool								running;
 			pid_t								pid;
 			Pidlock								pidlock;
 			Epoll								epoll;
 
-			std::vector<Program>				programs;
-			std::vector<Group>					groups;
-			std::vector<Program>				reload_programs;
-			UnixServer							unix_server;
-			InetServer							inet_server;
+			// --- METHODS ---
 
+			// Configuration
 			void		initialize();
+
+			// Reload
 			void		reload();
 			void		process_reload();
-			void		clean_up(bool silent = false);
+
+			// Taskmaster
 			int			daemonize();
+			void		cleanup(bool silent = false);
 
 		private:
+		
+			// --- METHODS ---
 
+			// Configuration
 			std::string	validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	validate_boolean(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	validate_number(const std::string& key, ConfigParser::ConfigEntry *entry, long min = 0, long max = LONG_MAX);
@@ -99,10 +113,10 @@
 			std::string	validate_childlogdir(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir);
 			std::string	validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry);
-
 			std::string	validate(const std::string& key, ConfigParser::ConfigEntry *entry);
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
 
+			// Reload
 			bool		has_changes(const Program& old_prog, const Program& new_prog);
 			void		update_programs(Program& existing_prog, Program&& new_prog);
 			void		process_restarts();

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:33:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:50:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -659,9 +659,9 @@
 
 #pragma endregion
 
-#pragma region "Clean-Up"
+#pragma region "Clean Up"
 
-	void Taskmaster::clean_up(bool silent) {
+	void Taskmaster::cleanup(bool silent) {
 		unix_server.close();
 		inet_server.close();
 		pidlock.unlock();

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:36:50 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:48:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 		if ((result = Config.load(argc, argv))) {
 			Log.set_logfile(tskm.logfile);
 			Log.set_logfile_ready(true);
-			tskm.clean_up();
+			tskm.cleanup();
 			return (result - 1);
 		}
 
@@ -43,20 +43,20 @@
 		Log.set_logfile_ready(true);
 
 		result = tskm.daemonize();
-		if (result == -1)	{ tskm.clean_up(true);	return (0);					   }
-		if (result)			{ tskm.clean_up();		return (result);			   }
-		if (Signal::signum)	{ tskm.clean_up();		return (128 + Signal::signum); }
+		if (result == -1)	{ tskm.cleanup(true);	return (0);					   }
+		if (result)			{ tskm.cleanup();		return (result);			   }
+		if (Signal::signum)	{ tskm.cleanup();		return (128 + Signal::signum); }
 
 		Log.info("Taskmasterd: started with pid " + std::to_string(tskm.pid));
 
 		int sigfd = Signal::create();
 		if (sigfd == -1) {
-			tskm.clean_up();
+			tskm.cleanup();
 			return (1);
 		}
 
 		if (tskm.epoll.create() || tskm.epoll.add(sigfd, true, false)) {
-			tskm.clean_up();
+			tskm.cleanup();
 			return (1);
 		}
 
@@ -68,7 +68,7 @@
 			if (tskm.epoll.wait()) break;
 		}
 
-		tskm.clean_up();
+		tskm.cleanup();
 
 		return ((Signal::signum) ? 128 + Signal::signum : result);
 	}

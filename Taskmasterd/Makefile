@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/10 18:25:17 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/10 18:54:23 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,16 +60,15 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp										\
-																\
-			  Config/Options.cpp Config/Initialize.cpp			\
+SRCS		= Config/Options.cpp Config/Initialize.cpp			\
 			  Config/Load.cpp Config/Include.cpp				\
 			  Config/Section.cpp Config/Keys.cpp				\
 																\
 			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp	\
 			  Logging/ProcessOutput.cpp							\
 																\
-			  Taskmaster/Taskmaster.cpp Taskmaster/Pidlock.cpp	\
+			  Taskmaster/Main.cpp Taskmaster/Taskmaster.cpp		\
+			  Taskmaster/Pidlock.cpp							\
 																\
 			  Programs/Program.cpp Programs/Process.cpp			\
 			  Programs/Group.cpp								\
