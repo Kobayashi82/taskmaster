@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:21:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:33:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -669,6 +669,9 @@
 		Signal::close();
 		if (!silent) Log.info("Taskmasterd: closed\n");
 		Log.close();
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
 	}
 
 #pragma endregion
@@ -704,7 +707,9 @@
 			Log.debug("Daemon: second fork completed");
 
 			// 4. close()
-			close(0); close(1); close(2);
+			close(STDIN_FILENO);
+			close(STDOUT_FILENO);
+			close(STDERR_FILENO);
 			Log.debug("Daemon: standard file descriptors closed");
 
 			Log.debug("Daemon: completed successfully");
