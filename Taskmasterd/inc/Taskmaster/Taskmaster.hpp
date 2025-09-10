@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   TaskManager.hpp                                    :+:      :+:    :+:   */
+/*   Taskmaster.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 13:16:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:33:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,16 @@
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
+	#include "Logging/TaskmasterLog.hpp"
+	#include "Taskmaster/Pidlock.hpp"
 	#include "Programs/Program.hpp"
 	#include "Programs/Group.hpp"
-	#include "Programs/UnixServer.hpp"
-	#include "Programs/InetServer.hpp"
+	#include "Servers/UnixServer.hpp"
+	#include "Servers/InetServer.hpp"
 	#include "Loop/Epoll.hpp"
+	#include "Loop/Signal.hpp"
 
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
@@ -27,22 +31,21 @@
 
 #pragma endregion
 
-#pragma region "TaskManager"
+#pragma region "Taskmaster"
 
-	class Pidfile;
-	class TaskManager {
+	class Taskmaster {
 
 		public:
 
 			// Constructors
-			TaskManager();
-			TaskManager(const TaskManager&) = delete;
-			TaskManager(TaskManager&&) = delete;
-			~TaskManager() = default;
+			Taskmaster();
+			Taskmaster(const Taskmaster&) = delete;
+			Taskmaster(Taskmaster&&) = delete;
+			~Taskmaster() = default;
 
 			// Overloads
-			TaskManager& operator=(const TaskManager&) = delete;
-			TaskManager& operator=(TaskManager&&) = delete;
+			Taskmaster& operator=(const Taskmaster&) = delete;
+			Taskmaster& operator=(Taskmaster&&) = delete;
 
 			// Variables
 			bool								nodaemon;
@@ -63,23 +66,24 @@
 			uint16_t							minfds;
 			uint16_t							minprocs;
 			std::map<std::string, std::string>	environment;
-
+			std::string							section;
 
 			bool								running;
 			pid_t								pid;
-			Pidfile								*pidfile_ptr;
-			Epoll								*epoll_ptr;
-			std::string							section;
-			std::vector<Program>				reload_programs;
+			Pidlock								pidlock;
+			Epoll								epoll;
+
 			std::vector<Program>				programs;
 			std::vector<Group>					groups;
+			std::vector<Program>				reload_programs;
 			UnixServer							unix_server;
 			InetServer							inet_server;
 
 			void		initialize();
 			void		reload();
 			void		process_reload();
-			void		clean_up();
+			void		clean_up(bool silent = false);
+			int			daemonize();
 
 		private:
 
@@ -109,6 +113,6 @@
 	
 #pragma region "Variables"
 
-	extern TaskManager TaskMaster;
+	extern Taskmaster tskm;
 
 #pragma endregion

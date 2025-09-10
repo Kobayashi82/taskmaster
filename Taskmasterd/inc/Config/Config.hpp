@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 13:43:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:35:28 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #pragma region "Includes"
 
+	#include "Utils/Utils.hpp"
 	#include "Config/Options.hpp"
 
 	#include <cstdint>															// uint16_t, uint32_t

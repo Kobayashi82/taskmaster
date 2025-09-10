@@ -6,13 +6,12 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:35:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 19:05:05 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:35:48 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 
 	#include <unistd.h>															// gethostname()

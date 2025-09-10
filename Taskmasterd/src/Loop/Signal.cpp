@@ -14,16 +14,14 @@
 
 	#include "Config/Config.hpp"
 	#include "Logging/TaskmasterLog.hpp"
-	#include "Main/Signal.hpp"
+	#include "Loop/Signal.hpp"
 
 	#include <csignal>															// std::signal()
 	#include <unistd.h>															// close()
 	#include <cstring>															// strerror()
 	#include <iostream>															// std::exit()
-
-	#include <sys/signalfd.h>
-	#include <fcntl.h>
 	#include <sys/wait.h>														// waitpid()
+	#include <sys/signalfd.h>													// struct signalfd_siginfo, signalfd()
 
 #pragma endregion
 

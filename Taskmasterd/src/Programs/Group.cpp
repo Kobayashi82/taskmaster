@@ -6,15 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:44:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:31:18 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
-	#include "Programs/Group.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <unistd.h>															// gethostname()
 	#include <filesystem>														// std::filesystem::path()

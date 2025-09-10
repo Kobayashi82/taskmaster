@@ -6,13 +6,12 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:36:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:17:35 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:35:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
 	#include "Config/Config.hpp"
 
 	#include <cstring>															// strerror()

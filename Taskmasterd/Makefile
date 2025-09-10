@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/10 13:01:07 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/10 18:25:17 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,26 +60,28 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp Main/Signal.cpp Main/Daemon.cpp		\
+SRCS		= Main/Main.cpp										\
 																\
-			  Config/Options.cpp Config/Pidfile.cpp				\
-			  Config/Initialize.cpp Config/Load.cpp				\
+			  Config/Options.cpp Config/Initialize.cpp			\
+			  Config/Load.cpp Config/Include.cpp				\
 			  Config/Section.cpp Config/Keys.cpp				\
-			  Config/Include.cpp								\
 																\
 			  Logging/TaskmasterLog.cpp Logging/LogRotate.cpp	\
 			  Logging/ProcessOutput.cpp							\
 																\
-			  Programs/TaskManager.cpp Programs/Program.cpp		\
-			  Programs/Process.cpp Programs/Group.cpp			\
-			  Programs/UnixServer.cpp Programs/InetServer.cpp	\
+			  Taskmaster/Taskmaster.cpp Taskmaster/Pidlock.cpp	\
 																\
-			  Loop/Epoll.cpp									\
+			  Programs/Program.cpp Programs/Process.cpp			\
+			  Programs/Group.cpp								\
 																\
-			  Utils/String.cpp Utils/Path.cpp Utils/Parser.cpp	\
-			  Utils/Globbing.cpp Utils/Environment.cpp			\
-			  Utils/Validators.cpp Utils/Error.cpp				\
-			  Utils/Array.cpp
+			  Servers/UnixServer.cpp Servers/InetServer.cpp		\
+																\
+			  Loop/Signal.cpp Loop/Epoll.cpp					\
+																\
+			  Utils/String.cpp Utils/Environment.cpp			\
+			  Utils/Path.cpp Utils/Globbing.cpp					\
+			  Utils/Parser.cpp Utils/Validators.cpp				\
+			  Utils/Error.cpp Utils/Array.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

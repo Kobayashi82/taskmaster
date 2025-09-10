@@ -1,41 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   TaskManager.cpp                                    :+:      :+:    :+:   */
+/*   Taskmaster.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 13:41:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:33:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Pidfile.hpp"
-	#include "Programs/TaskManager.hpp"
-	#include "Logging/TaskmasterLog.hpp"
-	#include "Main/Signal.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <cstring>															// strerror()
-	#include <unistd.h>															// gethostname()
+	#include <sstream>															// std::ostringstream
+	#include <iomanip>															// std::setw(), std::setfill()
 	#include <filesystem>														// std::filesistem::path()
 	#include <pwd.h>															// struct passwd, getpwuid()
-	#include <algorithm>
-	#include <iostream>
+	#include <unistd.h>															// gethostname(), fork(), setsid(), chdir(), close(), getpid()
+	#include <sys/stat.h>														// umask()
 
 #pragma endregion
 
 #pragma region "Variables"
 
-	TaskManager TaskMaster;
+	Taskmaster tskm;
 
 #pragma endregion
 
 #pragma region "Constructors"
 
-	TaskManager::TaskManager() : running(true), pid(0), pidfile_ptr(nullptr), epoll_ptr(nullptr), section("taskmasterd") {}
+	Taskmaster::Taskmaster() : section("taskmasterd"), running(true), pid(0) {}
 
 #pragma endregion
 
@@ -45,7 +42,7 @@
 
 		#pragma region "Directory"
 
-			std::string TaskManager::validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				std::string default_dir = Utils::expand_path(".", "", true, false);
@@ -81,7 +78,7 @@
 
 		#pragma region "Boolean"
 
-			std::string TaskManager::validate_boolean(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_boolean(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_boolean(entry->value)) {
@@ -97,7 +94,7 @@
 
 		#pragma region "Number"
 
-			std::string TaskManager::validate_number(const std::string& key, ConfigParser::ConfigEntry *entry, long min, long max) {
+			std::string Taskmaster::validate_number(const std::string& key, ConfigParser::ConfigEntry *entry, long min, long max) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_number(entry->value, min, max)) {
@@ -113,7 +110,7 @@
 
 		#pragma region "Umask"
 
-			std::string TaskManager::validate_umask(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_umask(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_umask(entry->value)) {
@@ -129,7 +126,7 @@
 		
 		#pragma region "User"
 
-			std::string TaskManager::validate_user(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_user(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_user(entry->value)) {
@@ -150,7 +147,7 @@
 
 		#pragma region "Logfile"
 
-			std::string TaskManager::validate_logfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+			std::string Taskmaster::validate_logfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
 				if (key.empty() || !entry) return {};
 
 				if (Utils::toUpper(entry->value) != "NONE") {
@@ -176,7 +173,7 @@
 
 		#pragma region "Size"
 
-			std::string TaskManager::validate_size(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_size(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				long bytes = Utils::parse_size(entry->value);
@@ -193,7 +190,7 @@
 
 		#pragma region "Log Level"
 
-			std::string TaskManager::validate_loglevel(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_loglevel(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_loglevel(entry->value)) {
@@ -209,7 +206,7 @@
 
 		#pragma region "Pidfile"
 
-			std::string TaskManager::validate_pidfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+			std::string Taskmaster::validate_pidfile(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
 				if (key.empty() || !entry) return {};
 
 				entry->value = Utils::expand_path(entry->value, dir);
@@ -232,7 +229,7 @@
 
 		#pragma region "Childlogdir"
 
-			std::string TaskManager::validate_childlogdir(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
+			std::string Taskmaster::validate_childlogdir(const std::string& key, ConfigParser::ConfigEntry *entry, const std::string& dir) {
 				if (key.empty() || !entry) return {};
 
 				entry->value = Utils::expand_path(entry->value, dir, true, false);
@@ -260,7 +257,7 @@
 
 		#pragma region "Minfds"
 
-			std::string TaskManager::validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_minfds(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_number(entry->value, 1, 65535)) {
@@ -286,7 +283,7 @@
 
 		#pragma region "Minprocs"
 
-			std::string TaskManager::validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry) {
+			std::string Taskmaster::validate_minprocs(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_number(entry->value, 1, 65535)) {
@@ -314,7 +311,7 @@
 
 	#pragma region "Validate"
 
-		std::string TaskManager::validate(const std::string& key, ConfigParser::ConfigEntry *entry) {
+		std::string Taskmaster::validate(const std::string& key, ConfigParser::ConfigEntry *entry) {
 			if (key.empty() || !entry) return {};
 
 			static std::string dir = "";
@@ -348,7 +345,7 @@
 
 	#pragma region "Expand Vars"
 
-		std::string TaskManager::expand_vars(std::map<std::string, std::string>& env, const std::string& key) {
+		std::string Taskmaster::expand_vars(std::map<std::string, std::string>& env, const std::string& key) {
 			if (key.empty()) return {};
 
 			ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, key);
@@ -390,7 +387,7 @@
 
 	#pragma region "Initialize"
 
-		void TaskManager::initialize() {
+		void Taskmaster::initialize() {
 			std::string configFile;
 
 			ConfigParser::ConfigEntry *entry = Config.get_value_entry(section, "directory");
@@ -467,7 +464,7 @@
 
 	#pragma region "Reload"
 
-		void TaskManager::reload() {
+		void Taskmaster::reload() {
 			reload_programs.clear();
 			groups.clear();
 
@@ -505,7 +502,7 @@
 
 	#pragma region "Has Changes"
 
-		bool TaskManager::has_changes(const Program& old_prog, const Program& new_prog) {
+		bool Taskmaster::has_changes(const Program& old_prog, const Program& new_prog) {
 			// Comparar campos básicos del programa
 			if (old_prog.name != new_prog.name ||
 				old_prog.numprocs != new_prog.numprocs ||
@@ -557,7 +554,7 @@
 
 	#pragma region "Update Programs"
 
-		void TaskManager::update_programs(Program& existing_prog, Program&& new_prog) {
+		void Taskmaster::update_programs(Program& existing_prog, Program&& new_prog) {
 			std::vector<Process> runtime_backup;
 			for (const auto& proc : existing_prog.process) {
 				Process backup;
@@ -599,7 +596,7 @@
 
 	#pragma region "Process Restarts"
 
-		void TaskManager::process_restarts() {
+		void Taskmaster::process_restarts() {
 			for (auto& program : programs) {
 				if (program.needs_restart) {
 					// parada y reinicio de procesos
@@ -613,7 +610,7 @@
 
 	#pragma region "Process Reload"
 
-		void TaskManager::process_reload() {
+		void Taskmaster::process_reload() {
 			bool is_restart = false;
 
 			auto programs_it = programs.begin();
@@ -664,14 +661,71 @@
 
 #pragma region "Clean-Up"
 
-	void TaskManager::clean_up() {
+	void Taskmaster::clean_up(bool silent) {
 		unix_server.close();
 		inet_server.close();
-		if (pidfile_ptr) pidfile_ptr->unlock();
-		if (epoll_ptr) epoll_ptr->close();
+		pidlock.unlock();
+		epoll.close();
 		Signal::close();
-		Log.info("Taskmasterd: closed\n");
+		if (!silent) Log.info("Taskmasterd: closed\n");
 		Log.close();
+	}
+
+#pragma endregion
+
+#pragma region "Daemonize"
+
+	int Taskmaster::daemonize() {
+
+		if (!nodaemon) {
+			// 1. fork()
+			int pid = fork();
+			if (pid < 0) {
+				Log.critical("Daemon: first fork failed - " + std::string(strerror(errno)));
+				return (1);
+			}
+			if (pid > 0) return (-1);
+			Log.debug("Daemon: first fork completed");
+
+			// 2. setsid()
+			if (setsid() < 0) {
+				Log.critical("Daemon: setsid() failed - " + std::string(strerror(errno)));
+				return (1);
+			}
+			Log.debug("Daemon: setsid completed");
+
+			// 3. fork()
+			pid = fork();
+			if (pid < 0) {
+				Log.critical("Daemon: second fork failed - " + std::string(strerror(errno)));
+				return (1);
+			}
+			if (pid > 0) return (-1);
+			Log.debug("Daemon: second fork completed");
+
+			// 4. close()
+			close(0); close(1); close(2);
+			Log.debug("Daemon: standard file descriptors closed");
+
+			Log.debug("Daemon: completed successfully");
+		}
+
+		// 5. umask()
+		::umask(umask);
+		std::ostringstream oss;
+		oss << "Taskmasterd: umask set to " << std::oct << std::setw(3) << std::setfill('0') << umask;
+		Log.debug(oss.str());
+
+		// 6. chdir()
+		if (chdir("/"))					Log.warning("Taskmasterd: failed to change directory to / - " + std::string(strerror(errno)));
+		else							Log.debug("Taskmasterd: working directory set to /");
+
+		// 7. flock()
+		if (pidlock.lock(pidfile)) return (1);
+
+		pid = getpid();
+
+		return (0);
 	}
 
 #pragma endregion

@@ -6,17 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 21:42:23 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:29:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
-	#include "Programs/TaskManager.hpp"
-	#include "Programs/UnixServer.hpp"
-	#include "Logging/TaskmasterLog.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname(), close()
@@ -114,7 +110,7 @@
 			if (entry) { configFile = entry->filename; order = entry->order; }
 
 			std::map<std::string, std::string> env;
-			Utils::environment_clone(env, TaskMaster.environment);
+			Utils::environment_clone(env, tskm.environment);
 
 			char hostname[255];
 			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
@@ -138,7 +134,7 @@
 				}
 				catch (const std::exception& e) { Utils::error_add(entry->filename, "[" + section + "] file: unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order); }
 
-				std::string dir = TaskMaster.directory;
+				std::string dir = tskm.directory;
 				if (!Utils::valid_path(entry->value, dir)) {
 					if (entry->value != Config.defaultValues[section]["file"]) {
 						Utils::error_add(entry->filename, "[" + section + "] file: invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order);

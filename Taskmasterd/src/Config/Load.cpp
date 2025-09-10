@@ -6,16 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 12:49:56 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:35:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
-	#include "Programs/TaskManager.hpp"
-	#include "Logging/TaskmasterLog.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <cstring>															// strerror()
 	#include <fstream>															// std::ifstream
@@ -128,23 +125,23 @@
 			Utils::errors_maxLevel = WARNING;
 		}
 
-		TaskMaster.initialize();
+		tskm.initialize();
 
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
 			if (Utils::errors_maxLevel == WARNING)				Log.warning ("Taskmasterd: configuration loaded with warnings");
 			if (Utils::errors_maxLevel == ERROR)				Log.error ("Taskmasterd: configuration loaded with errors");
 			if (Utils::errors_maxLevel == CRITICAL) { result = 2;
-				if (!TaskMaster.nodaemon || TaskMaster.silent)	std::cerr << "Error: critical errors in the configuration file" << std::endl;
+				if (!tskm.nodaemon || tskm.silent)	std::cerr << "Error: critical errors in the configuration file" << std::endl;
 				else											Log.critical ("Taskmasterd: configuration loaded with critical errors");
 			}
 		} else													Log.info("Taskmasterd: configuration loaded");
 
-		Log.set_logfile_maxbytes(TaskMaster.logfile_maxbytes);
-		Log.set_logfile_backups(TaskMaster.logfile_backups);
-		Log.set_logfile_level(TaskMaster.loglevel);
-		Log.set_logfile_syslog(TaskMaster.logfile_syslog);
-		Log.set_logfile_stdout(TaskMaster.nodaemon && !TaskMaster.silent);
+		Log.set_logfile_maxbytes(tskm.logfile_maxbytes);
+		Log.set_logfile_backups(tskm.logfile_backups);
+		Log.set_logfile_level(tskm.loglevel);
+		Log.set_logfile_syslog(tskm.logfile_syslog);
+		Log.set_logfile_stdout(tskm.nodaemon && !tskm.silent);
 
 		return(result);
 	}
@@ -159,7 +156,7 @@
 		in_reloading = true;
 		load_file(mainConfigFile);
 
-		TaskMaster.reload();
+		tskm.reload();
 
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
@@ -168,7 +165,7 @@
 			if (Utils::errors_maxLevel == CRITICAL) 	{ Log.critical	("configuration reloaded with critical errors"); result = 2; }
 		} else											  Log.info("configuration reloaded succesfully");
 
-		TaskMaster.process_reload();
+		tskm.process_reload();
 
 		return(result);
 	}

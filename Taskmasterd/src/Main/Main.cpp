@@ -6,15 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 14:29:10 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:36:50 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Main/Taskmasterd.hpp"
-	#include "Main/Signal.hpp"
-	#include "Loop/Epoll.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <iostream>															// std::cerr()
 
@@ -28,53 +26,49 @@
 		Signal::set_for_load();
 
 		if ((result = Config.load(argc, argv))) {
-			Log.set_logfile(TaskMaster.logfile);
+			Log.set_logfile(tskm.logfile);
 			Log.set_logfile_ready(true);
-			TaskMaster.clean_up();
+			tskm.clean_up();
 			return (result - 1);
 		}
 
-		Pidfile pidfile(TaskMaster.pidfile);
-		TaskMaster.pidfile_ptr = &pidfile;
-		if (pidfile.is_locked()) {
+		if (tskm.pidlock.is_locked(tskm.pidfile)) {
 			std::cerr << "Error: another taskmasterd instance is already running" << std::endl;
 			return (1);
 		}
 
-		std::remove(TaskMaster.logfile.c_str());	// REMOVE
+		// std::remove(tskm.logfile.c_str());	// REMOVE
 
-		Log.set_logfile(TaskMaster.logfile);
+		Log.set_logfile(tskm.logfile);
 		Log.set_logfile_ready(true);
 
-		result = daemonize(pidfile);
-		if (result == -1)	{ TaskMaster.clean_up();	return (0);					   }
-		if (result)			{ TaskMaster.clean_up();	return (result);			   }
-		if (Signal::signum)	{ TaskMaster.clean_up();	return (128 + Signal::signum); }
+		result = tskm.daemonize();
+		if (result == -1)	{ tskm.clean_up(true);	return (0);					   }
+		if (result)			{ tskm.clean_up();		return (result);			   }
+		if (Signal::signum)	{ tskm.clean_up();		return (128 + Signal::signum); }
 
-		Log.info("Taskmasterd: started with pid " + std::to_string(TaskMaster.pid));
+		Log.info("Taskmasterd: started with pid " + std::to_string(tskm.pid));
 
 		int sigfd = Signal::create();
 		if (sigfd == -1) {
-			TaskMaster.clean_up();
+			tskm.clean_up();
 			return (1);
 		}
 
-		Epoll epoll;
-		TaskMaster.epoll_ptr = &epoll;
-		if (epoll.create() || epoll.add(sigfd, true, false)) {
-			TaskMaster.clean_up();
+		if (tskm.epoll.create() || tskm.epoll.add(sigfd, true, false)) {
+			tskm.clean_up();
 			return (1);
 		}
 
-		TaskMaster.unix_server.start();
-		TaskMaster.inet_server.start();
+		tskm.unix_server.start();
+		tskm.inet_server.start();
 
-		while (TaskMaster.running) {
+		while (tskm.running) {
 			// Máquina de estados
-			if (epoll.wait()) break;
+			if (tskm.epoll.wait()) break;
 		}
 
-		TaskMaster.clean_up();
+		tskm.clean_up();
 
 		return ((Signal::signum) ? 128 + Signal::signum : result);
 	}

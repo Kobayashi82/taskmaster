@@ -6,17 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 14:56:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:29:44 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
-	#include "Programs/TaskManager.hpp"
-	#include "Programs/InetServer.hpp"
-	#include "Logging/TaskmasterLog.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname(), close()
@@ -100,7 +96,7 @@
 			if (entry) { configFile = entry->filename; order = entry->order; }
 
 			std::map<std::string, std::string> env;
-			Utils::environment_clone(env, TaskMaster.environment);
+			Utils::environment_clone(env, tskm.environment);
 
 			char hostname[255];
 			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");

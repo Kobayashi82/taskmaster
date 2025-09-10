@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 22:38:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:33:24 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 	#include "Logging/LogRotate.hpp"
 
 	#include <filesystem>															// std::filesystem
-	#include <cstdio>																// std::remove, std::rename
 
 #pragma endregion
 

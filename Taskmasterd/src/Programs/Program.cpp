@@ -6,16 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 20:37:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:30:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Utils/Utils.hpp"
-	#include "Config/Config.hpp"
-	#include "Programs/Program.hpp"
-	#include "Programs/TaskManager.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <cstring>															// strerror()
 	#include <unistd.h>															// gethostname()
@@ -44,7 +41,7 @@
 			std::string Program::validate_directory(const std::string& key, ConfigParser::ConfigEntry *entry) {
 				if (key.empty() || !entry) return {};
 
-				std::string default_dir = TaskMaster.directory;
+				std::string default_dir = tskm.directory;
 				if (entry->value != "do not change") {
 					if (!Utils::valid_path(entry->value, "", true)) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
@@ -198,7 +195,7 @@
 				std::string final_dir = dir;
 
 				if (Utils::toUpper(entry->value) == "AUTO") {
-					final_dir = TaskMaster.childlogdir;
+					final_dir = tskm.childlogdir;
 					entry->value = section.substr(8) + "_" + key.substr(0, 6) + ".log";
 					if (!Utils::valid_path(entry->value, final_dir)) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
@@ -247,8 +244,8 @@
 				}
 				if (Utils::toUpper(entry->value) == "AUTO") {
 					std::string url;
-					if (!TaskMaster.unix_server.disabled)					url = "unix://" + TaskMaster.unix_server.file;
-					if (url.empty() && !TaskMaster.inet_server.disabled)	url = "http://" + TaskMaster.inet_server.url;
+					if (!tskm.unix_server.disabled)					url = "unix://" + tskm.unix_server.file;
+					if (url.empty() && !tskm.inet_server.disabled)	url = "http://" + tskm.inet_server.url;
 					entry->value = url;
 				}
 
@@ -408,7 +405,7 @@
 			else		{ configFile = entry->filename; order = entry->order; }
 
 			std::map<std::string, std::string> env;
-			Utils::environment_clone(env, TaskMaster.environment);
+			Utils::environment_clone(env, tskm.environment);
 
 			std::string HERE			= Utils::environment_get(env, "HERE");
 			std::string HOST_NAME		= Utils::environment_get(env, "HOST_NAME");
@@ -492,7 +489,7 @@
 					proc.stderr_logfile_syslog					= Utils::parse_boolean(expand_vars(proc.environment, "stderr_logfile_syslog"));
 					proc.serverurl								= expand_vars(proc.environment, "serverurl");
 					std::string umask							= expand_vars(proc.environment, "umask");
-					if (umask.empty() || umask == "inherit")	proc.umask = TaskMaster.umask;
+					if (umask.empty() || umask == "inherit")	proc.umask = tskm.umask;
 					else										proc.umask = static_cast<uint16_t>(std::stoi(umask, nullptr, 8));
 
 					std::stringstream ss(expand_vars(proc.environment, "exitcodes")); std::string token;

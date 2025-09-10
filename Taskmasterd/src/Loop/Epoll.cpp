@@ -6,15 +6,13 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 14:30:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:33:40 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "Logging/TaskmasterLog.hpp"
-	#include "Main/Signal.hpp"
-	#include "Loop/Epoll.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <unistd.h>															// close()
 	#include <cstring>															// strerror()
@@ -142,6 +140,9 @@
 				continue;
 			}
 
+			if (events[i].data.fd == tskm.unix_server.sockfd) {
+				
+			}
 			// EventInfo * event = Event::get(events[i].data.fd);
 			// if (!event) continue;
 

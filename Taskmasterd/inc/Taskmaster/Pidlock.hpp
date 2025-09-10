@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Pidfile.hpp                                        :+:      :+:    :+:   */
+/*   Pidlock.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:43:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 21:33:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 18:17:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,34 +18,33 @@
 
 #pragma endregion
 
-#pragma region "TaskManager"
+#pragma region "Pidlock"
 
-	class Pidfile {
+	class Pidlock {
 
 		private:
 
 			// Variables
-			std::string	_pidfile;
 			int			_pidfd;
 			bool		_locked;
+			std::string	_pidfile;
 
 		public:
 
 			// Constructors
-			Pidfile() = delete;
-			explicit Pidfile(const std::string& pidfile);
-			Pidfile(const Pidfile&) = delete;
-			Pidfile(Pidfile&&) = delete;
-			~Pidfile();
+			Pidlock();
+			Pidlock(const Pidlock&) = delete;
+			Pidlock(Pidlock&&) = delete;
+			~Pidlock();
 
 			// Overloads
-			Pidfile& operator=(const Pidfile&) = delete;
-			Pidfile& operator=(Pidfile&&) = delete;
+			Pidlock& operator=(const Pidlock&) = delete;
+			Pidlock& operator=(Pidlock&&) = delete;
 
 			// Methods
-			bool	is_locked() const;
+			bool	is_locked(const std::string& pidfile) const;
 			void	unlock();
-			int		lock();
+			int		lock(const std::string& pidfile);
 
 	};
 
