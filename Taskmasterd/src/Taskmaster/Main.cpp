@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:48:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:11:46 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@
 			if (tskm.epoll.wait()) break;
 		}
 
+		std::cout << "WTF " << std::to_string(tskm.inet_server.sockfd) << std::endl;
 		tskm.cleanup();
 
 		return ((Signal::signum) ? 128 + Signal::signum : result);

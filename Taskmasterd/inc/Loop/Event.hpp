@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:20:55 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 19:59:36 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 21:32:20 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 #pragma region "EventInfo"
 
 	// Enumerators
-	enum class EventType { NOTHING, SOCKET, CLIENT, DATA, CGI };
+	enum class EventType { UNIX_SOCKET, INET_SOCKET, CLIENT, STD_MASTER, STD_IN, STD_OUT, STD_ERR };
 
 	struct EventInfo {
 		int					fd;
@@ -31,6 +31,8 @@
 
 		std::vector <char>	read_buffer;
 		std::vector <char>	write_buffer;
+
+		EventInfo(int _fd, EventType _type, std::any _owner) : fd(_fd), type(_type), owner(_owner) {}
 	};
 
 #pragma endregion

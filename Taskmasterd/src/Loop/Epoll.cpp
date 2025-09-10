@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:33:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:11:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@
 		if (_epoll_fd < 0 || fd < 0) return (1);
 
 		if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL)) {
-			Log.error("Epoll: failed to set event - " + std::string(strerror(errno)));
+			Log.error("Epoll: failed to set event for fd " +  std::to_string(fd) + " - " + std::string(strerror(errno)));
 			return (1);
 		}
 
@@ -85,7 +85,7 @@
 		else							return (0);
 
 		if (epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &epoll_event)) {
-			Log.error("Epoll: failed to set event - " + std::string(strerror(errno)));
+			Log.error("Epoll: failed to set event for fd " +  std::to_string(fd) + " - " + std::string(strerror(errno)));
 			return (1);
 		}
 
@@ -109,7 +109,7 @@
 		else							return (1);
 
 		if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &epoll_event)) {
-			Log.error("Epoll: failed to add event - " + std::string(strerror(errno)));
+			Log.error("Epoll: failed to add event for fd " +  std::to_string(fd) + " - " + std::string(strerror(errno)));
 			return (1);
 		}
 
@@ -140,30 +140,32 @@
 				continue;
 			}
 
-			if (events[i].data.fd == tskm.unix_server.sockfd) {
-				
-			}
-			// EventInfo * event = Event::get(events[i].data.fd);
-			// if (!event) continue;
+			// Events
+			EventInfo *event = tskm.event.get(events[i].data.fd);
+			if (!event) continue;
 
 			if (events[i].events & EPOLLIN) {
-				// switch (event->type) {
-				// 	case SOCKET: 	{ Socket::accept(event);				break; }
-				// 	case CLIENT: 	{ Communication::read_client(event);	break; }
-				// 	case DATA: 		{ Communication::read_data(event);		break; }
-				// 	case CGI: 		{ Communication::read_cgi(event);		break; }
-				// }
+				switch (event->type) {
+					case EventType::UNIX_SOCKET: 	{ tskm.unix_server.accept();	break; }
+					case EventType::INET_SOCKET: 	{ tskm.inet_server.accept();	break; }
+					case EventType::CLIENT:			{ 								break; }
+					case EventType::STD_MASTER:		{ 								break; }
+					case EventType::STD_IN:			{ 								break; }
+					case EventType::STD_OUT:		{ 								break; }
+					case EventType::STD_ERR:		{ 								break; }
+				}
 			}
 
-			// event = Event::get(events[i].data.fd);
-			// if (!event) continue;
-
 			if (events[i].events & EPOLLOUT) {
-				// switch (event->type) {
-				// 	case CLIENT: 	{ Communication::write_client(event);	break; }
-				// 	case DATA: 		{										break; }
-				// 	case CGI: 		{ Communication::write_cgi(event);		break; }
-				// }
+				switch (event->type) {
+					case EventType::UNIX_SOCKET: 	{ 								break; }
+					case EventType::INET_SOCKET: 	{ 								break; }
+					case EventType::CLIENT:			{ 								break; }
+					case EventType::STD_MASTER:		{ 								break; }
+					case EventType::STD_IN:			{ 								break; }
+					case EventType::STD_OUT:		{ 								break; }
+					case EventType::STD_ERR:		{ 								break; }
+				}
 			}
 		}
 

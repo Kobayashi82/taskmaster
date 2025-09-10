@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Versión mejorada para detectar FD leaks
+valgrind \
+    --tool=memcheck \
+    --leak-check=full \
+    --show-leak-kinds=all \
+    --track-fds=yes \
+    --trace-children=yes \
+    --track-origins=yes \
+    --verbose \
+    --log-file=valgrind.log \
+    ./taskmasterd -n "$@"
+
+# Mostrar solo FD leaks
+echo "=== FD LEAKS ==="
+grep -i "open file descriptor" valgrind.log || echo "No FD leaks detected by valgrind"
+
+# Mostrar resumen
+echo "=== SUMMARY ==="
+grep -E "(LEAK SUMMARY|ERROR SUMMARY)" valgrind.log

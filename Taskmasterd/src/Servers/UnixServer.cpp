@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:29:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:10:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,13 +241,25 @@
 
 #pragma endregion
 
+#pragma region "Close"
+
+	void UnixServer::close() {
+		if (sockfd == -1) return;
+		::close(sockfd); sockfd = -1;
+		Log.debug("Unix Server: socket closed");
+		if (std::remove(file.c_str()) && errno != ENOENT) Log.debug("Unix Server: failed to remove socket file - " + std::string(strerror(errno)));	
+	}
+
+#pragma endregion
+
 #pragma region "Start"
 
 	int UnixServer::start() {
 		sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
 		if (sockfd == -1) {
 			Log.error("Unix Server: failed to create socket - " + std::string(strerror(errno)));
-			disabled = true; return (1);
+			disabled = true;
+			return (1);
 		}
 		Log.debug("Unix Server: socket created");
 
@@ -260,7 +272,8 @@
 
 		if (bind(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1) {
 			Log.error("Unix Server: failed to bind socket - " + std::string(strerror(errno)));
-			::close(sockfd); disabled = true; return (1);
+			::close(sockfd); disabled = true;
+			return (1);
 		}
 		Log.debug("Unix Server: socket bound to path " + file);
 
@@ -272,8 +285,16 @@
 
 		if (listen(sockfd, 50) == -1) {
 			Log.error("Unix Server: failed to listen on socket - " + std::string(strerror(errno)));
-			::close(sockfd); disabled = true; return (1);
+			::close(sockfd); disabled = true;
+			return (1);
 		}
+
+		tskm.event.events.emplace(sockfd, EventInfo(sockfd, EventType::UNIX_SOCKET, this));
+		if (tskm.epoll.add(sockfd, true, false)) {
+			Log.error("Unix Server: failed to start");
+			return (1);
+		}
+
 		Log.info("Unix Server: started on " + file);
 
 		return (0);
@@ -281,13 +302,30 @@
 
 #pragma endregion
 
-#pragma region "Close"
+#pragma region "Accept"
 
-	void UnixServer::close() {
-		if (sockfd == -1) return;
-		::close(sockfd); sockfd = -1;
-		Log.debug("Unix Server: socket closed");
-		if (std::remove(file.c_str()) && errno != ENOENT) Log.debug("Unix Server: failed to remove socket file - " + std::string(strerror(errno)));	
+	int UnixServer::accept() {
+		if (sockfd == -1) return (-1);
+
+		int client_fd = ::accept4(sockfd, nullptr, nullptr, SOCK_CLOEXEC | SOCK_NONBLOCK);
+		if (client_fd == -1) {
+			if (errno != EAGAIN && errno != EWOULDBLOCK)
+				Log.error("Unix Server: failed to accept client - " + std::string(strerror(errno)));
+			return (-1);
+		}
+
+		Log.info("Unix Server: client connected — (fd: " + std::to_string(client_fd) + ")");
+
+		tskm.event.events.emplace(client_fd, EventInfo(client_fd, EventType::CLIENT, this));
+
+		if (tskm.epoll.add(client_fd, true, false) == -1) {
+			Log.error("Unix Server: client disconnected — (fd: " + std::to_string(client_fd) + ")");
+			::close(client_fd);
+			tskm.event.remove(client_fd);
+			return (-1);
+		}
+
+		return (client_fd);
 	}
 
 #pragma endregion

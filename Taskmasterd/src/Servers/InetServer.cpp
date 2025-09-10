@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:17 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:29:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 22:10:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,8 @@
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (sockfd == -1) {
 			Log.error("Inet Server: failed to create socket - " + std::string(strerror(errno)));
-			disabled = true; return (1);
+			disabled = true;
+			return (1);
 		}
 		Log.debug("Inet Server: socket created");
 
@@ -188,7 +189,8 @@
 		addr.sin_port = htons(port);
 		if (inet_pton(AF_INET, ip.c_str(), &addr.sin_addr) != 1) {
 			Log.error("Inet Server: invalid IP address format: " + ip);
-			::close(sockfd); disabled = true; return (1);
+			::close(sockfd); disabled = true;
+			return (1);
 		}
 
 		int opt = 1;
@@ -196,14 +198,23 @@
 
 		if (bind(sockfd, (sockaddr *)&addr, sizeof(addr)) == -1) {
 			Log.error("Inet Server: failed to bind socket - " + std::string(strerror(errno)));
-			::close(sockfd); disabled = true; return (1);
+			::close(sockfd); disabled = true;
+			return (1);
 		}
 		Log.debug("Inet Server: socket bound to " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
 
 		if (listen(sockfd, 50) == -1) {
 			Log.error("Inet Server: failed to listen on socket - " + std::string(strerror(errno)));
-			::close(sockfd); disabled = true; return (1);
+			::close(sockfd); disabled = true;
+			return (1);
 		}
+
+		tskm.event.events.emplace(sockfd, EventInfo(sockfd, EventType::INET_SOCKET, this));
+		if (tskm.epoll.add(sockfd, true, false)) {
+			Log.error("Inet Server: failed to start");
+			return (1);
+		}
+
 		Log.info("Inet Server: started on " + (hostname.empty() ? ip : hostname) + ":" + std::to_string(port));
 
 		return (0);
@@ -217,6 +228,40 @@
 		if (sockfd == -1) return;
 		::close(sockfd); sockfd = -1;
 		Log.debug("Inet Server: socket closed");
+	}
+
+#pragma endregion
+
+#pragma region "Accept"
+
+	int InetServer::accept() {
+		if (sockfd == -1) return (-1);
+
+		sockaddr_in client_addr;
+		socklen_t client_len = sizeof(client_addr);
+		
+		int client_fd = ::accept4(sockfd, (sockaddr*)&client_addr, &client_len, SOCK_CLOEXEC | SOCK_NONBLOCK);
+		if (client_fd == -1) {
+			if (errno != EAGAIN && errno != EWOULDBLOCK)
+				Log.error("Inet Server: failed to accept client - " + std::string(strerror(errno)));
+			return (-1);
+		}
+
+		std::string	client_ip	= inet_ntoa(client_addr.sin_addr);
+		uint16_t	client_port	= ntohs(client_addr.sin_port);
+
+		Log.info("Inet Server: client connected — " + client_ip + ":" + std::to_string(client_port) + " (fd: " + std::to_string(client_fd) + ")");
+
+		tskm.event.events.emplace(client_fd, EventInfo(client_fd, EventType::CLIENT, this));
+
+		if (tskm.epoll.add(client_fd, true, false) == -1) {
+			Log.error("Inet Server: client disconnected — " + client_ip + ":" + std::to_string(client_port) + " (fd: " + std::to_string(client_fd) + ")");
+			::close(client_fd);
+			tskm.event.remove(client_fd);
+			return (-1);
+		}
+
+		return (client_fd);
 	}
 
 #pragma endregion

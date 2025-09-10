@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:26:45 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:46:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 21:21:26 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,9 @@
 
 			// Methods
 			void	initialize();
-			int		start();
 			void	close();
+			int		start();
+			int		accept();
 
 		private:
 
