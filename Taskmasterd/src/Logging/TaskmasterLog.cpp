@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 21:43:07 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 13:13:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,7 +343,10 @@
 					_logfile_stream.flush();
 					_logRotate.rotate(_logfile);
 				}
-				if (_logfile_stdout) std::cout << log;
+				if (_logfile_stdout) {
+					if (log.substr(log.length() - 21, 21) == "Taskmasterd: closed\n\n") log.pop_back();
+					std::cout << log;
+				}
 				if (_logfile_syslog && add_level) send_syslog(log.substr(29), level);
 			}
 		}

@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/09 22:13:31 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/10 13:01:07 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,6 +73,8 @@ SRCS		= Main/Main.cpp Main/Signal.cpp Main/Daemon.cpp		\
 			  Programs/TaskManager.cpp Programs/Program.cpp		\
 			  Programs/Process.cpp Programs/Group.cpp			\
 			  Programs/UnixServer.cpp Programs/InetServer.cpp	\
+																\
+			  Loop/Epoll.cpp									\
 																\
 			  Utils/String.cpp Utils/Path.cpp Utils/Parser.cpp	\
 			  Utils/Globbing.cpp Utils/Environment.cpp			\

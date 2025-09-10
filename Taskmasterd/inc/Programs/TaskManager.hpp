@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 22:22:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 13:16:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 	#include "Programs/Group.hpp"
 	#include "Programs/UnixServer.hpp"
 	#include "Programs/InetServer.hpp"
+	#include "Loop/Epoll.hpp"
 
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
@@ -67,6 +68,7 @@
 			bool								running;
 			pid_t								pid;
 			Pidfile								*pidfile_ptr;
+			Epoll								*epoll_ptr;
 			std::string							section;
 			std::vector<Program>				reload_programs;
 			std::vector<Program>				programs;

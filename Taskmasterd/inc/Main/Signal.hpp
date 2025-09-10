@@ -22,19 +22,6 @@
 
 	class Signal {
 
-		private:
-
-			//Variables
-			static int	sigfd;
-
-			static void	sigquit_handler(int sig);
-			static void	sigint_handler(int sig);
-			static void	sigterm_handler(int sig);
-			static void	sighup_handler(int sig);
-			static void	sigsev_handler(int sig);
-			static void	sigpipe_handler(int sig);
-			static void	sigchld_handler(int sig);
-
 		public:
 
 			// Constructors
@@ -47,14 +34,25 @@
 			Signal& operator=(const Signal&) = delete;
 			Signal& operator=(Signal&&) = delete;
 
-			static volatile sig_atomic_t signum;
+			//Variables
+			static int						signal_fd;
+			static volatile sig_atomic_t	signum;
 
+			// Handlers
+			static void	sigquit_handler(int sig);
+			static void	sigint_handler(int sig);
+			static void	sigterm_handler(int sig);
+			static void	sighup_handler(int sig);
+			static void	sigsegv_handler(int sig);
+			static void	sigpipe_handler(int sig);
+			static void	sigchld_handler(int sig);
+
+			// Methods
 			static void	set_for_load();
 			static void	set_default();
-			static void	set_ignore();
-
-			static int	create_fd();
-			static void	close_fd();
+			static int	create();
+			static void	close();
+			static int	process();
 
 	};
 

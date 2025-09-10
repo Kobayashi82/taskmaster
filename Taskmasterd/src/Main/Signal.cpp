@@ -16,9 +16,11 @@
 	#include "Logging/TaskmasterLog.hpp"
 	#include "Main/Signal.hpp"
 
-	#include <iostream>															// std::exit()
-	#include <unistd.h>															// close()
 	#include <csignal>															// std::signal()
+	#include <unistd.h>															// close()
+	#include <cstring>															// strerror()
+	#include <iostream>															// std::exit()
+
 	#include <sys/signalfd.h>
 	#include <fcntl.h>
 	#include <sys/wait.h>														// waitpid()
@@ -27,8 +29,8 @@
 
 #pragma region "Variables"
 
+	int						Signal::signal_fd = -1;
 	volatile sig_atomic_t	Signal::signum = 0;
-	int						Signal::sigfd = -1;
 
 #pragma endregion
 
@@ -70,10 +72,10 @@
 
 	#pragma endregion
 
-	#pragma region "SIGSEV"
+	#pragma region "SIGSEGV"
 
-		void Signal::sigsev_handler(int sig) {
-			Log.critical("Signal: SIGSEV received. Segmentation fault");
+		void Signal::sigsegv_handler(int sig) {
+			Log.critical("Signal: SIGSEGV received. Segmentation fault");
 
 			// Cleanup
 			signal(SIGSEGV, SIG_DFL);
@@ -108,8 +110,9 @@
 		std::signal(SIGINT, sigint_handler);
 		std::signal(SIGTERM, sigterm_handler);
 		std::signal(SIGHUP, SIG_IGN);
-		std::signal(SIGSEGV, sigsev_handler);
+		std::signal(SIGSEGV, sigsegv_handler);
 		std::signal(SIGPIPE, SIG_IGN);
+		std::signal(SIGCHLD, SIG_IGN);
 	}
 
 	void Signal::set_default() {
@@ -119,22 +122,16 @@
 		std::signal(SIGHUP, SIG_DFL);
 		std::signal(SIGSEGV, SIG_DFL);
 		std::signal(SIGPIPE, SIG_DFL);
-	}
-
-	void Signal::set_ignore() {
-		std::signal(SIGQUIT, SIG_IGN);
-		std::signal(SIGINT, SIG_IGN);
-		std::signal(SIGTERM, SIG_IGN);
-		std::signal(SIGHUP, SIG_IGN);
-		std::signal(SIGSEGV, SIG_IGN);
-		std::signal(SIGPIPE, SIG_IGN);
+		std::signal(SIGCHLD, SIG_DFL);
 	}
 
 #pragma endregion>
 
 #pragma region "Create FD"
 
-	int Signal::create_fd() {
+	// Warning: calling create() twice will close the previous fd, but it may still be registered in epoll
+	int Signal::create() {
+		if (signal_fd >= 0) close();
 
 		sigset_t mask;
 		sigemptyset(&mask);
@@ -147,41 +144,70 @@
 		sigaddset(&mask, SIGCHLD);
 
 		if (pthread_sigmask(SIG_BLOCK, &mask, nullptr)) {
-			perror("pthread_sigmask");
+			Log.critical("Signal: failed to block signals - " + std::string(strerror(errno)));
 			return (-1);
 		}
 
-		sigfd = signalfd(-1, &mask, SFD_CLOEXEC | SFD_NONBLOCK);
-		if (sigfd == -1) {
-			perror("signalfd");
+		signal_fd = signalfd(-1, &mask, SFD_CLOEXEC | SFD_NONBLOCK);
+		if (signal_fd == -1) {
+			Log.critical("Signal: failed to create signal FD - " + std::string(strerror(errno)));
 			return (-1);
 		}
 
-		Log.debug("Signal: signalfd created");
+		Log.debug("Signal: signal FD created: " + std::to_string(signal_fd));
 
-		return (sigfd);
+		return (signal_fd);
 	}
 
 #pragma endregion
 
 #pragma region "Close FD"
 
-	void Signal::close_fd() {
-		if (sigfd >= 0) close(sigfd);
-		sigfd = -1;
+	// Warning: calling close() will close the fd, but it may still be registered in epoll
+	void Signal::close() {
+		if (signal_fd >= 0) {
+			if (::close(signal_fd) == -1) Log.error("Signal: failed to close signal FD " + std::to_string(signal_fd));
+			signal_fd = -1;
+		}
 	}
 
 #pragma endregion
 
-    // struct signalfd_siginfo fdsi;
-    // ssize_t s;
-    // while (true) {
-    //     s = read(signalfd, &fdsi, sizeof(fdsi));
-    //     if (s != sizeof(fdsi)) continue;
+#pragma region "Process"
 
-    //     std::cout << "Received signal: " << fdsi.ssi_signo << "\n";
-    //     if (fdsi.ssi_signo == SIGTERM || fdsi.ssi_signo == SIGINT) {
-    //         std::cout << "Exiting...\n";
-    //         break;
-    //     }
-    // }
+	int Signal::process() {
+		struct signalfd_siginfo fdsi;
+		ssize_t bytes_read;
+
+		while (true) {
+			bytes_read = read(signal_fd, &fdsi, sizeof(fdsi));
+			if (bytes_read == 0) {
+				Log.error("Signal: signal FD closed unexpectedly");
+				break;
+			}
+			else if (bytes_read == -1) {
+				if (errno == EAGAIN || errno == EWOULDBLOCK) break;		// no data
+				if (errno == EINTR) continue;							// interrupted, retry
+				Log.error("Signal: failed to receive signal - " + std::string(strerror(errno)));
+				break;
+			}
+			else if (bytes_read != sizeof(fdsi)) {
+				Log.error("Signal: corrupted signal received");
+				break;
+			}
+
+			switch (fdsi.ssi_signo) {
+				case SIGQUIT:	sigquit_handler(fdsi.ssi_signo);	return (1);
+				case SIGINT:	sigint_handler(fdsi.ssi_signo);		return (1);
+				case SIGTERM:	sigterm_handler(fdsi.ssi_signo);	return (1);
+				case SIGHUP:	sighup_handler(fdsi.ssi_signo);		break;
+				case SIGSEGV:	sigsegv_handler(fdsi.ssi_signo);	return (1);
+				case SIGPIPE:	sigpipe_handler(fdsi.ssi_signo);	break;
+				case SIGCHLD:	sigchld_handler(fdsi.ssi_signo);	break;
+			}
+		}
+
+		return (0);
+	}
+
+#pragma endregion

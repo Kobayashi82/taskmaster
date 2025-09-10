@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 22:51:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 14:29:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 	#include "Main/Taskmasterd.hpp"
 	#include "Main/Signal.hpp"
+	#include "Loop/Epoll.hpp"
 
 	#include <iostream>															// std::cerr()
 
@@ -29,6 +30,7 @@
 		if ((result = Config.load(argc, argv))) {
 			Log.set_logfile(TaskMaster.logfile);
 			Log.set_logfile_ready(true);
+			TaskMaster.clean_up();
 			return (result - 1);
 		}
 
@@ -51,14 +53,25 @@
 
 		Log.info("Taskmasterd: started with pid " + std::to_string(TaskMaster.pid));
 
-		Signal::create_fd();
+		int sigfd = Signal::create();
+		if (sigfd == -1) {
+			TaskMaster.clean_up();
+			return (1);
+		}
+
+		Epoll epoll;
+		TaskMaster.epoll_ptr = &epoll;
+		if (epoll.create() || epoll.add(sigfd, true, false)) {
+			TaskMaster.clean_up();
+			return (1);
+		}
+
 		TaskMaster.unix_server.start();
 		TaskMaster.inet_server.start();
 
 		while (TaskMaster.running) {
 			// Máquina de estados
-			sleep(1);
-			TaskMaster.running = false;
+			if (epoll.wait()) break;
 		}
 
 		TaskMaster.clean_up();

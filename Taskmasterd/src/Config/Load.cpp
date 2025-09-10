@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 22:49:21 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 12:49:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,11 +132,11 @@
 
 		Utils::error_print();
 		if (Utils::errors.size() || Utils::errors_maxLevel > DEBUG)	{
-			if (Utils::errors_maxLevel == WARNING)				Log.warning ("Taskmasterd: configuration loaded with warnings. Review recommended");
-			if (Utils::errors_maxLevel == ERROR)				Log.error ("Taskmasterd: configuration loaded with errors. Execution can continue");
+			if (Utils::errors_maxLevel == WARNING)				Log.warning ("Taskmasterd: configuration loaded with warnings");
+			if (Utils::errors_maxLevel == ERROR)				Log.error ("Taskmasterd: configuration loaded with errors");
 			if (Utils::errors_maxLevel == CRITICAL) { result = 2;
 				if (!TaskMaster.nodaemon || TaskMaster.silent)	std::cerr << "Error: critical errors in the configuration file" << std::endl;
-				else											Log.critical ("Taskmasterd: configuration loaded with critical errors. Execution aborted");
+				else											Log.critical ("Taskmasterd: configuration loaded with critical errors");
 			}
 		} else													Log.info("Taskmasterd: configuration loaded");
 
