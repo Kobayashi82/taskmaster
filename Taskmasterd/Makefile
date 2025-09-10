@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/10 18:54:23 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/10 20:00:08 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,7 +75,7 @@ SRCS		= Config/Options.cpp Config/Initialize.cpp			\
 																\
 			  Servers/UnixServer.cpp Servers/InetServer.cpp		\
 																\
-			  Loop/Signal.cpp Loop/Epoll.cpp					\
+			  Loop/Signal.cpp Loop/Epoll.cpp Loop/Event.cpp		\
 																\
 			  Utils/String.cpp Utils/Environment.cpp			\
 			  Utils/Path.cpp Utils/Globbing.cpp					\

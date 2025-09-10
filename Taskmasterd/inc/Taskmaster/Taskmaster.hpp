@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:59:19 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/10 20:00:41 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,9 @@
 	#include "Programs/Group.hpp"
 	#include "Servers/UnixServer.hpp"
 	#include "Servers/InetServer.hpp"
-	#include "Loop/Epoll.hpp"
 	#include "Loop/Signal.hpp"
+	#include "Loop/Epoll.hpp"
+	#include "Loop/Event.hpp"
 
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
@@ -82,6 +83,7 @@
 			pid_t								pid;
 			Pidlock								pidlock;
 			Epoll								epoll;
+			Event								event;
 
 			// --- METHODS ---
 
