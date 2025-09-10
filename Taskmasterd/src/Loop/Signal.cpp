@@ -12,9 +12,7 @@
 
 #pragma region "Includes"
 
-	#include "Config/Config.hpp"
-	#include "Logging/TaskmasterLog.hpp"
-	#include "Loop/Signal.hpp"
+	#include "Taskmaster/Taskmaster.hpp"
 
 	#include <csignal>															// std::signal()
 	#include <unistd.h>															// close()
@@ -75,8 +73,8 @@
 		void Signal::sigsegv_handler(int sig) {
 			Log.critical("Signal: SIGSEGV received. Segmentation fault");
 
-			// Cleanup
 			signal(SIGSEGV, SIG_DFL);
+			tskm.cleanup();
 			raise(SIGSEGV);
 			std::exit(128 + sig);
 		}
