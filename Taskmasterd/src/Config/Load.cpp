@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 20:06:14 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:45:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,24 +64,24 @@
 			}
 		} else configFile = Utils::expand_path(configFile, "", true, false);
 
-		if (configFile.empty()) {
-			Log.error("no configuration file found");
-			Log.warning("tasksmasterd is running without a configuration file");
-			return;
-		}
-
-		std::ifstream file(configFile);
-		if (!file.is_open()) {
-			Log.error("cannot open config file: " + configFile + " - " + strerror(errno));
-			Log.warning("tasksmasterd is running without a configuration file");
-			return;
-		}
-
 		sections.clear();
 		currentSection.clear();
 		Utils::errors.clear();
 		Utils::errors_maxLevel = order = 0;
 		in_environment = false;
+
+		if (configFile.empty()) {
+			if (!in_reloading)	Log.warning("Tasksmasterd: no configuration file found, running without a configuration file");
+			else				Log.warning("Tasksmasterd: no configuration file found, skipping program reload");
+			return;
+		}
+
+		std::ifstream file(configFile);
+		if (!file.is_open()) {
+			Log.error("Taskmasterd: cannot open config file: " + configFile + " - " + strerror(errno));
+			if (!in_reloading) Log.warning("Tasksmasterd: running without a configuration file");
+			return;
+		}
 
 		std::string	line;
 		int			lineNumber = 0;
@@ -112,7 +112,7 @@
 		if ((result = Options.parse(argc, argv))) return (result);
 
 		if (Options.configuration.empty() && is_root) {
-			Log.warning("taskmasterd is running as root and it is searching for its configuration file in default locations (including its current working directory). You probably want to specify a \"-c\" argument specifying an absolute path to a configuration file for improved security.");
+			Log.warning("Taskmasterd: running as root and searching for a configuration file in default locations (including the current directory). You probably want to specify a \"-c\" argument with an absolute path to a configuration file for improved security");
 			Utils::errors_maxLevel = WARNING;
 		}
 
@@ -148,7 +148,10 @@
 		int result = 0;
 
 		in_reloading = true;
+		std::cerr << mainConfigFile << std::endl;
 		load_file(mainConfigFile);
+
+		if (Config.sections.empty()) return (1);
 
 		tskm.reload();
 

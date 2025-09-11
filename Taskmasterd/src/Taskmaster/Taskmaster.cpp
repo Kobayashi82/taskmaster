@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 20:19:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:43:29 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -461,6 +461,8 @@
 	#pragma region "Reload"
 
 		void Taskmaster::reload() {
+			if (Config.sections.empty()) return;
+
 			root_warning = false;
 			reload_programs.clear();
 			groups.clear();
@@ -483,7 +485,7 @@
 						auto it = std::find_if(reload_programs.begin(), reload_programs.end(), [&program_name](const auto& program) { return (program.name == program_name); });
 
 						if		(it == reload_programs.end())	Utils::error_add(g_entry->filename, "[" + group + "] programs: program '" + program_name + "' not found", ERROR, g_entry->line, g_entry->order);
-						else if	(!it->disabled)			add_group = true;
+						else if	(!it->disabled)					add_group = true;
 					}
 
 					if (add_group) groups.emplace_back(group);
@@ -610,6 +612,13 @@
 	#pragma region "Process Reload"
 
 		void Taskmaster::process_reload() {
+			// If reload_programs is empty, it means no valid configuration was loaded
+			// In this case, we should not modify the existing programs
+			if (reload_programs.empty()) {
+				Log.info("no programs found in configuration, keeping existing programs unchanged");
+				return;
+			}
+
 			bool is_restart = false;
 
 			auto programs_it = programs.begin();
