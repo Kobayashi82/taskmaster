@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 14:33:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:19:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@
 
 #pragma region "Constructors"
 
-	Taskmaster::Taskmaster() : section("taskmasterd"), running(true), pid(0) {}
+	Taskmaster::Taskmaster() : section("taskmasterd"), root_warning(false), running(true), pid(0) {}
 
 #pragma endregion
 
@@ -130,14 +130,8 @@
 				if (key.empty() || !entry) return {};
 
 				if (!Utils::valid_user(entry->value)) {
-					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid user", CRITICAL, entry->line, entry->order + 2);
+					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid user", ERROR, entry->line, entry->order + 2);
 					entry->value = "";
-				} else {
-					if (!Config.is_root && Utils::toLower(entry->value) != "do not switch") {
-						struct passwd* pw = getpwuid(getuid());
-						if (pw && pw->pw_name != entry->value && entry->value != std::to_string(getuid()))
-							Utils::error_add(entry->filename, "[" + section + "] " + key + ": cannot drop privileges, not running as root", CRITICAL, entry->line, entry->order + 2);
-					}
 				}
 
 				return (entry->value);
@@ -374,10 +368,10 @@
 			}
 			catch(const std::exception& e) {
 				Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
-				if (key != "environment") {
+				if (key != "environment" && key != "user") {
 					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section][key], WARNING, entry->line, entry->order + 1);
 					entry->value = Config.defaultValues[section][key];
-				} else entry->value = "";
+				} else if (key == "environment") entry->value = "";
 			}
 
 			return (validate(key, entry));
@@ -458,6 +452,8 @@
 					if (add_group) groups.emplace_back(group);
 				}
 			}
+
+			if (root_warning) Log.warning("Taskmasterd: some programs have no 'user' set in the configuration file and will run as root. Add 'user=root' to silence this warning");
 		}
 
 	#pragma endregion
@@ -465,6 +461,7 @@
 	#pragma region "Reload"
 
 		void Taskmaster::reload() {
+			root_warning = false;
 			reload_programs.clear();
 			groups.clear();
 
@@ -492,6 +489,8 @@
 					if (add_group) groups.emplace_back(group);
 				}
 			}
+
+			if (root_warning) Log.warning("Taskmasterd: some programs have no 'user' set in the configuration file and will run as root. Add 'user=root' to silence this warning");
 		}
 
 	#pragma endregion

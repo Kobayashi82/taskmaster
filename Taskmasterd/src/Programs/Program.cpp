@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 13:57:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:13:14 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,15 +171,24 @@
 
 				if (!Utils::valid_user(entry->value)) {
 					Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid user", ERROR, entry->line, entry->order + 2);
-					entry->value = "";
+					entry->value = ""; entry->value = ""; disabled = true;
 				} else {
 					if (!Config.is_root && Utils::toLower(entry->value) != "do not switch") {
 						struct passwd* pw = getpwuid(getuid());
 						if (pw && pw->pw_name != entry->value && entry->value != std::to_string(getuid())) {
 							Utils::error_add(entry->filename, "[" + section + "] " + key + ": cannot switch user, not running as root", ERROR, entry->line, entry->order + 2);
-							entry->value = "";
+							entry->value = ""; disabled = true;
 						}
 					}
+					else if (!Config.is_root && Utils::toLower(entry->value) == "do not switch" && tskm.user != "do not switch") {
+						struct passwd* pw = getpwuid(getuid());
+						if (pw && pw->pw_name != tskm.user && tskm.user != std::to_string(getuid())) {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": cannot switch user, not running as root", ERROR, entry->line, entry->order + 2);
+							entry->value = ""; disabled = true;
+						}
+					}
+
+					if (Config.is_root && Utils::toLower(entry->value) == "do not switch" && tskm.user == "do not switch") tskm.root_warning = true;
 				}
 
 				return (entry->value);
@@ -325,17 +334,21 @@
 					entry->value = Utils::remove_quotes(entry->value);
 					if (entry->value.empty()) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": empty value", ERROR, entry->line, entry->order);
-						Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section.substr(0, 8)][key], WARNING, entry->line, entry->order + 1);
-						entry->value = Config.defaultValues[section.substr(0, 8)][key];
+						if (key != "user") {
+							Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section.substr(0, 8)][key], WARNING, entry->line, entry->order + 1);
+							entry->value = Config.defaultValues[section.substr(0, 8)][key];
+						} else { disabled = true; return {}; }
 					}
 				}
 			}
 			catch(const std::exception& e) {
 				Utils::error_add(entry->filename, "[" + section + "] " + key + ": unclosed quote or unfinished escape sequence", ERROR, entry->line, entry->order);
-				if (key != "environment") {
+				if (key != "environment" && key != "user") {
 					Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + Config.defaultValues[section.substr(0, 8)][key], WARNING, entry->line, entry->order + 1);
 					entry->value = Config.defaultValues[section.substr(0, 8)][key];
-				} else { entry->value = ""; original_value = ""; }
+				}
+				else if (key == "user") { disabled = true; return {}; }
+				else { entry->value = ""; original_value = ""; }
 			}
 
 			std::string final_value = validate(key, entry);
@@ -437,9 +450,6 @@
 					process.emplace_back();
 					Process& proc = process.back();
 
-					// Esto va mejor en el constructor
-					proc.std_in = proc.std_out = proc.std_err = -1;
-					proc.terminated = false;
 					proc.program_name = name;
 					proc.process_num = current_process;
 
