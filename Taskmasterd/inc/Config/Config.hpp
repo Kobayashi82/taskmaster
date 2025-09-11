@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/24 21:47:27 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:35:28 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:54:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@
 			std::set<std::string>										validSections;
 			std::string													currentSection;
 			std::string													mainConfigFile;
+			std::string													originalWorkingDir;
 			bool														in_environment;
 			bool														in_reloading;
 

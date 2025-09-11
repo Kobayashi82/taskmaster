@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:33:13 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 20:45:55 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 20:58:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@
 #pragma region "Load File"
 
 	void ConfigParser::load_file(const std::string& filePath) {
-		std::string configFile = mainConfigFile = filePath;
+		std::string configFile = filePath;
 
 		if (configFile.empty()) {
 			const std::string candidates[] = {
@@ -63,6 +63,8 @@
 				if (!configFile.empty()) break;
 			}
 		} else configFile = Utils::expand_path(configFile, "", true, false);
+
+		mainConfigFile = configFile;
 
 		sections.clear();
 		currentSection.clear();
@@ -108,6 +110,8 @@
 	int ConfigParser::load(int argc, char **argv) {
 		int result = 0;
 
+		originalWorkingDir = Utils::expand_path(".", "", true, false);
+
 		ConfigOptions Options;
 		if ((result = Options.parse(argc, argv))) return (result);
 
@@ -147,8 +151,8 @@
 	int ConfigParser::reload() {
 		int result = 0;
 
+		chdir(originalWorkingDir.c_str());
 		in_reloading = true;
-		std::cerr << mainConfigFile << std::endl;
 		load_file(mainConfigFile);
 
 		if (Config.sections.empty()) return (1);
@@ -161,6 +165,8 @@
 			if (Utils::errors_maxLevel == ERROR)		  Log.error		("configuration reloaded with errors");
 			if (Utils::errors_maxLevel == CRITICAL) 	{ Log.critical	("configuration reloaded with critical errors"); result = 2; }
 		} else											  Log.info("configuration reloaded succesfully");
+
+		chdir("/");
 
 		tskm.process_reload();
 

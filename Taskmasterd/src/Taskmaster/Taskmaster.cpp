@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 20:43:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 21:24:16 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -467,11 +467,15 @@
 			reload_programs.clear();
 			groups.clear();
 
+			size_t program_count = 0;
 			for (auto& [program, keys] : Config.sections) {
-				if (program.substr(0, 8) == "program:") {
+				if (program.substr(0, 8) == "program:" && program.length() > 8) {
 					reload_programs.emplace_back(program);
+					program_count++;
 				}
 			}
+
+			Log.debug("found " + std::to_string(program_count) + " programs in configuration");
 
 			for (auto& [group, keys] : Config.sections) {
 				if (group.substr(0, 6) == "group:") {
@@ -620,13 +624,16 @@
 			}
 
 			bool is_restart = false;
+			std::vector<bool> processed(reload_programs.size(), false);
 
 			auto programs_it = programs.begin();
 			while (programs_it != programs.end()) {
 				bool found = false;
-				for (auto& rld_program : reload_programs) {
+				for (size_t i = 0; i < reload_programs.size(); ++i) {
+					auto& rld_program = reload_programs[i];
 					if (programs_it->name == rld_program.name) {
 						found = true;
+						processed[i] = true;
 						// Hay cambios en un programa
 						if (has_changes(*programs_it, rld_program)) {
 							programs_it->needs_restart = true;
@@ -645,16 +652,16 @@
 			}
 
 			// Hay programas nuevos
-			for (auto& rld_program : reload_programs) {
-				bool found = false;
-				for (const auto& program : programs) {
-					if (rld_program.name == program.name) { found = true; break; }
+			for (size_t i = 0; i < reload_programs.size(); ++i) {
+				if (processed[i]) continue; // Skip already processed programs
+				
+				auto& rld_program = reload_programs[i];
+				if (rld_program.name.empty()) {
+					Log.error("Attempting to add program with empty name - skipping");
+					continue;
 				}
-				if (!found) {
-					// Programa nuevo, añadirlo
-					Log.info("New program '" + rld_program.name + "' added");
-					programs.emplace_back(std::move(rld_program));
-				}
+				Log.info("New program '" + rld_program.name + "' added");
+				programs.emplace_back(std::move(rld_program));
 			}
 
 			// Si hay cambios críticos, programar restart de procesos afectados
