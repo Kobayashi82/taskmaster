@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:30:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 13:57:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -437,6 +437,9 @@
 					process.emplace_back();
 					Process& proc = process.back();
 
+					// Esto va mejor en el constructor
+					proc.std_in = proc.std_out = proc.std_err = -1;
+					proc.terminated = false;
 					proc.program_name = name;
 					proc.process_num = current_process;
 

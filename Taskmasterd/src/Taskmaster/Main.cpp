@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:21:46 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 13:16:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@
 			tskm.cleanup();
 			return (1);
 		}
+
+		tskm.event.add(sigfd, EventType::SIGNAL, nullptr);
 
 		if (tskm.epoll.create() || tskm.epoll.add(sigfd, true, false)) {
 			tskm.cleanup();

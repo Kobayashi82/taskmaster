@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:45:00 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 14:33:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -672,10 +672,7 @@
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		close(STDERR_FILENO);
-
-		for (auto& kv : event.events) {
-			close(kv.first);
-		}
+		event.remove_clients();
 	}
 
 #pragma endregion

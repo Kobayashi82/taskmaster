@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:44:29 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 13:41:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,38 +136,41 @@
 
 		for (int i = 0; i < eventCount; ++i) {
 
-			// Signals
-			if (events[i].data.fd == Signal::signal_fd) {
-				if (Signal::process()) return (1);
-				continue;
-			}
-
-			// Events
 			EventInfo *event = tskm.event.get(events[i].data.fd);
 			if (!event) continue;
 
-			if (events[i].events & EPOLLIN) {
+			if (!event->dead && events[i].events & EPOLLIN) {
 				switch (event->type) {
-					case EventType::UNIX_SOCKET: 	{ tskm.unix_server.accept();	break; }
-					case EventType::INET_SOCKET: 	{ tskm.inet_server.accept();	break; }
-					case EventType::CLIENT:			{ 								break; }
-					case EventType::STD_MASTER:		{ 								break; }
-					case EventType::STD_IN:			{ 								break; }
-					case EventType::STD_OUT:		{ 								break; }
-					case EventType::STD_ERR:		{ 								break; }
+					case EventType::SIGNAL:			{ if (Signal::process()) return (1);	break; }
+					case EventType::UNIX_SOCKET:	{ tskm.unix_server.accept();			break; }
+					case EventType::INET_SOCKET:	{ tskm.inet_server.accept();			break; }
+					case EventType::CLIENT:			{ 										break; }
+					case EventType::STD_MASTER:		{ 										break; }
+					case EventType::STD_IN:			{ 										break; }
+					case EventType::STD_OUT:		{ 										break; }
+					case EventType::STD_ERR:		{ 										break; }
 				}
 			}
 
-			if (events[i].events & EPOLLOUT) {
+			if (!event->dead && events[i].events & EPOLLOUT) {
 				switch (event->type) {
-					case EventType::UNIX_SOCKET: 	{ 								break; }
-					case EventType::INET_SOCKET: 	{ 								break; }
-					case EventType::CLIENT:			{ 								break; }
-					case EventType::STD_MASTER:		{ 								break; }
-					case EventType::STD_IN:			{ 								break; }
-					case EventType::STD_OUT:		{ 								break; }
-					case EventType::STD_ERR:		{ 								break; }
+					case EventType::SIGNAL:			{ 										break; }
+					case EventType::UNIX_SOCKET:	{ 										break; }
+					case EventType::INET_SOCKET:	{ 										break; }
+					case EventType::CLIENT:			{ 										break; }
+					case EventType::STD_MASTER:		{ 										break; }
+					case EventType::STD_IN:			{ 										break; }
+					case EventType::STD_OUT:		{ 										break; }
+					case EventType::STD_ERR:		{ 										break; }
 				}
+			}
+
+			if (event->dead) {
+				remove(event->fd);
+				::close(event->fd);
+				for (auto& fd : event->in)	tskm.event.in_remove(event->fd, fd);
+				for (auto& fd : event->out)	tskm.event.out_remove(event->fd, fd);
+				tskm.event.remove(event->fd);
 			}
 		}
 

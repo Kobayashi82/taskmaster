@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:21:01 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 21:32:14 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 14:34:22 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,49 +16,139 @@
 
 #pragma endregion
 
-#pragma region "Get"
+#pragma region "Events"
 
-	EventInfo* Event::get(int fd) {
-		if (fd < 0) return (nullptr);
+	#pragma region "Add"
 
-		auto it = events.find(fd);
-		if (it != events.end())	return (&it->second);
+		void Event::add(int fd, EventType type, Process *proc){
+			events.emplace(fd, EventInfo(fd, type, proc));
+		}
 
-		return (nullptr);
-	}
+	#pragma endregion
 
-#pragma endregion
+	#pragma region "Get"
 
-#pragma region "Clear"
+		#pragma region "Event"
 
-	void Event::clear() {
-		events.clear();
-	}
+			EventInfo* Event::get(int fd) {
+				if (fd < 0) return (nullptr);
 
-#pragma endregion
+				auto it = events.find(fd);
+				if (it != events.end())	return (&it->second);
 
-#pragma region "Remove (FD)"
+				return (nullptr);
+			}
 
-	void Event::remove(int fd) {
-		events.erase(fd);
-	}
+		#pragma endregion
 
-#pragma endregion
+		#pragma region "Process"
 
-#pragma region "Remove (Owner)"
+			Process* Event::get_process(int fd) {
+				if (fd < 0) return (nullptr);
 
-	void Event::remove(void *owner) {
-		for (auto it = events.begin(); it != events.end();) {
-			if (it->second.owner.has_value()) {
-				try {
-					if (std::any_cast<void *>(it->second.owner) == static_cast<void *>(owner)) {
+				auto it = events.find(fd);
+				if (it != events.end()) return (it->second.proc);
+
+				return (nullptr);
+			}
+
+		#pragma endregion
+
+	#pragma endregion
+
+	#pragma region "Remove"
+
+		#pragma region "Event"
+
+			void Event::remove(int fd) {
+				events.erase(fd);
+			}
+
+		#pragma endregion
+
+		#pragma region "Clients"
+
+			void Event::remove_clients() {
+				for (auto it = events.begin(); it != events.end();) {
+					if (it->second.type == EventType::CLIENT) {
+						EventInfo event = it->second;
+						tskm.epoll.remove(event.fd);
+						::close(event.fd);
+						for (auto& fd : event.in)	tskm.event.in_remove(event.fd, fd);
+						for (auto& fd : event.out)	tskm.event.out_remove(event.fd, fd);
 						it = events.erase(it);
 						continue;
 					}
-				} catch (const std::bad_any_cast&) {}
+					++it;
+				}
 			}
-			++it;
-		}
-	}
+
+		#pragma endregion
+
+		#pragma region "Clear"
+
+			void Event::clear() {
+				events.clear();
+			}
+
+		#pragma endregion
+
+	#pragma endregion
+
+#pragma endregion
+
+#pragma region "In / Out"
+
+	#pragma region "In"
+
+		#pragma region "Remove"
+
+			void Event::in_remove(int fd, int from) {
+				if (fd < 0 || from < 0) return;
+
+				auto it = events.find(from);
+				if (it != events.end()) it->second.out.erase(fd);
+			}
+
+		#pragma endregion
+
+		#pragma region "Add"
+
+			void Event::in_add(int fd, int to) {
+				if (fd < 0 || to < 0) return;
+
+				auto it = events.find(to);
+				if (it != events.end()) it->second.out.insert(fd);
+			}
+
+		#pragma endregion
+
+	#pragma endregion
+
+	#pragma region "Out"
+
+		#pragma region "Remove"
+
+			void Event::out_remove(int fd, int from) {
+				if (fd < 0 || from < 0) return;
+
+				auto it = events.find(from);
+				if (it != events.end()) it->second.out.erase(fd);
+			}
+
+		#pragma endregion
+
+		#pragma region "Add"
+
+			void Event::out_add(int fd, int to) {
+				if (fd < 0 || to < 0) return;
+
+				auto it = events.find(to);
+				if (it != events.end()) it->second.out.insert(fd);
+			}
+
+		#pragma endregion
+
+	#pragma endregion
 
 #pragma endregion

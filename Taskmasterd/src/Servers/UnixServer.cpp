@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/05 19:24:11 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:15:19 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 13:16:13 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -289,7 +289,8 @@
 			return (1);
 		}
 
-		tskm.event.events.emplace(sockfd, EventInfo(sockfd, EventType::UNIX_SOCKET, this));
+		tskm.event.add(sockfd, EventType::UNIX_SOCKET, nullptr);
+
 		if (tskm.epoll.add(sockfd, true, false)) {
 			Log.error("Unix Server: failed to start");
 			return (1);
@@ -316,7 +317,7 @@
 
 		Log.info("Unix Server: client connected — (fd: " + std::to_string(client_fd) + ")");
 
-		tskm.event.events.emplace(client_fd, EventInfo(client_fd, EventType::CLIENT, this));
+		tskm.event.add(client_fd, EventType::CLIENT, nullptr);
 
 		if (tskm.epoll.add(client_fd, true, false) == -1) {
 			Log.error("Unix Server: client disconnected — (fd: " + std::to_string(client_fd) + ")");

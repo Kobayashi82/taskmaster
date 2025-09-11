@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:20:55 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 21:32:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 13:37:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,32 @@
 
 #pragma region "Includes"
 
-	#include <any>																// std::any
-	#include <map>																// std::map
+	#include "Programs/Process.hpp"
+
+	#include <cstdint>															// uint8_t
+	#include <set>																// std::set
+	#include <map>																// std::unordered_map
 
 #pragma endregion
 
 #pragma region "EventInfo"
 
 	// Enumerators
-	enum class EventType { UNIX_SOCKET, INET_SOCKET, CLIENT, STD_MASTER, STD_IN, STD_OUT, STD_ERR };
+	enum class EventType { SIGNAL, UNIX_SOCKET, INET_SOCKET, CLIENT, STD_MASTER, STD_IN, STD_OUT, STD_ERR };
 
 	struct EventInfo {
-		int					fd;
-		EventType 			type;
-		std::any			owner;
+		int						fd;
+		EventType 				type;
+		Process					*proc;
+		bool					dead;
 
-		std::vector <char>	read_buffer;
-		std::vector <char>	write_buffer;
+		std::set<int>			in;
+		std::set<int>			out;
 
-		EventInfo(int _fd, EventType _type, std::any _owner) : fd(_fd), type(_type), owner(_owner) {}
+		std::vector<uint8_t>	read_buffer;
+		std::vector<uint8_t>	write_buffer;
+
+		EventInfo(int _fd, EventType _type, Process *_proc) : fd(_fd), type(_type), proc(_proc), dead(false) {}
 	};
 
 #pragma endregion
@@ -46,26 +53,20 @@
 			// Variables
 			std::unordered_map <int, EventInfo> events;
 
-			// --- METHODS ---
-
-			// Get Owner (template)
-			template <typename T>
-			T* get_owner(int fd) {
-				if (fd < 0) return (nullptr);
-
-				auto it = events.find(fd);
-				if (it != events.end() && it->second.owner.has_value()) {
-					try { return (std::any_cast<T*>(it->second.owner)); }
-					catch (const std::bad_any_cast&) { return (nullptr); }
-				}
-				return (nullptr);
-			}
-
+			// Events
+			void		add(int fd, EventType type, Process *proc);
 			EventInfo*	get(int fd);
-			EventInfo*	get_owner(int fd);
-			void		clear();
+			Process*	get_process(int fd);
 			void		remove(int fd);
-			void		remove(void *owner);
+			void		remove_clients();
+			void		clear();
+
+			// In / Out
+			void		in_remove(int fd, int from);
+			void		in_add(int fd, int to);
+			void		out_remove(int fd, int from);
+			void		out_add(int fd, int to);
+
 	};
 
 #pragma endregion

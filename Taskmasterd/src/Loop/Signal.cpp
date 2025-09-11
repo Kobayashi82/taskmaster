@@ -92,7 +92,45 @@
 	#pragma region "SIGCHLD"
 
 		void Signal::sigchld_handler(int sig) { (void) sig;
+			pid_t	pid;
+			int		status;
 
+			while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+				auto it = tskm.processes.find(pid);
+				if (it == tskm.processes.end()) continue;
+
+				Process *proc = it->second;
+
+				proc->terminated = true;
+
+				if (WIFEXITED(status)) {
+					proc->exit_code = WEXITSTATUS(status);
+					proc->exit_reason = (std::find(proc->exitcodes.begin(), proc->exitcodes.end(), proc->exit_code) != proc->exitcodes.end()) ? "exited" : "unexpected";
+				} else if (WIFSIGNALED(status)) {
+					int sig_n = WTERMSIG(status);
+					proc->exit_code = 128 + sig_n;
+				    switch (sig_n) {
+						case SIGQUIT: proc->exit_reason = "quit";					break;
+						case SIGINT:  proc->exit_reason = "interrupted";			break;
+						case SIGTERM: proc->exit_reason = "terminated";				break;
+						case SIGHUP:  proc->exit_reason = "hangup";					break;
+						case SIGABRT: proc->exit_reason = "aborted";				break;
+						case SIGKILL: proc->exit_reason = "killed";					break;
+						case SIGSEGV: proc->exit_reason = "segmentation fault";		break;
+						case SIGPIPE: proc->exit_reason = "broken pipe";			break;
+						default:      proc->exit_reason = "unknown";				break;
+					}
+				}
+
+				if (proc->std_in != -1) {
+					tskm.epoll.remove(proc->std_in);
+					::close(proc->std_in);
+					EventInfo *event = tskm.event.get(proc->std_in);
+					for (auto& fd : event->in)	tskm.event.in_remove(event->fd, fd);
+					tskm.event.remove(proc->std_in);
+					proc->std_in = -1;
+				}
+			}
 		}
 
 	#pragma endregion

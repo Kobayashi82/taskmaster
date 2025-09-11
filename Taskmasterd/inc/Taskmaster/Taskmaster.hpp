@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 20:00:41 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/11 14:02:53 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
+	#include <map>																// std::unordered_map
 	#include <vector>															// std::vector
 
 #pragma endregion
@@ -73,6 +74,7 @@
 			std::vector<Program>				programs;
 			std::vector<Group>					groups;
 			std::vector<Program>				reload_programs;
+			std::unordered_map <int, Process *>	processes;
 
 			// Servers
 			UnixServer							unix_server;
