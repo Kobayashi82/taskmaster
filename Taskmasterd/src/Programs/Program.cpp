@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 19:34:09 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 20:39:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,7 +285,7 @@
 			if (key == "numprocs")					validate_number(key, entry, 1, 65535);
 			if (key == "numprocs_start")			validate_number(key, entry, 0, 65535);
 			if (key == "priority")					validate_number(key, entry, 0, 999);
-			if (key == "startsecs")					validate_number(key, entry, 0, 3600);
+			if (key == "startsecs")					validate_number(key, entry, 1, 3600);
 			if (key == "startretries")				validate_number(key, entry, 0, 100);
 			if (key == "stopwaitsecs")				validate_number(key, entry, 1, 3600);
 
@@ -455,6 +455,11 @@
 					proc.program_name = name;
 					proc.process_num = current_process;
 					proc.status = ProcessState::STOPPED;
+					proc.started_once = false;
+					proc.terminated = false;
+					proc.manual_stopped = false;
+					proc.restart_count = 0;
+					proc.exit_code = 0;
 
 					Utils::environment_add(proc.environment, env);
 					Utils::environment_add(proc.environment, "PROGRAM_NAME", name);
@@ -485,9 +490,9 @@
 
 					proc.priority								= Utils::parse_number(expand_vars(proc.environment, "priority"), 0, 999, 999);
 					proc.autostart								= Utils::parse_boolean(expand_vars(proc.environment, "autostart"));
-					proc.autorestart							= Utils::parse_boolean(expand_vars(proc.environment, "autorestart"));
-					proc.startsecs								= Utils::parse_number(expand_vars(proc.environment, "startsecs"), 0, 3600, 1);
-					proc.startretries							= Utils::parse_number(expand_vars(proc.environment, "startretries"), 1, 100, 3);
+					proc.autorestart							= Utils::parse_boolean(expand_vars(proc.environment, "autorestart"), true);
+					proc.startsecs								= Utils::parse_number(expand_vars(proc.environment, "startsecs"), 1, 3600, 1);
+					proc.startretries							= Utils::parse_number(expand_vars(proc.environment, "startretries"), 0, 100, 3);
 					proc.stopsignal								= Utils::parse_signal(expand_vars(proc.environment, "stopsignal"));
 					proc.stopwaitsecs							= Utils::parse_number(expand_vars(proc.environment, "stopwaitsecs"), 1, 3600, 10);
 					proc.stopasgroup							= Utils::parse_boolean(expand_vars(proc.environment, "stopasgroup"));
@@ -700,10 +705,11 @@
 
 			switch (proc.status) {
 				case ProcessState::STOPPED:
-					if (!proc.started_once && proc.autostart == true) {
+					if (!proc.started_once && proc.autostart) {
 						proc.terminated = false;
 						proc.status = ProcessState::STARTING;
 						proc.change_time = proc.start_time = current_time;
+						proc.started_once = true;
 						process_next = proc.startsecs;
 						process_start(proc);
 					}
@@ -712,16 +718,29 @@
 				case ProcessState::STARTING:
 					if (proc.terminated) {
 						// El proceso murió durante el arranque
-						// handleProcessDeath(proc);
-						proc.status = ProcessState::BACKOFF;
-						proc.change_time = current_time;
-						// calcular tiempo de retry basado en los retries
-						// process_next = retry_time;
+						bool exit_code_expected = std::find(proc.exitcodes.begin(), proc.exitcodes.end(), proc.exit_code) != proc.exitcodes.end();
+						
+						bool should_restart = false;
+						if (proc.restart_count < proc.startretries) {
+							if (proc.autorestart == 1) {  // always
+								should_restart = true;
+							} else if (proc.autorestart == 2) {  // unexpected
+								should_restart = !exit_code_expected;
+							}
+						}
+						
+						if (should_restart) {
+							proc.status = ProcessState::BACKOFF;
+							proc.change_time = current_time;
+						} else {
+							proc.status = ProcessState::EXITED;
+							proc.change_time = current_time;
+						}
 					} else if (current_time - proc.start_time >= proc.startsecs) {
 						// Ha pasado el tiempo mínimo. Good
-						std::cerr << "RUNNING\n";
 						proc.status = ProcessState::RUNNING;
 						proc.change_time = current_time;
+						proc.restart_count = 0;
 					}
 					break;
 
@@ -729,7 +748,29 @@
 					if (proc.terminated) {
 						if (proc.manual_stopped)	proc.status = ProcessState::STOPPED;
 						else						proc.status = ProcessState::EXITED;
-						proc.change_time = current_time;
+
+						bool should_restart = false;
+						if (proc.restart_count < proc.startretries) {
+							bool exit_code_expected = std::find(proc.exitcodes.begin(), proc.exitcodes.end(), proc.exit_code) != proc.exitcodes.end();
+							
+							if (proc.autorestart == 1) {  // always
+								should_restart = true;
+							} else if (proc.autorestart == 2) {  // unexpected
+								should_restart = !exit_code_expected;
+							}
+							// autorestart == 0 (never) -> should_restart remains false
+						}
+
+						if (should_restart) {
+							proc.change_time = current_time;
+							int backoff = proc.startsecs * (1 << proc.restart_count);
+							process_next = (backoff > 30) ? 30 : backoff;
+							proc.terminated = false;
+							proc.status = ProcessState::BACKOFF;
+						} else {
+							proc.change_time = current_time;
+							proc.status = ProcessState::EXITED;
+						}
 						// handleProcessDeath(proc);
 					}
 					break;
@@ -743,6 +784,19 @@
 					break;
 
 				case ProcessState::BACKOFF:
+					{
+						int backoff = proc.startsecs * (1 << proc.restart_count);
+						if (current_time < proc.change_time + backoff) {
+							process_next = (proc.change_time + backoff) - current_time;
+						} else {
+							proc.status = ProcessState::STARTING;
+							proc.change_time = proc.start_time = current_time;
+							proc.restart_count++;
+							proc.terminated = false;  // Reset terminated status before restarting
+							process_start(proc);
+						}
+					}
+					break;
 					// Esperando antes de reintentar
 					// if (current_time - proc.change_time >= getBackoffTime()) {
 					// 	// process_next = (process.change_time + getBackoffDelay()) - current_time;
@@ -754,10 +808,10 @@
 					// 	}
 					// 	proc.change_time = current_time;
 					// }
-					break;
-				case ProcessState::EXITED:
-				case ProcessState::FATAL:
-				case ProcessState::UNKNOWN: break;
+
+				case ProcessState::EXITED:	break;
+				case ProcessState::FATAL:	break;
+				case ProcessState::UNKNOWN:	break;
 			}
 			next_check = std::min(next_check, process_next);
 		}
