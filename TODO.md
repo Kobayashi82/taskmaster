@@ -28,7 +28,6 @@ void trimBuffer() {
 # Execution
 
 ```c
-
 std::cerr << getpid() << "\n";
 std::cerr << TaskMaster.programs[2].process[0].name << "\n";
 while (!TaskMaster.silent) ;

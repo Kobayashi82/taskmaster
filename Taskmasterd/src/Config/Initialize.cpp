@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:35:44 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 19:06:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@
 				{"numprocs", "1"},
 				{"numprocs_start", "0"},
 				{"priority", "999"},
-				{"autostart", "true"},
+				{"autostart", "false"},
 				{"autorestart", "unexpected"},
 				{"startsecs", "1"},
 				{"startretries", "3"},

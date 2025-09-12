@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 20:13:14 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 19:34:09 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 	#include <algorithm>
 	#include <iostream>
 	#include <sstream>															// std::stringstream
+	#include <unistd.h>															// execvpe()
+	#include <fcntl.h>															// pipe2()
 
 #pragma endregion
 
@@ -443,15 +445,16 @@
 
 			uint16_t current_process = 0;
 			uint16_t current_process_num = numprocs_start;
-			process.reserve(numprocs);
+			processes.reserve(numprocs);
 
 			while (current_process < numprocs && !disabled) {
 				try {
-					process.emplace_back();
-					Process& proc = process.back();
+					processes.emplace_back();
+					Process& proc = processes.back();
 
 					proc.program_name = name;
 					proc.process_num = current_process;
+					proc.status = ProcessState::STOPPED;
 
 					Utils::environment_add(proc.environment, env);
 					Utils::environment_add(proc.environment, "PROGRAM_NAME", name);
@@ -538,3 +541,226 @@
 	#pragma endregion
 
 #pragma endregion
+
+
+		// client->master_fd = posix_openpt(O_RDWR | O_NOCTTY);
+		// if (client->master_fd == -1) {
+		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] posix_openpt() failed");
+		// 	return (1);
+		// }
+		
+		// if (grantpt(client->master_fd) == -1 || unlockpt(client->master_fd) == -1) {
+		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] grantpt()/unlockpt() failed");
+		// 	close(client->master_fd);
+		// 	return (1);
+		// }
+		
+		// char pty_name[256];
+		// if (ptsname_r(client->master_fd, pty_name, sizeof(pty_name)) != 0) {
+		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] ptsname_r() failed");
+		// 	close(client->master_fd);
+		// 	return (1);
+		// }
+
+		// struct winsize ws;
+		// ws.ws_row = client->terminal_rows;
+		// ws.ws_col = client->terminal_cols;
+		// ws.ws_xpixel = 0;
+		// ws.ws_ypixel = 0;
+		// if (ioctl(client->master_fd, TIOCSWINSZ, &ws) == -1) {
+		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] failed to set PTY window size");
+		// 	return (1);
+		// }
+
+
+	void Program::process_start(Process& proc) {
+		int pipe_std_in[2];
+		int pipe_std_out[2];
+		int pipe_std_err[2];
+
+		if (proc.tty_mode) {
+
+		} else {
+			if (pipe2(pipe_std_in, O_CLOEXEC | O_NONBLOCK)) {
+				Log.error("Process: failed to pipe stdin - " + std::string(strerror(errno)));
+				proc.exit_code = -1;
+				proc.exit_reason = "pipe failed for stdin";
+				proc.terminated = true;
+			}
+			if (pipe2(pipe_std_out, O_CLOEXEC | O_NONBLOCK)) {
+				Log.error("Process: failed to pipe stdout - " + std::string(strerror(errno)));
+				close(pipe_std_in[0]);
+				close(pipe_std_in[1]);
+				proc.exit_code = -1;
+				proc.exit_reason = "pipe failed for stdout";
+				proc.terminated = true;
+			}
+			if (!proc.redirect_stderr) {
+				if (pipe2(pipe_std_err, O_CLOEXEC | O_NONBLOCK)) {
+					Log.error("Process: failed to pipe stderr - " + std::string(strerror(errno)));
+					close(pipe_std_in[0]);
+					close(pipe_std_in[1]);
+					close(pipe_std_out[0]);
+					close(pipe_std_out[1]);
+					proc.exit_code = -1;
+					proc.exit_reason = "pipe failed for stderr";
+					proc.terminated = true;
+				}
+			}
+		}
+
+		if (proc.terminated) return;
+
+		proc.pid = fork();
+		if (proc.pid < 0) {
+			Log.error("Process: failed to fork - " + std::string(strerror(errno)));
+			if (proc.tty_mode) {
+
+			} else {
+				close(pipe_std_in[0]);
+				close(pipe_std_in[1]);
+				close(pipe_std_out[0]);
+				close(pipe_std_out[1]);
+				if (!proc.redirect_stderr) {
+					close(pipe_std_err[0]);
+					close(pipe_std_err[1]);
+				}
+			}
+			proc.exit_code = -1;
+			proc.exit_reason = "fork failed";
+			proc.terminated = true;
+		}
+
+		if (proc.pid == 0) {
+			int fail_code = -1;
+
+			if (proc.tty_mode) {
+
+			} else {
+				if (dup2(pipe_std_in[0], STDIN_FILENO) == -1) fail_code = -2;
+				close(pipe_std_in[0]);
+				close(pipe_std_in[1]);
+
+				if (fail_code == -1 && dup2(pipe_std_out[1], STDOUT_FILENO) == -1) fail_code = -3;
+				close(pipe_std_out[0]);
+				close(pipe_std_out[1]);
+
+				if (!proc.redirect_stderr) {
+					if (fail_code == -1 && dup2(pipe_std_err[1], STDERR_FILENO) == -1) fail_code = -4;
+					close(pipe_std_err[0]);
+					close(pipe_std_err[1]);
+				} else {
+					if (fail_code == -1 && dup2(STDOUT_FILENO, STDERR_FILENO) == -1) fail_code = -4;
+				}
+
+				if (fail_code < -1) {
+					tskm.cleanup(true, true);
+					std::exit(fail_code);
+				}
+			}
+
+			char **envp = Utils::toArray(proc.environment);
+			char **args = Utils::toArray(proc.arguments);
+
+			execvpe(proc.command.c_str(), args, envp);
+
+			Utils::array_free(envp);
+			Utils::array_free(args);
+
+			tskm.cleanup(true, true);
+			std::exit(fail_code);
+		}
+
+		close(pipe_std_in[0]);
+		close(pipe_std_out[1]);
+		close(pipe_std_err[1]);
+
+		tskm.processes[proc.pid] = &proc;
+
+		proc.std_in = pipe_std_in[1];
+		proc.std_out = pipe_std_out[0];
+		tskm.event.add(proc.std_in, EventType::STD_IN, &proc);
+		tskm.event.add(proc.std_out, EventType::STD_OUT, &proc);
+		tskm.epoll.add(proc.std_in, false, false);
+		tskm.epoll.add(proc.std_out, true, false);
+
+		if (!proc.redirect_stderr) {
+			proc.std_err = pipe_std_err[0];
+			tskm.event.add(proc.std_err, EventType::STD_ERR, &proc);
+			tskm.epoll.add(proc.std_err, true, false);
+		}
+	}
+
+	uint32_t Program::update_state_machine() {
+		uint32_t next_check = UINT32_MAX;
+
+		for (auto& proc : processes) {
+			uint32_t		process_next = UINT32_MAX;
+			std::time_t		current_time = time(nullptr);
+
+			switch (proc.status) {
+				case ProcessState::STOPPED:
+					if (!proc.started_once && proc.autostart == true) {
+						proc.terminated = false;
+						proc.status = ProcessState::STARTING;
+						proc.change_time = proc.start_time = current_time;
+						process_next = proc.startsecs;
+						process_start(proc);
+					}
+					break;
+
+				case ProcessState::STARTING:
+					if (proc.terminated) {
+						// El proceso murió durante el arranque
+						// handleProcessDeath(proc);
+						proc.status = ProcessState::BACKOFF;
+						proc.change_time = current_time;
+						// calcular tiempo de retry basado en los retries
+						// process_next = retry_time;
+					} else if (current_time - proc.start_time >= proc.startsecs) {
+						// Ha pasado el tiempo mínimo. Good
+						std::cerr << "RUNNING\n";
+						proc.status = ProcessState::RUNNING;
+						proc.change_time = current_time;
+					}
+					break;
+
+				case ProcessState::RUNNING:
+					if (proc.terminated) {
+						if (proc.manual_stopped)	proc.status = ProcessState::STOPPED;
+						else						proc.status = ProcessState::EXITED;
+						proc.change_time = current_time;
+						// handleProcessDeath(proc);
+					}
+					break;
+
+				case ProcessState::STOPPING:
+					if (proc.terminated || (current_time - proc.change_time > proc.stopwaitsecs)) {
+						proc.status = ProcessState::STOPPED;
+						proc.change_time = current_time;
+						// cleanupProcess(proc);
+					}
+					break;
+
+				case ProcessState::BACKOFF:
+					// Esperando antes de reintentar
+					// if (current_time - proc.change_time >= getBackoffTime()) {
+					// 	// process_next = (process.change_time + getBackoffDelay()) - current_time;
+					// 	if (proc.restart_count < proc.startretries) {
+					// 		startProcess(proc);
+					// 		proc.status = ProcessState::STARTING;
+					// 	} else {
+					// 		proc.status = ProcessState::FATAL;
+					// 	}
+					// 	proc.change_time = current_time;
+					// }
+					break;
+				case ProcessState::EXITED:
+				case ProcessState::FATAL:
+				case ProcessState::UNKNOWN: break;
+			}
+			next_check = std::min(next_check, process_next);
+		}
+
+		return (next_check);
+	}

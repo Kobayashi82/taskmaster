@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 13:41:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 19:42:03 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,9 @@
 		if (_epoll_fd < 0 || fd < 0) return (1);
 
 		if (epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, NULL)) {
-			Log.error("Epoll: failed to set event for fd " +  std::to_string(fd) + " - " + std::string(strerror(errno)));
+			if (errno != ENOENT && errno != EBADF) {
+				Log.error("Epoll: failed to remove event for fd " +  std::to_string(fd) + " - " + std::string(strerror(errno)));
+			}
 			return (1);
 		}
 
@@ -122,11 +124,16 @@
 
 #pragma region "Wait"
 
-	int Epoll::wait() {
+int Epoll::wait() {
 		if (_epoll_fd < 0) return (1);
 
 		struct epoll_event	events[MAX_EVENTS];
-		int					timeout = 100;
+		static bool			first_time = false;
+		uint32_t			min_timeout = UINT32_MAX;
+		int					timeout = 1;
+
+		timeout = (min_timeout == UINT32_MAX) ? -1 : min_timeout * 1000;
+		if (!first_time) { timeout = 1; first_time = true; }
 
 		int eventCount = epoll_wait(_epoll_fd, events, MAX_EVENTS, timeout);
 		if (eventCount == -1) {
@@ -147,7 +154,20 @@
 					case EventType::CLIENT:			{ 										break; }
 					case EventType::STD_MASTER:		{ 										break; }
 					case EventType::STD_IN:			{ 										break; }
-					case EventType::STD_OUT:		{ 										break; }
+					case EventType::STD_OUT:		{ 
+						char buffer[4096];
+						ssize_t n = read(event->fd, buffer, sizeof(buffer) - 1);
+						if (n > 0) {
+							buffer[n] = '\0';            // terminamos el string
+							std::cout << buffer;         // imprimir en stdout
+							std::cout.flush();           // forzar flush por si es interactivo
+						} else if (n == 0) {
+							// EOF -> el hijo cerró stdout
+							// aquí podrías cerrar event->fd o marcarlo como terminado
+						} else {
+							perror("read from STD_OUT failed");
+						}
+						break; }
 					case EventType::STD_ERR:		{ 										break; }
 				}
 			}
@@ -160,7 +180,7 @@
 					case EventType::CLIENT:			{ 										break; }
 					case EventType::STD_MASTER:		{ 										break; }
 					case EventType::STD_IN:			{ 										break; }
-					case EventType::STD_OUT:		{ 										break; }
+					case EventType::STD_OUT:		{										break; }
 					case EventType::STD_ERR:		{ 										break; }
 				}
 			}
@@ -172,6 +192,10 @@
 				for (auto& fd : event->out)	tskm.event.out_remove(event->fd, fd);
 				tskm.event.remove(event->fd);
 			}
+		}
+
+		for (auto& program : tskm.programs) {
+			min_timeout = std::min(min_timeout, program.update_state_machine());
 		}
 
 		return (0);

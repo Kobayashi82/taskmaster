@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:21:17 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 19:42:22 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@
 	#include "Loop/Signal.hpp"
 	#include "Loop/Epoll.hpp"
 	#include "Loop/Event.hpp"
-
+	
+	#include <iostream>															// std::cout, std::cerr
 	#include <cstdint>															// uint8_t, uint16_t
 	#include <climits>															// LONG_MIN, LONG_MAX
 	#include <map>																// std::unordered_map
@@ -100,7 +101,7 @@
 
 			// Taskmaster
 			int			daemonize();
-			void		cleanup(bool silent = false);
+			void		cleanup(bool silent = false, bool is_child = false);
 
 		private:
 		

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:28:40 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 16:35:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@
 		exit_reason(""),
 		spawn_error(""),
 		program_name(""),
+		started_once(false),
+		manual_stopped(false),
 		terminated(false),
 		std_in(-1),
 		std_out(-1),

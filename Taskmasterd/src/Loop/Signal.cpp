@@ -201,6 +201,8 @@
 	int Signal::create() {
 		if (signal_fd >= 0) close();
 
+		set_default();
+
 		sigset_t mask;
 		sigemptyset(&mask);
 		sigaddset(&mask, SIGQUIT);

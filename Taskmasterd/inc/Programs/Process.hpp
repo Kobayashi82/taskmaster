@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:21:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 16:34:06 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,8 @@
 			std::string							exit_reason;
 			std::string							spawn_error;
 			std::string							program_name;
+			bool								started_once;
+			bool								manual_stopped;
 			bool								terminated;
 			int									std_in;
 			int									std_out;

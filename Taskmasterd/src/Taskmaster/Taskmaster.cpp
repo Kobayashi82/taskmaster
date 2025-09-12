@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:21:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 19:02:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -533,13 +533,13 @@
 			}
 
 			// Si no hay procesos en alguno de los programas, hay cambios
-			if (old_prog.process.empty() || new_prog.process.empty()) {
-				return old_prog.process.size() != new_prog.process.size();
+			if (old_prog.processes.empty() || new_prog.processes.empty()) {
+				return old_prog.processes.size() != new_prog.processes.size();
 			}
 
 			// Comparar solo el primer proceso
-			const auto& old_proc = old_prog.process[0];
-			const auto& new_proc = new_prog.process[0];
+			const auto& old_proc = old_prog.processes[0];
+			const auto& new_proc = new_prog.processes[0];
 
 			// Cambios críticos que requieren reinicio
 			return (old_proc.command != new_proc.command ||
@@ -577,7 +577,7 @@
 
 		void Taskmaster::update_programs(Program& existing_prog, Program&& new_prog) {
 			std::vector<Process> runtime_backup;
-			for (const auto& proc : existing_prog.process) {
+			for (const auto& proc : existing_prog.processes) {
 				Process backup;
 				backup.pid = proc.pid;
 				backup.status = proc.status;
@@ -596,9 +596,9 @@
 			existing_prog.numprocs_start = new_prog.numprocs_start;
 			existing_prog.disabled = new_prog.disabled;
 			existing_prog.groups = std::move(new_prog.groups);
-			existing_prog.process = std::move(new_prog.process);
+			existing_prog.processes = std::move(new_prog.processes);
 
-			for (auto& new_proc : existing_prog.process) {
+			for (auto& new_proc : existing_prog.processes) {
 				for (const auto& backup : runtime_backup) {
 					if (new_proc.name == backup.name || new_proc.process_num == backup.process_num) {
 						new_proc.pid = backup.pid;
@@ -692,10 +692,10 @@
 
 #pragma region "Clean Up"
 
-	void Taskmaster::cleanup(bool silent) {
+	void Taskmaster::cleanup(bool silent, bool is_child) {
 		unix_server.close();
 		inet_server.close();
-		pidlock.unlock();
+		if (!is_child) pidlock.unlock();
 		epoll.close();
 		Signal::close();
 		if (!silent) Log.info("Taskmasterd: closed\n");

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/09 12:45:18 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 17:52:31 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,10 @@
 			uint16_t        			numprocs_start;
 			bool						disabled;
 			bool						needs_restart;
-			std::vector<Process>		process;
+			std::vector<Process>		processes;
 			std::vector<std::string>	groups;
+
+			uint32_t	update_state_machine();
 
 		private:
 
@@ -70,6 +72,8 @@
 			std::string	expand_vars(std::map<std::string, std::string>& env, const std::string& key);
 			void		add_groups(std::map<std::string, std::string>& env, std::string& configFile, uint16_t order);
 			void		initialize();
+
+			void		process_start(Process& proc);
 
 	};
 
