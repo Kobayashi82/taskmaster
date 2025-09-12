@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 22:50:20 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/08 17:32:52 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 12:26:10 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 	#include "Utils/Utils.hpp"
 
 	#include <algorithm>														// std::transform(), std::all_of()
+	#include <chrono>															// std::chrono
 
 #pragma endregion
 
@@ -129,6 +130,23 @@
 		pushToken();
 
 		return (vec);
+	}
+
+#pragma endregion
+
+#pragma region "Get Time Stamp"
+
+	std::string Utils::get_timestamp() {
+		auto		now = std::chrono::system_clock::now();
+		auto		time_t = std::chrono::system_clock::to_time_t(now);
+		auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+		struct tm	*timeinfo = localtime(&time_t);
+		char		buffer[24], ms_buffer[4];
+
+		strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+		sprintf(ms_buffer, "%03d", (int)ms.count());
+
+		return (std::string(buffer) + "," + ms_buffer);
 	}
 
 #pragma endregion

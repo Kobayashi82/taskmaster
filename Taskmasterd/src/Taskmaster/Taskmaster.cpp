@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 21:24:16 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 12:21:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,23 @@
 
 #pragma region "Constructors"
 
-	Taskmaster::Taskmaster() : section("taskmasterd"), root_warning(false), running(true), pid(0) {}
+	Taskmaster::Taskmaster() :
+		section("taskmasterd"),
+		root_warning(false),
+		running(true),
+		pid(0)
+	{
+		status_names = {
+			"STOPPED",		// 0
+			"STARTING",		// 1
+			"RUNNING",		// 2
+			"BACKOFF",		// 3
+			"STOPPING",		// 4
+			"EXITED",		// 5
+			"FATAL",		// 6
+			"UNKNOWN",		// 7
+		};
+	}
 
 #pragma endregion
 

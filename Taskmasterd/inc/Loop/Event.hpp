@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:20:55 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 13:37:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 12:01:35 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,16 @@
 
 #pragma endregion
 
-#pragma region "EventInfo"
+#pragma region "Enumerators"
 
-	// Enumerators
 	enum class EventType { SIGNAL, UNIX_SOCKET, INET_SOCKET, CLIENT, STD_MASTER, STD_IN, STD_OUT, STD_ERR };
 
+#pragma endregion
+
+#pragma region "Event Info"
+
 	struct EventInfo {
+		// Variables
 		int						fd;
 		EventType 				type;
 		Process					*proc;
@@ -39,7 +43,16 @@
 		std::vector<uint8_t>	read_buffer;
 		std::vector<uint8_t>	write_buffer;
 
+		// Constructors
+		EventInfo() = delete;
 		EventInfo(int _fd, EventType _type, Process *_proc) : fd(_fd), type(_type), proc(_proc), dead(false) {}
+		EventInfo(const EventInfo&) = default;
+		EventInfo(EventInfo&&) = default;
+		~EventInfo() = default;
+
+		// Overloads
+		EventInfo& operator=(const EventInfo&) = default;
+		EventInfo& operator=(EventInfo&&) = default;
 	};
 
 #pragma endregion

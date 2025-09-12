@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 19:57:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 12:21:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@
 			Pidlock								pidlock;
 			Epoll								epoll;
 			Event								event;
+			std::vector<std::string>			status_names;
 
 			// --- METHODS ---
 

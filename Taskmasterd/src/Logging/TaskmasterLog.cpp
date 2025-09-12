@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 22:28:53 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:36:14 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 12:26:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 	#include <cstring>															// strerror()
 	#include <iostream>															// std::cout
-	#include <chrono>															// std::chrono
+
 	#include <syslog.h>															// syslog functions
 
 #pragma endregion
@@ -296,23 +296,6 @@
 
 	#pragma endregion
 
-	#pragma region "Get Time Stamp"
-
-		std::string TaskmasterLog::get_timestamp() const {
-			auto		now = std::chrono::system_clock::now();
-			auto		time_t = std::chrono::system_clock::to_time_t(now);
-			auto		ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
-			struct tm	*timeinfo = localtime(&time_t);
-			char		buffer[24], ms_buffer[4];
-
-			strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-			sprintf(ms_buffer, "%03d", (int)ms.count());
-
-			return (std::string(buffer) + "," + ms_buffer);
-		}
-
-	#pragma endregion
-
 	#pragma region "Add To Buffer"
 
 		void TaskmasterLog::add_buffer(const std::string& log) {
@@ -329,7 +312,7 @@
 		void TaskmasterLog::log(const std::string& msg, const std::string& level, bool add_level) {
 			std::string log;
 
-			if (add_level)	log = get_timestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
+			if (add_level)	log = Utils::get_timestamp() + " " + level.substr(0, 4) + " " + msg + "\n";
 			else			log = ((_logfile_ready) ? "" : "[GENERIC]") + msg + "\n";
 
 			add_buffer(log);

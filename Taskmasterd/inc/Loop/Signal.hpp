@@ -37,6 +37,7 @@
 			//Variables
 			static int						signal_fd;
 			static volatile sig_atomic_t	signum;
+			static std::vector<std::string>	signals;
 
 			// Handlers
 			static void	sigquit_handler(int sig);
