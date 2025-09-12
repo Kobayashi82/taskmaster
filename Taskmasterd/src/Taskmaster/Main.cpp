@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:30:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/12 13:36:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,19 +76,3 @@
 	}
 
 #pragma endregion
-
-	// std::cerr << getpid() << "\n";
-	// std::cerr << TaskMaster.programs[2].process[0].name << "\n";
-	// while (!TaskMaster.silent) ;
-	// std::cerr << TaskMaster.programs[2].process[0].name << "\n";
-
-	// Log.close();
-	// char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
-	// char **args = Utils::toArray(TaskMaster.programs[2].process[0].arguments);
-
-	// Utils::environment_print(TaskMaster.programs[2].process[0].environment);
-	
-	// execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
-
-	// Utils::array_free(envp);
-	// Utils::array_free(args);

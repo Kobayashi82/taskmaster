@@ -25,8 +25,28 @@ void trimBuffer() {
     }
 }
 ```
+# Execution
 
-# Máquina de Estados del Supervisor
+```c
+
+std::cerr << getpid() << "\n";
+std::cerr << TaskMaster.programs[2].process[0].name << "\n";
+while (!TaskMaster.silent) ;
+std::cerr << TaskMaster.programs[2].process[0].name << "\n";
+
+Log.close();
+char **envp = Utils::toArray(TaskMaster.programs[2].process[0].environment);
+char **args = Utils::toArray(TaskMaster.programs[2].process[0].arguments);
+
+Utils::environment_print(TaskMaster.programs[2].process[0].environment);
+	
+execvpe(TaskMaster.programs[2].process[0].command.c_str(), args, envp);
+
+Utils::array_free(envp);
+Utils::array_free(args);
+```
+
+# Máquina de Estados
 
 ## Estados del Proceso
 
@@ -40,7 +60,7 @@ void trimBuffer() {
 - **FATAL**: Proceso ha fallado demasiadas veces, no se reintentará más
 - **UNKNOWN**: Estado inicial o error en la detección de estado
 
-## Función updateStateMachine() - Verificaciones por Estado
+## Función update_state()
 
 ### STOPPED
 **Verificar:**
@@ -160,9 +180,6 @@ void trimBuffer() {
 
 ### Manejo de Señales
 - Orden de señales: `stopsignal` → esperar `stopwaitsecs` → SIGKILL
-- Respetar jerarquía de señales (TERM → KILL)
 
 ### Logs y Debugging
 - Actualizar `uptime` cuando el proceso esté **RUNNING**
-- Registrar `exit_reason` para debugging
-- Mantener historial de transiciones de estado
