@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 14:06:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 18:06:47 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -698,6 +698,7 @@
 		if (!is_child) pidlock.unlock();
 		epoll.close();
 		Signal::close();
+		tskm.event.remove(Signal::signal_fd);
 		if (!silent) Log.info("Taskmasterd: closed\n");
 		Log.close();
 		close(STDIN_FILENO);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:21:01 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/11 14:34:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 17:58:23 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,19 @@
 
 			void Event::clear() {
 				events.clear();
+			}
+
+		#pragma endregion
+
+		#pragma region "Close & Clear"
+
+			void Event::close_clear() {
+				for (auto it = events.begin(); it != events.end();) {
+					EventInfo event = it->second;
+					tskm.epoll.remove(event.fd);
+					::close(event.fd);
+					it = events.erase(it);
+				}
 			}
 
 		#pragma endregion

@@ -37,6 +37,7 @@
 			//Variables
 			static int						signal_fd;
 			static volatile sig_atomic_t	signum;
+			static sigset_t					oldmask;
 			static std::vector<std::string>	signals;
 
 			// Handlers
@@ -44,6 +45,7 @@
 			static void	sigint_handler(int sig);
 			static void	sigterm_handler(int sig);
 			static void	sighup_handler(int sig);
+			static void	sigabrt_handler(int sig);
 			static void	sigsegv_handler(int sig);
 			static void	sigpipe_handler(int sig);
 			static void	sigchld_handler(int sig);

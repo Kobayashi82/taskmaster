@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:43:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 18:17:11 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 17:54:04 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@
 			Pidlock& operator=(Pidlock&&) = delete;
 
 			// Methods
+			void	close();
 			bool	is_locked(const std::string& pidfile) const;
 			void	unlock();
 			int		lock(const std::string& pidfile);

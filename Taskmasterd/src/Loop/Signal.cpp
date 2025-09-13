@@ -27,6 +27,7 @@
 
 	int							Signal::signal_fd = -1;
 	volatile sig_atomic_t		Signal::signum = 0;
+	sigset_t					Signal::oldmask;
 	std::vector<std::string>	Signal::signals = {
 		"ZERO",			// 0
 		"SIGHUP",		// 1
@@ -71,6 +72,7 @@
 		void Signal::sigquit_handler(int sig) {
 			Log.info("Signal: received SIGQUIT indicating exit request");
 			signum = sig;
+			tskm.programs[0].stop(tskm.programs[2].processes[0]);
 		}
 
 	#pragma endregion
@@ -98,6 +100,19 @@
 		void Signal::sighup_handler(int sig) { (void) sig;
 			Log.info("Signal: SIGHUP received. Reloading configuration");
 			Config.reload();
+		}
+
+	#pragma endregion
+
+	#pragma region "SIGSEGV"
+
+		void Signal::sigabrt_handler(int sig) {
+			Log.critical("Signal: SIGABRT received. Abort execution");
+
+			signal(SIGABRT, SIG_DFL);
+			tskm.cleanup();
+			raise(SIGABRT);
+			std::exit(128 + sig);
 		}
 
 	#pragma endregion
@@ -149,9 +164,9 @@
 						case SIGTERM: proc->exit_reason = "terminated";				break;
 						case SIGHUP:  proc->exit_reason = "hangup";					break;
 						case SIGABRT: proc->exit_reason = "aborted";				break;
-						case SIGKILL: proc->exit_reason = "killed";					break;
 						case SIGSEGV: proc->exit_reason = "segmentation fault";		break;
 						case SIGPIPE: proc->exit_reason = "broken pipe";			break;
+						case SIGKILL: proc->exit_reason = "killed";					break;
 						default:      proc->exit_reason = "unknown";				break;
 					}
 				}
@@ -182,6 +197,7 @@
 		std::signal(SIGINT, sigint_handler);
 		std::signal(SIGTERM, sigterm_handler);
 		std::signal(SIGHUP, SIG_IGN);
+		std::signal(SIGABRT, sigabrt_handler);
 		std::signal(SIGSEGV, sigsegv_handler);
 		std::signal(SIGPIPE, SIG_IGN);
 		std::signal(SIGCHLD, SIG_IGN);
@@ -192,6 +208,7 @@
 		std::signal(SIGINT, SIG_DFL);
 		std::signal(SIGTERM, SIG_DFL);
 		std::signal(SIGHUP, SIG_DFL);
+		std::signal(SIGABRT, SIG_DFL);
 		std::signal(SIGSEGV, SIG_DFL);
 		std::signal(SIGPIPE, SIG_DFL);
 		std::signal(SIGCHLD, SIG_DFL);
@@ -213,11 +230,12 @@
 		sigaddset(&mask, SIGINT);
 		sigaddset(&mask, SIGTERM);
 		sigaddset(&mask, SIGHUP);
+		sigaddset(&mask, SIGABRT);
 		sigaddset(&mask, SIGSEGV);
 		sigaddset(&mask, SIGPIPE);
 		sigaddset(&mask, SIGCHLD);
 
-		if (pthread_sigmask(SIG_BLOCK, &mask, nullptr)) {
+		if (pthread_sigmask(SIG_BLOCK, &mask, &oldmask)) {
 			Log.critical("Signal: failed to block signals - " + std::string(strerror(errno)));
 			return (-1);
 		}
@@ -242,6 +260,10 @@
 		if (signal_fd >= 0) {
 			if (::close(signal_fd) == -1) Log.error("Signal: failed to close signal FD " + std::to_string(signal_fd));
 			signal_fd = -1;
+		}
+
+		if (pthread_sigmask(SIG_SETMASK, &oldmask, nullptr)) {
+			Log.error("Signal: failed to restore old signal mask - " + std::string(strerror(errno)));
 		}
 	}
 
@@ -271,10 +293,11 @@
 			}
 
 			switch (fdsi.ssi_signo) {
-				case SIGQUIT:	sigquit_handler(fdsi.ssi_signo);	return (1);
+				case SIGQUIT:	sigquit_handler(fdsi.ssi_signo);	break; // return (1);
 				case SIGINT:	sigint_handler(fdsi.ssi_signo);		return (1);
 				case SIGTERM:	sigterm_handler(fdsi.ssi_signo);	return (1);
 				case SIGHUP:	sighup_handler(fdsi.ssi_signo);		break;
+				case SIGABRT:	sigabrt_handler(fdsi.ssi_signo);	return (1);
 				case SIGSEGV:	sigsegv_handler(fdsi.ssi_signo);	return (1);
 				case SIGPIPE:	sigpipe_handler(fdsi.ssi_signo);	break;
 				case SIGCHLD:	sigchld_handler(fdsi.ssi_signo);	break;

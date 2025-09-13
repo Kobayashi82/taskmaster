@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/09 12:41:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/10 22:21:01 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 17:55:00 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,15 @@
 	Pidlock::Pidlock() : _pidfd(-1), _locked(false) {}
 
 	Pidlock::~Pidlock() { unlock(); }
+
+#pragma endregion
+
+#pragma region "Close"
+
+	void Pidlock::close() {
+		if (_pidfd >= 0) ::close(_pidfd);
+		_pidfd = -1;
+	}
 
 #pragma endregion
 

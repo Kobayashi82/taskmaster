@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 13:29:02 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 17:40:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,10 @@
 		restart_count(0),
 		killwaitsecs(3),
 
+		std_master(-1),
+		std_slave(-1),
+		std_rows(25),
+		std_cols(80),
 		std_in(-1),
 		std_out(-1),
 		std_err(-1)

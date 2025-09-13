@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 14:13:54 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 18:08:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -563,7 +563,7 @@
 	void Program::create_pseudoterminal(Process& proc, char *pty_name) {
 		proc.std_master = posix_openpt(O_RDWR | O_NOCTTY);
 		if (proc.std_master == -1) {
-			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			Log.error("Process: posix_openpt failed to create pseudo-terminal - " + std::string(strerror(errno)));
 			proc.exit_code = -1;
 			proc.exit_reason = "posix_openpt failed";
 			proc.terminated = true;
@@ -572,16 +572,16 @@
 		
 		if (grantpt(proc.std_master) == -1 || unlockpt(proc.std_master) == -1) {
 			close(proc.std_master);
-			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			Log.error("Process: grantpt failed to create pseudo-terminal - " + std::string(strerror(errno)));
 			proc.exit_code = -1;
 			proc.exit_reason = "grantpt failed";
 			proc.terminated = true;
 			return;
 		}
 		
-		if (ptsname_r(proc.std_master, pty_name, sizeof(pty_name))) {
+		if (ptsname_r(proc.std_master, pty_name, 256)) {
 			close(proc.std_master);
-			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			Log.error("Process: ptsname_r failed to create pseudo-terminal - " + std::string(strerror(errno)));
 			proc.exit_code = -1;
 			proc.exit_reason = "ptsname_r failed";
 			proc.terminated = true;
@@ -595,7 +595,7 @@
 		ws.ws_ypixel = 0;
 		if (ioctl(proc.std_master, TIOCSWINSZ, &ws) == -1) {
 			close(proc.std_master);
-			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			Log.error("Process: ioctl failed to create pseudo-terminal - " + std::string(strerror(errno)));
 			proc.exit_code = -1;
 			proc.exit_reason = "ioctl failed";
 			proc.terminated = true;
@@ -669,6 +669,13 @@
 		if (proc.pid == 0) {
 			int fail_code = -1;
 
+			// Create new process group only if stopasgroup is enabled
+			if (proc.stopasgroup) {
+				if (setpgid(0, 0) == -1) {
+					std::exit(1);
+				}
+			}
+
 			if (proc.tty_mode) {
 				proc.std_slave = open(pty_name, O_RDWR);
 				if (proc.std_slave == -1) {
@@ -732,11 +739,23 @@
 				}
 			}
 
-			// tskm.cleanup(true, true); // Debe cerrar todos los fd menos el actual
 			if (fail_code < -1) {
 				tskm.cleanup(true, true);
 				std::exit(fail_code);
 			}
+
+			Log.close();
+			tskm.epoll.close();
+			tskm.event.remove(tskm.unix_server.sockfd);
+			tskm.event.remove(tskm.inet_server.sockfd);
+			tskm.event.remove(Signal::signal_fd);
+			tskm.inet_server.close();
+			tskm.unix_server.close();
+			Signal::close();
+			tskm.event.close_clear();
+			tskm.pidlock.close();
+
+			Signal::set_default();
 
 			char **envp = Utils::toArray(proc.environment);
 			char **args = Utils::toArray(proc.arguments);
@@ -746,27 +765,43 @@
 			Utils::array_free(envp);
 			Utils::array_free(args);
 
-			tskm.cleanup(true, true);
+			close(STDIN_FILENO);
+			close(STDOUT_FILENO);
+			close(STDERR_FILENO);
+
 			std::exit(fail_code);
 		}
 
-		close(pipe_std_in[0]);
-		close(pipe_std_out[1]);
-		if (!proc.redirect_stderr) close(pipe_std_err[1]);
+		// In parent process: set process group if stopasgroup is enabled
+		if (proc.stopasgroup) {
+			if (setpgid(proc.pid, proc.pid) == -1) {
+				// Log error but continue
+				Log.error("Process: failed to set process group for pid " + std::to_string(proc.pid) + " - " + std::string(strerror(errno)));
+			}
+		}
 
-		tskm.processes[proc.pid] = &proc;
+		if (proc.tty_mode) {
+			tskm.event.add(proc.std_master, EventType::STD_MASTER, &proc);
+			tskm.epoll.add(proc.std_master, true, false);
+		} else {	
+			close(pipe_std_in[0]);
+			close(pipe_std_out[1]);
+			if (!proc.redirect_stderr) close(pipe_std_err[1]);
 
-		proc.std_in = pipe_std_in[1];
-		proc.std_out = pipe_std_out[0];
-		tskm.event.add(proc.std_in, EventType::STD_IN, &proc);
-		tskm.event.add(proc.std_out, EventType::STD_OUT, &proc);
-		tskm.epoll.add(proc.std_in, false, false);
-		tskm.epoll.add(proc.std_out, true, false);
+			tskm.processes[proc.pid] = &proc;
 
-		if (!proc.redirect_stderr) {
-			proc.std_err = pipe_std_err[0];
-			tskm.event.add(proc.std_err, EventType::STD_ERR, &proc);
-			tskm.epoll.add(proc.std_err, true, false);
+			proc.std_in = pipe_std_in[1];
+			proc.std_out = pipe_std_out[0];
+			tskm.event.add(proc.std_in, EventType::STD_IN, &proc);
+			tskm.event.add(proc.std_out, EventType::STD_OUT, &proc);
+			tskm.epoll.add(proc.std_in, false, false);
+			tskm.epoll.add(proc.std_out, true, false);
+
+			if (!proc.redirect_stderr) {
+				proc.std_err = pipe_std_err[0];
+				tskm.event.add(proc.std_err, EventType::STD_ERR, &proc);
+				tskm.epoll.add(proc.std_err, true, false);
+			}
 		}
 	}
 
@@ -779,13 +814,15 @@
 		void Program::stop(Process& proc) {
 			std::time_t current_time = time(nullptr);
 
+			if (proc.status != ProcessState::RUNNING && proc.status != ProcessState::STARTING) return;
+
 			proc.status = ProcessState::STOPPING;
+			proc.stopped_manual = true;
+			proc.change_time = current_time;
 			if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
 			else					kill(proc.pid, proc.stopsignal);
-			proc.change_time = proc.start_time = current_time;
 			// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
 			proc.history_add();
-			process_start(proc);
 		}
 
 	#pragma endregion
@@ -794,6 +831,8 @@
 
 		void Program::restart(Process& proc) {
 			std::time_t current_time = time(nullptr);
+
+			if (proc.status != ProcessState::RUNNING && proc.status != ProcessState::STARTING) return;
 
 			proc.status = ProcessState::STOPPING;
 			if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);

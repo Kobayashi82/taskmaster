@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:20:55 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 12:01:35 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 17:58:34 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@
 			void		remove(int fd);
 			void		remove_clients();
 			void		clear();
+			void		close_clear();
 
 			// In / Out
 			void		in_remove(int fd, int from);
