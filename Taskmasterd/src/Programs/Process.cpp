@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 16:35:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 13:29:02 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,22 +37,23 @@
 #pragma region "Constructors"
 
 	Process::Process() :
-		pid(0),
+		program_name(""),
 		process_num(0),
+
+		pid(0),
 		status(ProcessState::STOPPED),
+		started_once(false),
+		stopped_manual(false),
+		terminated(false),
+		killed(false),
 		start_time(0),
 		stop_time(0),
 		change_time(0),
-		uptime(0),
-		restart_count(0),
-		killwait_secs(0),
 		exit_code(0),
 		exit_reason(""),
-		spawn_error(""),
-		program_name(""),
-		started_once(false),
-		manual_stopped(false),
-		terminated(false),
+		restart_count(0),
+		killwaitsecs(3),
+
 		std_in(-1),
 		std_out(-1),
 		std_err(-1)
@@ -67,7 +68,19 @@
 		void Process::history_add() {
 			if (history.size() > MAX_HISTORY_SIZE) history.pop_front();
 
+			static const std::vector<std::string> status_names = {
+				"STOPPED",		// 0
+				"STARTING",		// 1
+				"RUNNING",		// 2
+				"BACKOFF",		// 3
+				"STOPPING",		// 4
+				"EXITED",		// 5
+				"FATAL",		// 6
+				"UNKNOWN"		// 7
+			};
+
 			history.emplace_back(name, program_name, status, exit_code);
+			Log.debug("Process: " + name + " changed state to " + status_names[static_cast<int>(status)]);
 		}
 
 	#pragma endregion

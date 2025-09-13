@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 20:39:15 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 14:13:54 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 	#include <sstream>															// std::stringstream
 	#include <unistd.h>															// execvpe()
 	#include <fcntl.h>															// pipe2()
+	#include <sys/ioctl.h>														// ioctl()
 
 #pragma endregion
 
@@ -285,7 +286,7 @@
 			if (key == "numprocs")					validate_number(key, entry, 1, 65535);
 			if (key == "numprocs_start")			validate_number(key, entry, 0, 65535);
 			if (key == "priority")					validate_number(key, entry, 0, 999);
-			if (key == "startsecs")					validate_number(key, entry, 1, 3600);
+			if (key == "startsecs")					validate_number(key, entry, 0, 3600);
 			if (key == "startretries")				validate_number(key, entry, 0, 100);
 			if (key == "stopwaitsecs")				validate_number(key, entry, 1, 3600);
 
@@ -422,6 +423,7 @@
 			std::map<std::string, std::string> env;
 			Utils::environment_clone(env, tskm.environment);
 
+			// Save Variables
 			std::string HERE			= Utils::environment_get(env, "HERE");
 			std::string HOST_NAME		= Utils::environment_get(env, "HOST_NAME");
 			std::string GROUP_NAME		= Utils::environment_get(env, "GROUP_NAME");
@@ -430,6 +432,7 @@
 			std::string NUMPROCS		= Utils::environment_get(env, "NUMPROCS");
 			std::string PROCESS_NUM		= Utils::environment_get(env, "PROCESS_NUM");
 
+			// Add Variables
 			char hostname[255];
 			Utils::environment_add(env, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 			if (!configFile.empty()) Utils::environment_add(env, "HERE", std::filesystem::path(configFile).parent_path());
@@ -438,11 +441,12 @@
 			numprocs		= Utils::parse_number(expand_vars(env, "numprocs"), 0, 10000, 1);
 			numprocs_start	= Utils::parse_number(expand_vars(env, "numprocs_start"), 0, 65535, 0);
 
+			Utils::environment_add(env, "TASKMASTER_ENABLED", "1");
 			Utils::environment_add(env, "NUMPROCS", std::to_string(numprocs));
 			Utils::environment_del(env, "TASKMASTER_PROCESS_NAME");
 			Utils::environment_del(env, "TASKMASTER_SERVER_URL");
-			Utils::environment_add(env, "TASKMASTER_ENABLED", "1");
 
+			// Program Loop
 			uint16_t current_process = 0;
 			uint16_t current_process_num = numprocs_start;
 			processes.reserve(numprocs);
@@ -454,20 +458,17 @@
 
 					proc.program_name = name;
 					proc.process_num = current_process;
-					proc.status = ProcessState::STOPPED;
-					proc.started_once = false;
-					proc.terminated = false;
-					proc.manual_stopped = false;
-					proc.restart_count = 0;
-					proc.exit_code = 0;
 
+					// Add Variables
 					Utils::environment_add(proc.environment, env);
 					Utils::environment_add(proc.environment, "PROGRAM_NAME", name);
 					Utils::environment_add(proc.environment, "PROCESS_NUM", std::to_string(current_process_num++));
 
+					// Directory
 					proc.directory	= expand_vars(proc.environment, "directory");
 					proc.name		= expand_vars(proc.environment, "process_name");
 
+					// Command
 					entry = Config.get_value_entry(section, "command");
 					if (entry) {
 						try { entry->value = Utils::environment_expand(proc.environment, entry->value); }
@@ -487,18 +488,32 @@
 						Utils::error_add(configFile, "[" + section + "] command: required", ERROR, 0, order);
 						disabled = true;
 					}
-
+					
+					// User
 					proc.priority								= Utils::parse_number(expand_vars(proc.environment, "priority"), 0, 999, 999);
+					proc.user									= expand_vars(proc.environment, "user");
+					std::string umask							= expand_vars(proc.environment, "umask");
+					if (umask.empty() || umask == "inherit")	proc.umask = tskm.umask;
+					else										proc.umask = static_cast<uint16_t>(std::stoi(umask, nullptr, 8));
+
+					// Start
 					proc.autostart								= Utils::parse_boolean(expand_vars(proc.environment, "autostart"));
+					proc.startsecs								= Utils::parse_number(expand_vars(proc.environment, "startsecs"), 0, 3600, 1);
+
+					// Restart
 					proc.autorestart							= Utils::parse_boolean(expand_vars(proc.environment, "autorestart"), true);
-					proc.startsecs								= Utils::parse_number(expand_vars(proc.environment, "startsecs"), 1, 3600, 1);
 					proc.startretries							= Utils::parse_number(expand_vars(proc.environment, "startretries"), 0, 100, 3);
+
+					// Stop
+					std::stringstream ss(expand_vars(proc.environment, "exitcodes")); std::string token;
+					while (std::getline(ss, token, ',')) proc.exitcodes.push_back(static_cast<uint8_t>(std::stoi(token)));
 					proc.stopsignal								= Utils::parse_signal(expand_vars(proc.environment, "stopsignal"));
 					proc.stopwaitsecs							= Utils::parse_number(expand_vars(proc.environment, "stopwaitsecs"), 1, 3600, 10);
 					proc.stopasgroup							= Utils::parse_boolean(expand_vars(proc.environment, "stopasgroup"));
 					proc.killasgroup							= Utils::parse_boolean(expand_vars(proc.environment, "killasgroup"));
+
+					// Input / Output
 					proc.tty_mode								= Utils::parse_boolean(expand_vars(proc.environment, "tty_mode"));
-					proc.user									= expand_vars(proc.environment, "user");
 					proc.redirect_stderr						= Utils::parse_boolean(expand_vars(proc.environment, "redirect_stderr"));
 					proc.stdout_logfile							= expand_vars(proc.environment, "stdout_logfile");
 					proc.stdout_logfile_maxbytes				= Utils::parse_size(expand_vars(proc.environment, "stdout_logfile_maxbytes"));
@@ -508,17 +523,13 @@
 					proc.stderr_logfile_maxbytes				= Utils::parse_size(expand_vars(proc.environment, "stderr_logfile_maxbytes"));
 					proc.stderr_logfile_backups					= Utils::parse_number(expand_vars(proc.environment, "stderr_logfile_backups"), 0, 1000, 10);
 					proc.stderr_logfile_syslog					= Utils::parse_boolean(expand_vars(proc.environment, "stderr_logfile_syslog"));
+
+					// Environment
 					proc.serverurl								= expand_vars(proc.environment, "serverurl");
-					std::string umask							= expand_vars(proc.environment, "umask");
-					if (umask.empty() || umask == "inherit")	proc.umask = tskm.umask;
-					else										proc.umask = static_cast<uint16_t>(std::stoi(umask, nullptr, 8));
-
-					std::stringstream ss(expand_vars(proc.environment, "exitcodes")); std::string token;
-					while (std::getline(ss, token, ',')) proc.exitcodes.push_back(static_cast<uint8_t>(std::stoi(token)));
-
 					Utils::environment_add(proc.environment, "TASKMASTER_PROCESS_NAME", proc.name);
+
+					// Restore Variables
 					if (!proc.serverurl.empty())				Utils::environment_add(proc.environment, "TASKMASTER_SERVER_URL", proc.serverurl);
-					else										Utils::environment_del(proc.environment, "TASKMASTER_SERVER_URL");
 					if (HERE.empty())							Utils::environment_del(proc.environment, "HERE");
 					else										Utils::environment_add(proc.environment, "HERE", HERE);
 					if (HOST_NAME.empty())						Utils::environment_del(proc.environment, "HOST_NAME");
@@ -547,72 +558,91 @@
 
 #pragma endregion
 
+#pragma region "Execute"
 
-		// client->master_fd = posix_openpt(O_RDWR | O_NOCTTY);
-		// if (client->master_fd == -1) {
-		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] posix_openpt() failed");
-		// 	return (1);
-		// }
+	void Program::create_pseudoterminal(Process& proc, char *pty_name) {
+		proc.std_master = posix_openpt(O_RDWR | O_NOCTTY);
+		if (proc.std_master == -1) {
+			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			proc.exit_code = -1;
+			proc.exit_reason = "posix_openpt failed";
+			proc.terminated = true;
+			return;
+		}
 		
-		// if (grantpt(client->master_fd) == -1 || unlockpt(client->master_fd) == -1) {
-		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] grantpt()/unlockpt() failed");
-		// 	close(client->master_fd);
-		// 	return (1);
-		// }
+		if (grantpt(proc.std_master) == -1 || unlockpt(proc.std_master) == -1) {
+			close(proc.std_master);
+			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			proc.exit_code = -1;
+			proc.exit_reason = "grantpt failed";
+			proc.terminated = true;
+			return;
+		}
 		
-		// char pty_name[256];
-		// if (ptsname_r(client->master_fd, pty_name, sizeof(pty_name)) != 0) {
-		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] ptsname_r() failed");
-		// 	close(client->master_fd);
-		// 	return (1);
-		// }
+		if (ptsname_r(proc.std_master, pty_name, sizeof(pty_name))) {
+			close(proc.std_master);
+			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			proc.exit_code = -1;
+			proc.exit_reason = "ptsname_r failed";
+			proc.terminated = true;
+			return;
+		}
 
-		// struct winsize ws;
-		// ws.ws_row = client->terminal_rows;
-		// ws.ws_col = client->terminal_cols;
-		// ws.ws_xpixel = 0;
-		// ws.ws_ypixel = 0;
-		// if (ioctl(client->master_fd, TIOCSWINSZ, &ws) == -1) {
-		// 	Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] failed to set PTY window size");
-		// 	return (1);
-		// }
+		struct winsize ws;
+		ws.ws_row = proc.std_rows;
+		ws.ws_col = proc.std_cols;
+		ws.ws_xpixel = 0;
+		ws.ws_ypixel = 0;
+		if (ioctl(proc.std_master, TIOCSWINSZ, &ws) == -1) {
+			close(proc.std_master);
+			Log.error("Process: failed to create pseudo-terminal - " + std::string(strerror(errno)));
+			proc.exit_code = -1;
+			proc.exit_reason = "ioctl failed";
+			proc.terminated = true;
+			return;
+		}
+	}
 
+	void Program::create_pipes(Process& proc, int *pipe_std_in, int *pipe_std_out, int *pipe_std_err) {
+		if (pipe2(pipe_std_in, O_CLOEXEC | O_NONBLOCK)) {
+			Log.error("Process: failed to pipe stdin - " + std::string(strerror(errno)));
+			proc.exit_code = -1;
+			proc.exit_reason = "pipe failed for stdin";
+			proc.terminated = true;
+			return;
+		}
+		if (pipe2(pipe_std_out, O_CLOEXEC | O_NONBLOCK)) {
+			Log.error("Process: failed to pipe stdout - " + std::string(strerror(errno)));
+			close(pipe_std_in[0]);
+			close(pipe_std_in[1]);
+			proc.exit_code = -1;
+			proc.exit_reason = "pipe failed for stdout";
+			proc.terminated = true;
+			return;
+		}
+		if (!proc.redirect_stderr) {
+			if (pipe2(pipe_std_err, O_CLOEXEC | O_NONBLOCK)) {
+				Log.error("Process: failed to pipe stderr - " + std::string(strerror(errno)));
+				close(pipe_std_in[0]);
+				close(pipe_std_in[1]);
+				close(pipe_std_out[0]);
+				close(pipe_std_out[1]);
+				proc.exit_code = -1;
+				proc.exit_reason = "pipe failed for stderr";
+				proc.terminated = true;
+				return;
+			}
+		}
+	}
 
 	void Program::process_start(Process& proc) {
 		int pipe_std_in[2];
 		int pipe_std_out[2];
 		int pipe_std_err[2];
 
-		if (proc.tty_mode) {
-
-		} else {
-			if (pipe2(pipe_std_in, O_CLOEXEC | O_NONBLOCK)) {
-				Log.error("Process: failed to pipe stdin - " + std::string(strerror(errno)));
-				proc.exit_code = -1;
-				proc.exit_reason = "pipe failed for stdin";
-				proc.terminated = true;
-			}
-			if (pipe2(pipe_std_out, O_CLOEXEC | O_NONBLOCK)) {
-				Log.error("Process: failed to pipe stdout - " + std::string(strerror(errno)));
-				close(pipe_std_in[0]);
-				close(pipe_std_in[1]);
-				proc.exit_code = -1;
-				proc.exit_reason = "pipe failed for stdout";
-				proc.terminated = true;
-			}
-			if (!proc.redirect_stderr) {
-				if (pipe2(pipe_std_err, O_CLOEXEC | O_NONBLOCK)) {
-					Log.error("Process: failed to pipe stderr - " + std::string(strerror(errno)));
-					close(pipe_std_in[0]);
-					close(pipe_std_in[1]);
-					close(pipe_std_out[0]);
-					close(pipe_std_out[1]);
-					proc.exit_code = -1;
-					proc.exit_reason = "pipe failed for stderr";
-					proc.terminated = true;
-				}
-			}
-		}
+		char pty_name[256];
+		if (proc.tty_mode)	create_pseudoterminal(proc, pty_name);
+		else				create_pipes(proc, pipe_std_in, pipe_std_out, pipe_std_err);
 
 		if (proc.terminated) return;
 
@@ -620,7 +650,7 @@
 		if (proc.pid < 0) {
 			Log.error("Process: failed to fork - " + std::string(strerror(errno)));
 			if (proc.tty_mode) {
-
+				close(proc.std_master);
 			} else {
 				close(pipe_std_in[0]);
 				close(pipe_std_in[1]);
@@ -640,6 +670,49 @@
 			int fail_code = -1;
 
 			if (proc.tty_mode) {
+				proc.std_slave = open(pty_name, O_RDWR);
+				if (proc.std_slave == -1) {
+					// Log->debug("Client: [" + proc.std_ip + ":" + std::to_string(proc.std_port) + "] open slave failed");
+					// std::exit(1);
+				}
+
+				// if (setsid() == -1) std::exit(1);
+				
+				ioctl(proc.std_slave, TIOCSCTTY, 0);
+
+				dup2(proc.std_slave, STDIN_FILENO);
+				dup2(proc.std_slave, STDOUT_FILENO);
+				dup2(proc.std_slave, STDERR_FILENO);
+				
+				close(proc.std_master);
+				if (proc.std_slave > 2) {
+					// Error ?
+					close(proc.std_slave);
+				}
+
+				// if (initgroups(pw->pw_name, pw->pw_gid)) {
+				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] initgroups() failed");
+				// 	std::exit(1);
+				// }
+
+				// if (setgid(pw->pw_gid) != 0) {
+				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] setgid() failed");
+				// 	std::exit(1);
+				// }
+				// if (setuid(pw->pw_uid) != 0) {
+				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] setuid() failed");
+				// 	std::exit(1);
+				// }
+
+				// setenv("HOME", pw->pw_dir, 1);
+				// setenv("USER", pw->pw_name, 1);
+				// setenv("LOGNAME", pw->pw_name, 1);
+				// setenv("TERM", "xterm-256color", 1);
+
+				// if (chdir(pw->pw_dir) != 0) {
+				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] chdir() failed");
+				// 	std::exit(1);
+				// }
 
 			} else {
 				if (dup2(pipe_std_in[0], STDIN_FILENO) == -1) fail_code = -2;
@@ -657,11 +730,12 @@
 				} else {
 					if (fail_code == -1 && dup2(STDOUT_FILENO, STDERR_FILENO) == -1) fail_code = -4;
 				}
+			}
 
-				if (fail_code < -1) {
-					tskm.cleanup(true, true);
-					std::exit(fail_code);
-				}
+			// tskm.cleanup(true, true); // Debe cerrar todos los fd menos el actual
+			if (fail_code < -1) {
+				tskm.cleanup(true, true);
+				std::exit(fail_code);
 			}
 
 			char **envp = Utils::toArray(proc.environment);
@@ -678,7 +752,7 @@
 
 		close(pipe_std_in[0]);
 		close(pipe_std_out[1]);
-		close(pipe_std_err[1]);
+		if (!proc.redirect_stderr) close(pipe_std_err[1]);
 
 		tskm.processes[proc.pid] = &proc;
 
@@ -696,125 +770,203 @@
 		}
 	}
 
-	uint32_t Program::update_state_machine() {
+#pragma endregion
+
+#pragma region "Commands"
+
+	#pragma region "Stop"
+
+		void Program::stop(Process& proc) {
+			std::time_t current_time = time(nullptr);
+
+			proc.status = ProcessState::STOPPING;
+			if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
+			else					kill(proc.pid, proc.stopsignal);
+			proc.change_time = proc.start_time = current_time;
+			// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
+			proc.history_add();
+			process_start(proc);
+		}
+
+	#pragma endregion
+
+	#pragma region "Restart"
+
+		void Program::restart(Process& proc) {
+			std::time_t current_time = time(nullptr);
+
+			proc.status = ProcessState::STOPPING;
+			if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
+			else					kill(proc.pid, proc.stopsignal);
+			proc.change_time = proc.start_time = current_time;
+			// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
+			// proc.restarting = true;
+			proc.history_add();
+			process_start(proc);
+		}
+
+	#pragma endregion
+
+	#pragma region "Start"
+
+		void Program::start(Process& proc) {
+			std::time_t current_time = time(nullptr);
+
+			if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
+			else					proc.status = ProcessState::STARTING;
+			proc.started_once = true;
+			proc.terminated = false;
+			proc.killed = false;
+			proc.change_time = proc.start_time = current_time;
+			// if (proc.startsecs) next_wait = proc.startsecs;		// Tengo que pasarselo a epoll de alguna manera
+			proc.history_add();
+			process_start(proc);
+		}
+
+	#pragma endregion
+
+#pragma endregion
+
+#pragma region "State Machine"
+
+	uint32_t Program::state_machine() {
 		uint32_t next_check = UINT32_MAX;
 
 		for (auto& proc : processes) {
-			uint32_t		process_next = UINT32_MAX;
-			std::time_t		current_time = time(nullptr);
+			uint32_t	next_wait = UINT32_MAX;
+			std::time_t	current_time = time(nullptr);
 
 			switch (proc.status) {
 				case ProcessState::STOPPED:
-					if (!proc.started_once && proc.autostart) {
-						proc.terminated = false;
-						proc.status = ProcessState::STARTING;
-						proc.change_time = proc.start_time = current_time;
+					if (!proc.stopped_manual && proc.autostart && !proc.started_once) {										// Start
+						if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
+						else					proc.status = ProcessState::STARTING;
 						proc.started_once = true;
-						process_next = proc.startsecs;
+						proc.change_time = proc.start_time = current_time;
+						if (proc.startsecs) next_wait = proc.startsecs;
+						proc.history_add();
 						process_start(proc);
 					}
 					break;
 
 				case ProcessState::STARTING:
-					if (proc.terminated) {
-						// El proceso murió durante el arranque
-						bool exit_code_expected = std::find(proc.exitcodes.begin(), proc.exitcodes.end(), proc.exit_code) != proc.exitcodes.end();
-						
-						bool should_restart = false;
-						if (proc.restart_count < proc.startretries) {
-							if (proc.autorestart == 1) {  // always
-								should_restart = true;
-							} else if (proc.autorestart == 2) {  // unexpected
-								should_restart = !exit_code_expected;
-							}
-						}
-						
-						if (should_restart) {
+					if (proc.terminated) {																					// Terminated while starting
+						if (proc.autorestart && proc.restart_count < proc.startretries) {									// Restart
 							proc.status = ProcessState::BACKOFF;
+							proc.terminated = false;
 							proc.change_time = current_time;
-						} else {
-							proc.status = ProcessState::EXITED;
+							int backoff = ((proc.startsecs) ? proc.startsecs : 1) * (1 << proc.restart_count);
+							next_wait = (backoff > 30) ? 30 : backoff;
+							proc.history_add();
+						} else {																							// Fatal
+							proc.status = ProcessState::FATAL;
 							proc.change_time = current_time;
+							proc.history_add();
 						}
-					} else if (current_time - proc.start_time >= proc.startsecs) {
-						// Ha pasado el tiempo mínimo. Good
-						proc.status = ProcessState::RUNNING;
-						proc.change_time = current_time;
-						proc.restart_count = 0;
+					} else {
+						if (current_time - proc.start_time >= proc.startsecs) {												// Started successfully
+							proc.status = ProcessState::RUNNING;
+							proc.killed = false;
+							proc.stopped_manual = false;
+							proc.change_time = current_time;
+							proc.exit_code = 0;
+							proc.exit_reason = "";
+							proc.restart_count = 0;
+							proc.history_add();
+						} else {																							// Keep waiting
+							next_wait = proc.startsecs - (current_time - proc.start_time);
+						}
 					}
 					break;
 
 				case ProcessState::RUNNING:
 					if (proc.terminated) {
-						if (proc.manual_stopped)	proc.status = ProcessState::STOPPED;
-						else						proc.status = ProcessState::EXITED;
+						if (proc.stopped_manual) {																			// Manual stop
+							proc.status = ProcessState::STOPPED;
+							proc.change_time = current_time;
+							proc.history_add();
+						} else {																							// Restart or Exited
+							if (proc.autorestart && proc.startretries) {
+								if (proc.restart_count < proc.startretries) {
 
-						bool should_restart = false;
-						if (proc.restart_count < proc.startretries) {
-							bool exit_code_expected = std::find(proc.exitcodes.begin(), proc.exitcodes.end(), proc.exit_code) != proc.exitcodes.end();
-							
-							if (proc.autorestart == 1) {  // always
-								should_restart = true;
-							} else if (proc.autorestart == 2) {  // unexpected
-								should_restart = !exit_code_expected;
+									bool should_restart = false;
+									bool exit_code_expected = std::find(proc.exitcodes.begin(), proc.exitcodes.end(), proc.exit_code) != proc.exitcodes.end();
+
+									if		(proc.autorestart == 1)		should_restart = true;								// Always
+									else if	(proc.autorestart == 2)		should_restart = !exit_code_expected;				// Unexpected
+
+									if (should_restart) {																	// Restart
+										proc.status = ProcessState::BACKOFF;
+										proc.terminated = false;
+										proc.change_time = current_time;
+										int backoff = ((proc.startsecs) ? proc.startsecs : 1) * (1 << proc.restart_count);
+										next_wait = (backoff > 30) ? 30 : backoff;
+										proc.history_add();
+									} else {																				// Exited
+										proc.status = ProcessState::EXITED;
+										proc.change_time = current_time;
+										proc.history_add();
+									}
+								} else {																					// Fatal
+									proc.status = ProcessState::FATAL;
+									proc.change_time = current_time;
+									proc.history_add();
+								}
+							} else {																						// Exited
+								proc.status = ProcessState::EXITED;
+								proc.change_time = current_time;
+								proc.history_add();
 							}
-							// autorestart == 0 (never) -> should_restart remains false
 						}
-
-						if (should_restart) {
-							proc.change_time = current_time;
-							int backoff = proc.startsecs * (1 << proc.restart_count);
-							process_next = (backoff > 30) ? 30 : backoff;
-							proc.terminated = false;
-							proc.status = ProcessState::BACKOFF;
-						} else {
-							proc.change_time = current_time;
-							proc.status = ProcessState::EXITED;
-						}
-						// handleProcessDeath(proc);
 					}
 					break;
 
 				case ProcessState::STOPPING:
-					if (proc.terminated || (current_time - proc.change_time > proc.stopwaitsecs)) {
+					if (proc.terminated) {																					// Stopped
 						proc.status = ProcessState::STOPPED;
 						proc.change_time = current_time;
-						// cleanupProcess(proc);
+						proc.history_add();
+					} else if (!proc.killed && current_time - proc.change_time >= proc.stopwaitsecs) {						// Kill
+						proc.change_time = current_time;
+						proc.killed = true;
+						if (proc.killasgroup)	killpg(proc.pid, SIGKILL);
+						else					kill(proc.pid, SIGKILL);
+						next_wait = proc.killwaitsecs;
+					} else if (proc.killed && current_time - proc.change_time >= proc.stopwaitsecs + proc.killwaitsecs) {	// Unknown
+						proc.status = ProcessState::UNKNOWN;
+						proc.change_time = current_time;
+						proc.history_add();
+					} else if (proc.killed) {																				// Keep waiting
+						next_wait = (proc.stopwaitsecs + proc.killwaitsecs) - (current_time - proc.change_time);
+					} else {																								// Keep waiting
+						next_wait = proc.stopwaitsecs - (current_time - proc.change_time);
 					}
 					break;
 
-				case ProcessState::BACKOFF:
-					{
-						int backoff = proc.startsecs * (1 << proc.restart_count);
-						if (current_time < proc.change_time + backoff) {
-							process_next = (proc.change_time + backoff) - current_time;
-						} else {
-							proc.status = ProcessState::STARTING;
+				case ProcessState::BACKOFF: {
+						int backoff = ((proc.startsecs) ? proc.startsecs : 1) * (1 << proc.restart_count);
+						if (current_time >= proc.change_time + backoff) {													// Start
+							if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
+							else					proc.status = ProcessState::STARTING;
 							proc.change_time = proc.start_time = current_time;
+							if (proc.startsecs) next_wait = proc.startsecs;
 							proc.restart_count++;
-							proc.terminated = false;  // Reset terminated status before restarting
+							proc.history_add();
 							process_start(proc);
+						} else {																							// Keep waiting
+							next_wait = (proc.change_time + backoff) - current_time;
+							next_wait = (next_wait > 30) ? 30 : next_wait;
 						}
+						break;
 					}
-					break;
-					// Esperando antes de reintentar
-					// if (current_time - proc.change_time >= getBackoffTime()) {
-					// 	// process_next = (process.change_time + getBackoffDelay()) - current_time;
-					// 	if (proc.restart_count < proc.startretries) {
-					// 		startProcess(proc);
-					// 		proc.status = ProcessState::STARTING;
-					// 	} else {
-					// 		proc.status = ProcessState::FATAL;
-					// 	}
-					// 	proc.change_time = current_time;
-					// }
-
 				case ProcessState::EXITED:	break;
 				case ProcessState::FATAL:	break;
 				case ProcessState::UNKNOWN:	break;
 			}
-			next_check = std::min(next_check, process_next);
+			next_check = std::min(next_check, next_wait);
 		}
 
 		return (next_check);
 	}
+
+#pragma endregion

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 19:42:03 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 12:01:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ int Epoll::wait() {
 		}
 
 		for (auto& program : tskm.programs) {
-			min_timeout = std::min(min_timeout, program.update_state_machine());
+			min_timeout = std::min(min_timeout, program.state_machine());
 		}
 
 		return (0);

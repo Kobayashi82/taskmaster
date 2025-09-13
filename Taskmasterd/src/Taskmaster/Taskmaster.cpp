@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 19:02:32 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 14:06:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -584,7 +584,7 @@
 				backup.start_time = proc.start_time;
 				backup.stop_time = proc.stop_time;
 				backup.change_time = proc.change_time;
-				backup.uptime = proc.uptime;
+				backup.killed = proc.killed;
 				backup.process_num = proc.process_num;
 				backup.name = proc.name;
 				runtime_backup.push_back(backup);
@@ -606,7 +606,7 @@
 						new_proc.start_time = backup.start_time;
 						new_proc.stop_time = backup.stop_time;
 						new_proc.change_time = backup.change_time;
-						new_proc.uptime = backup.uptime;
+						new_proc.killed = backup.killed;
 						break;
 					}
 				}
@@ -704,6 +704,7 @@
 		close(STDOUT_FILENO);
 		close(STDERR_FILENO);
 		event.remove_clients();
+		Signal::set_default();
 	}
 
 #pragma endregion

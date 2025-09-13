@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 17:52:31 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 14:03:12 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,13 @@
 			std::vector<Process>		processes;
 			std::vector<std::string>	groups;
 
-			uint32_t	update_state_machine();
+			void		create_pseudoterminal(Process& proc, char *pty_name);
+			void		create_pipes(Process& proc, int *pipe_std_in, int *pipe_std_out, int *pipe_std_err);
+
+			void		stop(Process& proc);
+			void		restart(Process& proc);
+			void		start(Process& proc);
+			uint32_t	state_machine();
 
 		private:
 

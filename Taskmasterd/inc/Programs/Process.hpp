@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 16:34:06 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 13:57:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,15 +75,15 @@
 
 			// Variables
 			std::string							name;
+			std::string							directory;
 			std::string							command;
 			std::vector<std::string>			arguments;
-			std::string							directory;
+			uint16_t							priority;
 			std::string							user;
 			uint16_t 							umask;
-			uint16_t							priority;
 			bool								autostart;
-			uint8_t								autorestart;
 			uint16_t							startsecs;
+			uint8_t								autorestart;
 			uint8_t								startretries;
 			std::vector<uint8_t>				exitcodes;
 			uint8_t								stopsignal;
@@ -103,22 +103,27 @@
 			std::string							serverurl;
 			std::map<std::string, std::string>	environment;
 
-			pid_t								pid;
+			std::string							program_name;
 			uint16_t							process_num;
+
+			pid_t								pid;
 			ProcessState						status;
+			bool								started_once;
+			bool								stopped_manual;
+			bool								terminated;
+			bool								killed;
 			std::time_t							start_time;
 			std::time_t							stop_time;
 			std::time_t							change_time;
-			std::time_t							uptime;
-			uint32_t							restart_count;
-			uint16_t							killwait_secs;
 			int									exit_code;
 			std::string							exit_reason;
-			std::string							spawn_error;
-			std::string							program_name;
-			bool								started_once;
-			bool								manual_stopped;
-			bool								terminated;
+			uint32_t							restart_count;
+			uint16_t							killwaitsecs;
+
+			int									std_master;
+			int									std_slave;
+			uint16_t							std_rows;
+			uint16_t							std_cols;
 			int									std_in;
 			int									std_out;
 			int									std_err;

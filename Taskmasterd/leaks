@@ -1,7 +1,7 @@
 #!/bin/bash
 
+	# --suppressions=.valgrind.supp \
 valgrind \
-	--suppressions=.valgrind.supp \
 	--leak-check=full \
 	--show-leak-kinds=all \
 	--track-fds=yes \

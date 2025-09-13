@@ -156,6 +156,10 @@
 					}
 				}
 
+				// Si no hay datos, cerrar std_out y std_err
+				// Si los hay, ya se hará en epoll
+				// Si shutting down taskmaster, seguir ciclo normal (deberia de salir de epoll cuando termine de procesar todo... ya veremos como lo hago)
+
 				if (proc->std_in != -1) {
 					tskm.epoll.remove(proc->std_in);
 					::close(proc->std_in);
