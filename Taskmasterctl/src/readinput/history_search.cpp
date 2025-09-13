@@ -1,23 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   history_search.c                                   :+:      :+:    :+:   */
+/*   history_search.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 15:20:34 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/02/25 17:09:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 00:07:51 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "libft.h"
-	#include "terminal/readinput/termcaps.h"
-	#include "terminal/readinput/readinput.h"
-	#include "terminal/readinput/prompt.h"
-	#include "terminal/readinput/history.h"
-	#include "main/options.h"
+	#include "readinput/termcaps.hpp"
+	#include "readinput/readinput.hpp"
+	#include "readinput/history.hpp"
+
+	#include <string>
+	#include <cstring>
+	#include <stdlib.h>
+	#include <unistd.h>
+	#include <cctype>
 
 #pragma endregion
 
@@ -38,6 +41,8 @@
 	static char		*match_show;
 
 	static int		search_find(int mode);
+
+	static bool		multiwidth_chars = false;
 
 #pragma endregion
 
@@ -64,7 +69,7 @@
 				size_t back_pos = 1;
 				while (search_buffer.position - back_pos > 0 && (search_buffer.value[search_buffer.position - back_pos] & 0xC0) == 0x80) back_pos++;
 				if (search_buffer.position < search_buffer.length)
-					ft_memmove(&search_buffer.value[search_buffer.position - back_pos], &search_buffer.value[search_buffer.position], search_buffer.length - search_buffer.position);
+					memmove(&search_buffer.value[search_buffer.position - back_pos], &search_buffer.value[search_buffer.position], search_buffer.length - search_buffer.position);
 				search_buffer.position -= back_pos; search_buffer.length -= back_pos;
 				search_buffer.value[search_buffer.length] = '\0';
 
@@ -77,14 +82,14 @@
 				// write search and match
 				write_value(STDOUT_FILENO, search_buffer.value, search_buffer.length);
 				write_value(STDOUT_FILENO, "': ", 3);
-				write_value(STDOUT_FILENO, match_show, ft_strlen(match_show));
+				write_value(STDOUT_FILENO, match_show, strlen(match_show));
 
 				// Move cursor to input position
-				len = 3 + chars_width(0, ft_strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
+				len = 3 + chars_width(0, strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
 				if (len > 0) cursor_left(len);
 
 				old_len = chars_width(0, buffer.length, buffer.value);
-				if (!no_match) { sfree(match_show); match_show = NULL; }
+				if (!no_match) { free(match_show); match_show = NULL; }
 			}
 		}
 
@@ -95,17 +100,17 @@
 		static int print_char() {			
 			size_t c_size = char_size(buffer.c);
 			
-			char new_char[c_size + 1];
+			char *new_char = (char *)malloc(c_size + 1);
 			new_char[0] = buffer.c;
 			for (size_t i = 1; i < c_size; i++) read(STDIN_FILENO, &new_char[i], 1);
 			new_char[c_size] = '\0';
 			
 			// Ignore multi-space chars
-			if (!options.multiwidth_chars && char_width(0, new_char) > 1) return (1);
+			if (!multiwidth_chars && char_width(0, new_char) > 1) return (1);
 
 			// Expand buffer if necessary
 			if (search_buffer.position + c_size >= search_buffer.size - 1) {
-				search_buffer.value = ft_realloc(search_buffer.value, search_buffer.size, search_buffer.size * 2);
+				search_buffer.value = (char *)realloc(search_buffer.value, search_buffer.size * 2);
 				search_buffer.size *= 2;
 			}
 			
@@ -134,14 +139,14 @@
 			// write search and match
 			write_value(STDOUT_FILENO, search_buffer.value, search_buffer.length);
 			write_value(STDOUT_FILENO, "': ", 3);
-			write_value(STDOUT_FILENO, match_show, ft_strlen(match_show));
+			write_value(STDOUT_FILENO, match_show, strlen(match_show));
 
 			// Move cursor to input position
-			len = 3 + chars_width(0, ft_strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
+			len = 3 + chars_width(0, strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
 			if (len > 0) cursor_left(len);
 
 			old_len = chars_width(0, buffer.length, buffer.value);
-			if (!no_match) { sfree(match_show); match_show = NULL; }
+			if (!no_match) { free(match_show); match_show = NULL; }
 			return (1);
 		}
 
@@ -160,17 +165,17 @@
 			old_len = chars_width(0, buffer.length, buffer.value);
 			original_size = buffer.size;
 			original_position = buffer.position;
-			original_buffer = smalloc(buffer.size);
-			ft_memcpy(original_buffer, buffer.value, buffer.size);
+			original_buffer = (char *)malloc(buffer.size);
+			memcpy(original_buffer, buffer.value, buffer.size);
 			
 			hist_searching = true;
 			initialized = true;
 			search_buffer.size = 1024;
 			search_buffer.position = 0, search_buffer.length = 0;
-			search_buffer.value = ft_calloc(search_buffer.size, sizeof(char));
+			search_buffer.value = (char *)calloc(search_buffer.size, sizeof(char));
 
 			char *prompt = remove_colors(term_prompt);
-			int len = chars_width(0, ft_strlen(prompt), prompt); sfree(prompt);
+			int len = chars_width(0, strlen(prompt), prompt); free(prompt);
 			len += chars_width(0, buffer.position, buffer.value);
 			if (len > 0) cursor_left(len);
 
@@ -201,7 +206,7 @@
 			if (len > 0) cursor_left(len);
 
 			if (term_prompt) {
-				write(STDOUT_FILENO, term_prompt, ft_strlen(term_prompt));
+				write(STDOUT_FILENO, term_prompt, strlen(term_prompt));
 				cursor_update(nocolor_length(term_prompt));
 			}
 			write_value(STDOUT_FILENO, buffer.value, buffer.length);
@@ -209,9 +214,9 @@
 			len = chars_width(buffer.position, buffer.length, buffer.value);
 			if (len > 0) cursor_left(len);
 
-			sfree(search_buffer.value);
-			sfree(original_buffer);
-			sfree(match_show);
+			free(search_buffer.value);
+			free(original_buffer);
+			free(match_show);
 
 			undo_push(false);
 
@@ -225,11 +230,11 @@
 		static int search_cancel() {
 			old_len = chars_width(0, buffer.length, buffer.value);
 
-			sfree(buffer.value);
+			free(buffer.value);
 			buffer.size = original_size;
 			buffer.position = original_position;
-			buffer.value = smalloc(original_size);
-			ft_memcpy(buffer.value, original_buffer, original_size);
+			buffer.value = (char *)malloc(original_size);
+			memcpy(buffer.value, original_buffer, original_size);
 
 			return (search_exit());
 		}
@@ -242,17 +247,25 @@
 			
 			static int process_match(HIST_ENTRY *hist, size_t pos, bool update) {
 				no_match = false;
-				match_show = ft_strjoin_sep(ft_strndup(hist->line, pos), "\033[30;47m", search_buffer.value, 1);
-				match_show = ft_strjoin_sep(match_show, "\033[0m", hist->line + pos + ft_strlen(search_buffer.value), 1);
+
+				std::string line = hist->line;
+				std::string before = line.substr(0, pos);
+				std::string match  = line.substr(pos, std::strlen(search_buffer.value));
+				std::string after  = line.substr(pos + std::strlen(search_buffer.value));
+
+				std::string new_match_show = before + "\033[30;47m" + match + "\033[0m" + after;
+				match_show = strdup(new_match_show.c_str());
+				// match_show = ft_strjoin_sep(strndup(hist->line, pos), "\033[30;47m", search_buffer.value, 1);
+				// match_show = ft_strjoin_sep(match_show, "\033[0m", hist->line + pos + strlen(search_buffer.value), 1);
 
 				// Expand buffer if necessary
 				while (hist->length >= buffer.size - 1) {
-					buffer.value = ft_realloc(buffer.value, buffer.size, buffer.size * 2);
+					buffer.value = (char *)realloc(buffer.value, buffer.size * 2);
 					buffer.size *= 2;
 				}
 
-				ft_memset(buffer.value, 0, buffer.size);
-				ft_strcpy(buffer.value, hist->line);
+				memset(buffer.value, 0, buffer.size);
+				strcpy(buffer.value, hist->line);
 				buffer.length = hist->length;
 				buffer.position = 0;
 
@@ -264,14 +277,14 @@
 					
 					// write match
 					write_value(STDOUT_FILENO, "': ", 3);
-					write_value(STDOUT_FILENO, match_show, ft_strlen(match_show));
+					write_value(STDOUT_FILENO, match_show, strlen(match_show));
 
 					// Move cursor to input position
-					len = 3 + chars_width(0, ft_strlen(match_show), match_show);
+					len = 3 + chars_width(0, strlen(match_show), match_show);
 					if (len > 0) cursor_left(len);
 
 					old_len = chars_width(0, buffer.length, buffer.value);
-					sfree(match_show); match_show = NULL;
+					free(match_show); match_show = NULL;
 				}
 
 				return (1);
@@ -294,7 +307,7 @@
 						for (; i < len; ++i) {
 							HIST_ENTRY *hist = history_get(i);
 							if (hist && hist->line) {
-								char *match = ft_strstr(hist->line, search_buffer.value);
+								char *match = strstr(hist->line, search_buffer.value);
 								if (match) {
 									history_pos = i;
 									return (process_match(hist, match - hist->line, true));
@@ -306,7 +319,7 @@
 						for (; i >= 0; --i) {
 							HIST_ENTRY *hist = history_get(i);
 							if (hist && hist->line) {
-								char *match = ft_strstr(hist->line, search_buffer.value);
+								char *match = strstr(hist->line, search_buffer.value);
 								if (match) {
 									history_pos = i;
 									return (process_match(hist, match - hist->line, (mode == FORWARD)));
@@ -319,11 +332,11 @@
 				
 				beep();
 				if (mode == START) {
-					sfree(buffer.value);
+					free(buffer.value);
 					buffer.size = original_size;
 					buffer.position = original_position;
-					buffer.value = smalloc(original_size);
-					ft_memcpy(buffer.value, original_buffer, original_size);
+					buffer.value = (char *)malloc(original_size);
+					memcpy(buffer.value, original_buffer, original_size);
 					no_match = true;
 				}
 				return (0);
@@ -343,7 +356,7 @@
 			else if (buffer.c == 18)		search_find(FORWARD);				//	[CTRL + R]	Search up
 			else if (buffer.c == 19)		search_find(BACKWARD);				//	[CTRL + S]	Search down
 			else if	(buffer.c == 127)		backspace();						//	[BackSpace]	Delete the previous character
-			else if (ft_isprint(buffer.c))	print_char();			
+			else if (std::isprint(buffer.c))	print_char();			
 			else							return (search_exit());
 
 			return (1);

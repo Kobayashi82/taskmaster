@@ -1,26 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   readline.c                                         :+:      :+:    :+:   */
+/*   readline.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 10:32:07 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/02/27 20:10:33 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 23:37:51 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "libft.h"
-	#include "terminal/terminal.h"
-	#include "terminal/readinput/termcaps.h"
-	#include "terminal/readinput/readinput.h"
-	#include "terminal/readinput/prompt.h"
-	#include "terminal/readinput/history.h"
-	#include "terminal/signals.h"
-	#include "main/shell.h"
-	#include "main/options.h"
+	#include "readinput/terminal.hpp"
+	#include "readinput/termcaps.hpp"
+	#include "readinput/readinput.hpp"
+	#include "readinput/history.hpp"
+	#include "signals.hpp"
+
+	#include <string>
+	#include <cstring>
+	#include <unistd.h>
+	#include <fcntl.h>
 
 #pragma endregion
 
@@ -33,6 +34,8 @@
 
 	static char	*clipboard;
 	static char	*tmp_line;
+	static bool	hide_ctrl_chars = false;
+	static bool	multiwidth_chars = false;
 
 	static void home();
 
@@ -46,9 +49,9 @@
 
 			static int ctrl_d(const int n) {
 				if (n <= 0 || (buffer.c == 4 && !buffer.length)) {
-					if (tmp_line) { sfree(tmp_line); tmp_line = NULL; }
+					if (tmp_line) { free(tmp_line); tmp_line = NULL; }
 					
-					sfree(buffer.value); buffer.value = NULL;
+					free(buffer.value); buffer.value = NULL;
 					write(STDOUT_FILENO, "\r\n", 2);
 					return (1);
 				} return (0);
@@ -60,14 +63,14 @@
 
 			static int ctrl_c() {
 				if (buffer.c == 3) {
-					if (tmp_line) { sfree(tmp_line); tmp_line = NULL; }
+					if (tmp_line) { free(tmp_line); tmp_line = NULL; }
 
 					buffer.value[0] = '\0'; buffer.position = 0; buffer.length = 0;
 
-					if (options.hide_ctrl_chars)	write(STDOUT_FILENO, "\r\n", 2);
+					if (hide_ctrl_chars)	write(STDOUT_FILENO, "\r\n", 2);
 					else							write(STDOUT_FILENO, "^C\r\n", 4);
 
-					shell.exit_code = 130; nsignal = 2;
+					// shell.exit_code = 130; nsignal = 2;
 					return (1);
 				} return (0);
 			}
@@ -78,7 +81,7 @@
 
 			static int enter() {
 				if (buffer.c == '\r' || buffer.c == '\n') {
-					if (tmp_line) { sfree(tmp_line); tmp_line = NULL; }
+					if (tmp_line) { free(tmp_line); tmp_line = NULL; }
 
 					buffer.value[buffer.length] = '\0';
 
@@ -105,7 +108,7 @@
 
 						while (buffer.position - back_pos > 0 && (buffer.value[buffer.position - back_pos] & 0xC0) == 0x80) back_pos++;
 						int c_width = char_width(buffer.position - back_pos, buffer.value);
-						if (buffer.position < buffer.length) ft_memmove(&buffer.value[buffer.position - back_pos], &buffer.value[buffer.position], buffer.length - buffer.position);
+						if (buffer.position < buffer.length) memmove(&buffer.value[buffer.position - back_pos], &buffer.value[buffer.position], buffer.length - buffer.position);
 						buffer.position -= back_pos; buffer.length -= back_pos;
 						buffer.value[buffer.length] = '\0';
 
@@ -128,7 +131,7 @@
 
 					int total_chars = chars_width(buffer.position, 0, buffer.value);
 
-					ft_memmove(&buffer.value[0], &buffer.value[buffer.position], buffer.length - buffer.position);
+					memmove(&buffer.value[0], &buffer.value[buffer.position], buffer.length - buffer.position);
 					buffer.length -= buffer.position; buffer.position = buffer.length;
 					buffer.value[buffer.length] = '\0';
 
@@ -157,7 +160,7 @@
 						size_t back_pos = 1;
 						while (buffer.position + back_pos < buffer.length && (buffer.value[buffer.position + back_pos] & 0xC0) == 0x80) back_pos++;
 
-						ft_memmove(&buffer.value[buffer.position], &buffer.value[buffer.position + back_pos], buffer.length - (buffer.position + back_pos));
+						memmove(&buffer.value[buffer.position], &buffer.value[buffer.position + back_pos], buffer.length - (buffer.position + back_pos));
 						buffer.length -= back_pos;
 
 						write_value(STDOUT_FILENO, &buffer.value[buffer.position], buffer.length - buffer.position);
@@ -177,15 +180,15 @@
 
 					size_t end_pos = buffer.position;
 				
-					while (end_pos < buffer.length && (ft_isspace(buffer.value[end_pos]) || ft_ispunct(buffer.value[end_pos])))
+					while (end_pos < buffer.length && (std::isspace(buffer.value[end_pos]) || std::ispunct(buffer.value[end_pos])))
 						end_pos++;
-					while (end_pos < buffer.length && !ft_isspace(buffer.value[end_pos]) && !ft_ispunct(buffer.value[end_pos]))
+					while (end_pos < buffer.length && !std::isspace(buffer.value[end_pos]) && !std::ispunct(buffer.value[end_pos]))
 						end_pos += char_size(buffer.value[end_pos]);
 				
 					size_t delete_len = end_pos - buffer.position;
 				
 					if (delete_len > 0) {
-						ft_memmove(&buffer.value[buffer.position], &buffer.value[end_pos], buffer.length - end_pos + 1);
+						memmove(&buffer.value[buffer.position], &buffer.value[end_pos], buffer.length - end_pos + 1);
 						buffer.length -= delete_len;
 				
 						write_value(STDOUT_FILENO, &buffer.value[buffer.position], buffer.length - buffer.position);
@@ -207,7 +210,7 @@
 					int total_chars = chars_width(buffer.position, buffer.length, buffer.value);
 
 					if (buffer.position < buffer.length) {
-						ft_memset(&buffer.value[buffer.position], 0, buffer.length - buffer.position);
+						memset(&buffer.value[buffer.position], 0, buffer.length - buffer.position);
 						buffer.length -= buffer.length - buffer.position;
 					}
 
@@ -257,15 +260,15 @@
 					char *new_line = history_prev();
 
 					if (!new_line) { beep(); return; }
-					if (!tmp_line) tmp_line = ft_substr(buffer.value, 0, buffer.length);
+					if (!tmp_line) tmp_line = strdup(std::string(buffer.value).substr(0, buffer.length).c_str());
 
 					home(); delete_end(false);
-					while (ft_strlen(new_line) >= buffer.size) {
-						buffer.value = ft_realloc(buffer.value, buffer.size, buffer.size * 2);
+					while (strlen(new_line) >= buffer.size) {
+						buffer.value = (char *)realloc(buffer.value, buffer.size * 2);
 						buffer.size *= 2;
 					}
-					ft_strcpy(buffer.value, new_line);
-					buffer.length = ft_strlen(buffer.value);
+					strcpy(buffer.value, new_line);
+					buffer.length = strlen(buffer.value);
 					buffer.position = buffer.length;
 					write_value(STDOUT_FILENO, buffer.value, buffer.length);
 				}
@@ -288,16 +291,16 @@
 					}
 
 					home(); delete_end(false);
-					while (ft_strlen(new_line) >= buffer.size) {
-						buffer.value = ft_realloc(buffer.value, buffer.size, buffer.size * 2);
+					while (strlen(new_line) >= buffer.size) {
+						buffer.value = (char *)realloc(buffer.value, buffer.size * 2);
 						buffer.size *= 2;
 					}
-					ft_strcpy(buffer.value, new_line);
-					buffer.length = ft_strlen(buffer.value);
+					strcpy(buffer.value, new_line);
+					buffer.length = strlen(buffer.value);
 					buffer.position = buffer.length;
 					write_value(STDOUT_FILENO, buffer.value, buffer.length);
 
-					if (free_line && new_line) sfree(new_line);
+					if (free_line && new_line) free(new_line);
 				}
 
 			#pragma endregion
@@ -313,10 +316,10 @@
 				static void arrow_left(bool simple) {
 					if (!buffer.ALT && !buffer.SHIFT && buffer.position > 0) {
 						if (buffer.CTRL && !simple) {
-							while (buffer.position > 0 && (ft_isspace(buffer.value[buffer.position - 1]) || ft_ispunct(buffer.value[buffer.position - 1]))) {
+							while (buffer.position > 0 && (std::isspace(buffer.value[buffer.position - 1]) || std::ispunct(buffer.value[buffer.position - 1]))) {
 								cursor_left(0); (buffer.position)--;
 							}
-							while (buffer.position > 0 && !ft_isspace(buffer.value[buffer.position - 1]) && !ft_ispunct(buffer.value[buffer.position - 1])) {
+							while (buffer.position > 0 && !std::isspace(buffer.value[buffer.position - 1]) && !std::ispunct(buffer.value[buffer.position - 1])) {
 								do { (buffer.position)--; } while (buffer.position > 0 && (buffer.value[buffer.position] & 0xC0) == 0x80);
 								cursor_left(0);
 							}
@@ -340,10 +343,10 @@
 				static void arrow_right(bool simple) {
 					if (!buffer.ALT && !buffer.SHIFT && buffer.position < buffer.length) {
 						if (buffer.CTRL && !simple) {
-							while (buffer.position < buffer.length && (ft_isspace(buffer.value[buffer.position]) || ft_ispunct(buffer.value[buffer.position]))) {
+							while (buffer.position < buffer.length && (std::isspace(buffer.value[buffer.position]) || std::ispunct(buffer.value[buffer.position]))) {
 								cursor_right(0); (buffer.position)++;
 							}
-							while (buffer.position < buffer.length && !ft_isspace(buffer.value[buffer.position]) && !ft_ispunct(buffer.value[buffer.position])) {
+							while (buffer.position < buffer.length && !std::isspace(buffer.value[buffer.position]) && !std::ispunct(buffer.value[buffer.position])) {
 								cursor_right(0);
 								do { (buffer.position)++; } while (buffer.position < buffer.length && (buffer.value[buffer.position] & 0xC0) == 0x80);
 							}
@@ -365,23 +368,23 @@
 			static int print_char() {
 				size_t c_size = char_size(buffer.c);
 
-				char new_char[c_size + 1];
+				char *new_char = (char *)malloc(c_size + 1);
 				new_char[0] = buffer.c;
 				for (size_t i = 1; i < c_size; i++) read(STDIN_FILENO, &new_char[i], 1);
 				new_char[c_size] = '\0';
 
 				//	Ignore multi-space chars
-				if (!options.multiwidth_chars && char_width(0, new_char) > 1) return (1);
+				if (!multiwidth_chars && char_width(0, new_char) > 1) return (1);
 
 				undo_push(true);
 
 				// Expand buffer if necessary
 				if (buffer.position + c_size >= buffer.size - 1) {
-					buffer.value = ft_realloc(buffer.value, buffer.size, buffer.size * 2);
+					buffer.value = (char *)realloc(buffer.value, buffer.size * 2);
 					buffer.size *= 2;
 				}
 
-				if (buffer.position < buffer.length) ft_memmove(&buffer.value[buffer.position + c_size], &buffer.value[buffer.position], buffer.length - buffer.position);
+				if (buffer.position < buffer.length) memmove(&buffer.value[buffer.position + c_size], &buffer.value[buffer.position], buffer.length - buffer.position);
 
 				// Insert all bytes of the character into the buffer
 				for (size_t i = 0; i < c_size; i++) buffer.value[buffer.position++] = new_char[i];
@@ -417,10 +420,10 @@
 
 							if (back_pos1 > 8 || back_pos2 > 8) return;
 
-							ft_memcpy(temp, &buffer.value[buffer.position - back_pos1], back_pos1);
-							ft_memmove(&buffer.value[buffer.position - back_pos1], &buffer.value[buffer.position], back_pos2);
+							memcpy(temp, &buffer.value[buffer.position - back_pos1], back_pos1);
+							memmove(&buffer.value[buffer.position - back_pos1], &buffer.value[buffer.position], back_pos2);
 							buffer.position -= back_pos1; buffer.position += back_pos2;
-							ft_memmove(&buffer.value[buffer.position], temp, back_pos1);
+							memmove(&buffer.value[buffer.position], temp, back_pos1);
 
 							cursor_left(char_width(0, temp));
 							write_value(STDOUT_FILENO, &buffer.value[buffer.position - back_pos2], back_pos1 + back_pos2);
@@ -432,10 +435,10 @@
 							buffer.position -= back_pos1;
 							while (buffer.position - back_pos2 > 0 && (buffer.value[buffer.position - back_pos2] & 0xC0) == 0x80) back_pos2++;
 
-							ft_memcpy(temp, &buffer.value[buffer.position - back_pos2], back_pos2);
-							ft_memmove(&buffer.value[buffer.position - back_pos2], &buffer.value[buffer.position], back_pos1);
+							memcpy(temp, &buffer.value[buffer.position - back_pos2], back_pos2);
+							memmove(&buffer.value[buffer.position - back_pos2], &buffer.value[buffer.position], back_pos1);
 							buffer.position -= back_pos2; buffer.position += back_pos1;
-							ft_memmove(&buffer.value[buffer.position], temp, back_pos2);
+							memmove(&buffer.value[buffer.position], temp, back_pos2);
 
 							cursor_left(char_width(0, temp));
 							cursor_left(char_width(buffer.position - back_pos1, buffer.value));
@@ -456,23 +459,23 @@
 
 					if (prev_word) {
 						if (position == len && position > 0) do { (position)--; } while (position > 0 && (buffer.value[position] & 0xC0) == 0x80);
-						while (position > 0 && (ft_isspace(buffer.value[position]) || ft_ispunct(buffer.value[position]))) position--;
+						while (position > 0 && (std::isspace(buffer.value[position]) || std::ispunct(buffer.value[position]))) position--;
 						if (position == 0) { word.len = 0; return (word); }
-						while (position > 0 && !ft_isspace(buffer.value[position]) && !ft_ispunct(buffer.value[position])) position--;
-						word.start = position + (ft_isspace(buffer.value[position]) || ft_ispunct(buffer.value[position]));
+						while (position > 0 && !std::isspace(buffer.value[position]) && !std::ispunct(buffer.value[position])) position--;
+						word.start = position + (std::isspace(buffer.value[position]) || std::ispunct(buffer.value[position]));
 					} else {
-						while (position < len && (ft_isspace(buffer.value[position]) || ft_ispunct(buffer.value[position]))) position++;
+						while (position < len && (std::isspace(buffer.value[position]) || std::ispunct(buffer.value[position]))) position++;
 						if (position == len) { do { (position)--; } while (position > 0 && (buffer.value[position] & 0xC0) == 0x80);
-							while (position > 0 && (ft_isspace(buffer.value[position]) || ft_ispunct(buffer.value[position]))) position--;
-							while (position > 0 && !ft_isspace(buffer.value[position]) && !ft_ispunct(buffer.value[position])) position--;
+							while (position > 0 && (std::isspace(buffer.value[position]) || std::ispunct(buffer.value[position]))) position--;
+							while (position > 0 && !std::isspace(buffer.value[position]) && !std::ispunct(buffer.value[position])) position--;
 						} else
-							while (position > 0 && !ft_isspace(buffer.value[position]) && !ft_ispunct(buffer.value[position])) position--;
+							while (position > 0 && !std::isspace(buffer.value[position]) && !std::ispunct(buffer.value[position])) position--;
 
-						word.start = position + (ft_isspace(buffer.value[position]) || ft_ispunct(buffer.value[position]));
+						word.start = position + (std::isspace(buffer.value[position]) || std::ispunct(buffer.value[position]));
 					}
 
 					size_t	temp_pos = word.start;
-					while (temp_pos < len && !ft_isspace(buffer.value[temp_pos]) && !ft_ispunct(buffer.value[temp_pos]))
+					while (temp_pos < len && !std::isspace(buffer.value[temp_pos]) && !std::ispunct(buffer.value[temp_pos]))
 						do { temp_pos++; } while (temp_pos < len && (buffer.value[temp_pos] & 0xC0) == 0x80);
 					word.end = temp_pos;
 
@@ -509,9 +512,9 @@
 							for (size_t i = 0, pos = sep.start; i < sep.len; i++, pos++) sep.value[i] = buffer.value[pos];
 					}
 
-					ft_memmove(&buffer.value[prev.start], next.value, next.len);
-					ft_memmove(&buffer.value[prev.start + next.len], sep.value, sep.len);
-					ft_memmove(&buffer.value[prev.start + next.len + sep.len], prev.value, prev.len);
+					memmove(&buffer.value[prev.start], next.value, next.len);
+					memmove(&buffer.value[prev.start + next.len], sep.value, sep.len);
+					memmove(&buffer.value[prev.start + next.len + sep.len], prev.value, prev.len);
 
 					while (buffer.position > 0 && buffer.position > prev.start) {
 						do { (buffer.position)--; } while (buffer.position > 0 && (buffer.value[buffer.position] & 0xC0) == 0x80);
@@ -550,7 +553,7 @@
 
 			static void clear_screen() {
 				write(STDOUT_FILENO, "\033[H\033[2J", 7);
-				if (term_prompt) write(STDOUT_FILENO, term_prompt, ft_strlen(term_prompt));
+				if (term_prompt) write(STDOUT_FILENO, term_prompt, strlen(term_prompt));
 				write(STDOUT_FILENO, buffer.value, buffer.length);
 				cursor_get();
 				cursor_move(buffer.length, buffer.position);
@@ -597,7 +600,7 @@
 
 				static int cursor() {
 					char seq[8];
-					ft_memset(&seq, 0, sizeof(seq));
+					memset(&seq, 0, sizeof(seq));
 					if (buffer.c == 27) {
 
 						fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
@@ -614,7 +617,7 @@
 								if (seq[1] == 'H') 						home();					//	Home			Cursor to the start
 								if (seq[1] == 'F')						end();					//	End				Cursor to the end
 								if (seq[1] == '3' && seq[2] == '~')		delete_char();			//	Delete			Delete
-								if (!ft_strncmp(seq + 1, "3;5~", 4))	delete_word();			//	CTRL + Delete	Delete current word
+								if (!strncmp(seq + 1, "3;5~", 4))	delete_word();			//	CTRL + Delete	Delete current word
 							}
 						} return (1);
 					} return (0);
@@ -669,7 +672,7 @@
 		else if (cursor())			result = 0;
 		else if (print_char())		result = 0;
 
-		if (result && clipboard) sfree(clipboard);
+		if (result && clipboard) free(clipboard);
 		return (result);
 	}
 

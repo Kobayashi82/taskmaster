@@ -1,21 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   input.h                                            :+:      :+:    :+:   */
+/*   auto_complete.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/25 15:04:02 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/03/06 13:36:20 by vzurera-         ###   ########.fr       */
+/*   Created: 2024/12/05 09:43:56 by vzurera-          #+#    #+#             */
+/*   Updated: 2025/09/13 23:45:17 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#pragma region "Includes"
 
-#pragma region Methods
+	#include "readinput/termcaps.hpp"
 
-	//	---------- INPUT -----------
-	char	*expand_input(char *input);
-	char	*get_input();
+#pragma endregion
+
+#pragma region "AutoComplete"					("Tab")
+
+	void autocomplete() {
+
+	}
 
 #pragma endregion

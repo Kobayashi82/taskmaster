@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   readinput.c                                        :+:      :+:    :+:   */
+/*   readinput.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 09:44:40 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/03/02 19:36:20 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 23:55:26 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,15 @@
 
 #pragma region "Includes"
 
-	#include "libft.h"
-	#include "terminal/terminal.h"
-	#include "terminal/readinput/termcaps.h"
-	#include "terminal/readinput/prompt.h"
-	#include "terminal/readinput/readinput.h"
-	#include "terminal/readinput/history.h"
-	#include "main/options.h"
-	#include "main/error.h"
+	#include "readinput/terminal.hpp"
+	#include "readinput/termcaps.hpp"
+	#include "readinput/readinput.hpp"
+	#include "readinput/history.hpp"
+
+	#include <unistd.h>
+	#include <fcntl.h>
+	#include <stdlib.h>
+	#include <cstring>
 
 #pragma endregion
 
@@ -54,16 +55,16 @@
 			if (fcntl(STDIN_FILENO, F_GETFD) == -1) {
 				int tty_fd = open("/dev/tty", O_RDWR);
 				if (tty_fd == -1) {
-					sfree(buffer.value);
+					free(buffer.value);
 					write(STDERR_FILENO, "\n", 1);
-					exit_error(STDIN_CLOSED, 1, NULL, true);
+					std::exit(1);
 				}
 				tcsetattr(tty_fd, TCSAFLUSH, &terminal.term);
-				sdup2(&tty_fd, STDIN_FILENO, true);
+				dup2(tty_fd, STDIN_FILENO);
 				write(STDOUT_FILENO, "\n", 1);
 			} else
 				tcsetattr(STDIN_FILENO, TCSAFLUSH, &terminal.term);
-			sfree(term_prompt); term_prompt = NULL;
+			free(term_prompt); term_prompt = NULL;
 		}
 	}
 
@@ -90,24 +91,24 @@
 		if (fcntl(STDIN_FILENO, F_GETFD) == -1) {
 			int tty_fd = open("/dev/tty", O_RDWR);
 			if (tty_fd == -1) {
-				sfree(buffer.value);
+				free(buffer.value);
 				disable_raw_mode();
 				write(STDERR_FILENO, "\n", 1);
-				exit_error(STDIN_CLOSED, 1, NULL, true);
+				std::exit(1);
 			}
-			sdup2(&tty_fd, STDIN_FILENO, true);
+			dup2(tty_fd, STDIN_FILENO);
 			return (1);
 		}
 		
 		if (fcntl(STDOUT_FILENO, F_GETFD) == -1) {
 			int tty_fd = open("/dev/tty", O_WRONLY);
 			if (tty_fd != -1) {
-				sfree(buffer.value);
+				free(buffer.value);
 				disable_raw_mode();
 				write(STDERR_FILENO, "\n", 1);
-				exit_error(STDOUT_CLOSED, 1, NULL, true);
+				std::exit(1);
 			}
-			sdup2(&tty_fd, STDOUT_FILENO, true);
+			dup2(tty_fd, STDOUT_FILENO);
 		}
 
 		return (0);
@@ -121,15 +122,15 @@
 		int result = 0;
 		buffer.size = 1024;
 		buffer.position = 0, buffer.length = 0;
-		buffer.value = ft_calloc(buffer.size, sizeof(char));
+		buffer.value = (char *)calloc(buffer.size, sizeof(char));
 		buffer.CTRL = false; buffer.ALT = false; buffer.SHIFT = false;
 
 		enable_raw_mode();
 
-		sfree(term_prompt);
-		term_prompt = ft_strdup(prompt);
+		free(term_prompt);
+		term_prompt = strdup(prompt);
 
-		if (term_prompt) write(STDOUT_FILENO, term_prompt, ft_strlen(term_prompt));
+		if (term_prompt) write(STDOUT_FILENO, term_prompt, strlen(term_prompt));
 		vi_mode = 0;
 
 		cursor_get();
@@ -141,16 +142,14 @@
 
 			if (hist_searching && history_search()) continue;
 
-			if		(options.emacs)	result = readline(readed);
-			else if	(options.vi)	result = vi();
-			else					result = dumb(readed);
+			result = readline(readed);
 		}
-		
+
 		history_set_pos_end();
 		undo_clear();
-		
+
 		disable_raw_mode();
-		
+
 		return (buffer.value);
 	}
 

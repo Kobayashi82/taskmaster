@@ -1,28 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   signal.c                                           :+:      :+:    :+:   */
+/*   signal.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 15:57:35 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/02/23 17:08:42 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 23:09:58 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "libft.h"
-	#include "terminal/terminal.h"
-	#include "terminal/readinput/termcaps.h"
-	#include "terminal/readinput/readinput.h"
-	#include "terminal/signals.h"
-	#include "main/shell.h"
-	#include "main/options.h"
-	#include "main/error.h"
+	#include "readinput/terminal.hpp"
+	#include "readinput/termcaps.hpp"
+	#include "readinput/readinput.hpp"
+	#include "signals.hpp"
 
+	#include <stdlib.h>
 	#include <signal.h>
 	#include <sys/ioctl.h>
+	#include <unistd.h>
 
 #pragma endregion
 
@@ -32,7 +30,7 @@ int	nsignal;
 
 	//	Handle SIGINT signal
 	static void sigint_handler(int sig) {
-		shell.exit_code = 128 + sig;
+		// shell.exit_code = 128 + sig;
 		nsignal = sig;
 		if (raw_mode) {
 			char byte = 3;
@@ -50,7 +48,7 @@ int	nsignal;
 	// 	// if (raw_mode) {
 	// 	// 	disable_raw_mode();
 	// 	// 	write(1, "\n", 1);
-	// 	// 	if (buffer.value) sfree(buffer.value);
+	// 	// 	if (buffer.value) free(buffer.value);
 	// 	// }
 	// 	// exit_error(SEGQUIT, 3, NULL, true);
 	// }
@@ -72,14 +70,14 @@ int	nsignal;
 
 	//	Handle SIGSEGV signal
 	static void sigsegv_handler(int sig) {
-		shell.exit_code = 128 + sig;
+		// shell.exit_code = 128 + sig;
 		nsignal = sig;
 		if (raw_mode) {
 			disable_raw_mode();
 			write(1, "\n", 1);
-			if (buffer.value) sfree(buffer.value);
+			if (buffer.value) free(buffer.value);
 		}
-		exit_error(SEGFAULT, 11, NULL, true);
+		// exit_error(SEGFAULT, 11, NULL, true);
 	}
 
 #pragma endregion

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   termcaps.c                                         :+:      :+:    :+:   */
+/*   termcaps.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/04 14:07:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/03/14 13:09:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 23:35:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,14 @@
 
 #pragma region "Includes"
 
-	#include "libft.h"
-	#include "terminal/terminal.h"
-	#include "terminal/readinput/termcaps.h"
-	#include "terminal/readinput/readinput.h"
-	#include "main/options.h"
+	#include "readinput/terminal.hpp"
+	#include "readinput/termcaps.hpp"
+	#include "readinput/readinput.hpp"
 
 	#include <termcap.h>
+	#include <unistd.h>
+	#include <stdlib.h>
+	#include <cstring>
 
 #pragma endregion
 
@@ -29,6 +30,12 @@
 	t_terminal		terminal;
 
 	static size_t	row, col;
+
+#pragma endregion
+
+#pragma region "BEEP"
+
+	void beep() { write(STDOUT_FILENO, "\a", 1); }
 
 #pragma endregion
 
@@ -168,9 +175,9 @@
 				if (!str) return (NULL);
 
 				size_t length = nocolor_length(str);
-				if (length == ft_strlen(str)) return (ft_strdup(str));
+				if (length == strlen(str)) return (strdup(str));
 
-				char *result = smalloc(length + 1);
+				char *result = (char *)malloc(length + 1);
 				size_t i = 0, j = 0;
 
 				while (str[i]) {
@@ -246,19 +253,19 @@
 		#pragma region "Get"
 
 			void cursor_get() {
-				char	buf[32]; ft_memset(buf, 0, sizeof(buf));
+				char	buf[32]; memset(buf, 0, sizeof(buf));
 				int		a = 0, i = 0;
 				char *action = tgetstr("u7", NULL);
 
 				if (action) {
-					write(STDIN_FILENO, action, ft_strlen(action));
+					write(STDIN_FILENO, action, strlen(action));
 					read(STDIN_FILENO, buf, sizeof(buf) - 1);
 
 					while (buf[i]) {
 						if (buf[i] >= '0' && buf[i] <= '9') {
 							int start = i;
 							while (buf[i] >= '0' && buf[i] <= '9') i++;
-							int value = ft_atoi(&buf[start]);
+							int value = std::atoi(&buf[start]);
 							if (a++ == 0)	row = value - 1;
 							else			col = value - 1;
 						} i++;
@@ -276,7 +283,7 @@
 				char *action = tgetstr("cm", NULL);
 				if (action) {
 					action = tgoto(action, new_col, new_row);
-					write(STDIN_FILENO, action, ft_strlen(action));
+					write(STDIN_FILENO, action, strlen(action));
 					row = new_row; col = new_col;
 				}
 			}
@@ -327,7 +334,7 @@
 			void cursor_hide() {
 				char *action = tgetstr("vi", NULL);
 
-				if (action) write(STDIN_FILENO, action, ft_strlen(action));
+				if (action) write(STDIN_FILENO, action, strlen(action));
 			}
 
 		#pragma endregion
@@ -337,7 +344,7 @@
 			void cursor_show() {
 				char *action = tgetstr("ve", NULL);
 
-				if (action) write(STDIN_FILENO, action, ft_strlen(action));
+				if (action) write(STDIN_FILENO, action, strlen(action));
 			}
 
 		#pragma endregion
@@ -368,7 +375,7 @@
 
 	int terminal_initialize() {
 		char *termtype = getenv("TERM");
-		if (!termtype) { termtype = "dumb"; options.emacs = false; options.vi = false; }
+		if (!termtype) termtype = strdup("dumb");
 
 		int success = tgetent(NULL, termtype);
 		if (success < 0)	{ write(STDERR_FILENO, "Could not access the termcap data base.\n", 41);	return (1); }
