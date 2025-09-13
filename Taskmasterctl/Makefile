@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/02 22:16:53 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/13 22:10:06 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,7 +45,7 @@ NAME		= taskmasterctl
 
 CC			= clang++
 CFLAGS		= -Wall -Wextra -Werror -std=c++17
-CEFLAGS		= -lm -lcrypt
+CEFLAGS		= -lm -lcrypt -ltermcap
 
 # ───────────────── #
 # ── DIRECTORIES ── #
@@ -60,7 +60,16 @@ SRC_DIR		= src/
 # ── FILES ── #
 # ─────────── #
 
-SRCS		= Main/Main.cpp
+SRCS		= Main/Main.cpp \
+			  Readinput/ReadInput.cpp \
+			  Readinput/History.cpp \
+			  Readinput/Prompt.cpp \
+			  Readinput/Termcaps.cpp \
+			  Readinput/Modes/Readline.cpp \
+			  Readinput/Modes/Dumb.cpp \
+			  Readinput/Utilities/AutoComplete.cpp \
+			  Readinput/Utilities/HistorySearch.cpp \
+			  Readinput/Utilities/Undo.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #
