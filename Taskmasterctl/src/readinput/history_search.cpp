@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 15:20:34 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 00:07:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 00:24:43 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,10 @@
 
 #pragma endregion
 
+static size_t safe_strlen(const char *s) {
+    return (s ? strlen(s) : 0);
+}
+
 #pragma region "Input"
 
 	#pragma region "BackSpace"					("BackSpace")
@@ -82,10 +86,10 @@
 				// write search and match
 				write_value(STDOUT_FILENO, search_buffer.value, search_buffer.length);
 				write_value(STDOUT_FILENO, "': ", 3);
-				write_value(STDOUT_FILENO, match_show, strlen(match_show));
+				write_value(STDOUT_FILENO, match_show, safe_strlen(match_show));
 
 				// Move cursor to input position
-				len = 3 + chars_width(0, strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
+				len = 3 + chars_width(0, safe_strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
 				if (len > 0) cursor_left(len);
 
 				old_len = chars_width(0, buffer.length, buffer.value);
@@ -139,10 +143,10 @@
 			// write search and match
 			write_value(STDOUT_FILENO, search_buffer.value, search_buffer.length);
 			write_value(STDOUT_FILENO, "': ", 3);
-			write_value(STDOUT_FILENO, match_show, strlen(match_show));
+			write_value(STDOUT_FILENO, match_show, safe_strlen(match_show));
 
 			// Move cursor to input position
-			len = 3 + chars_width(0, strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
+			len = 3 + chars_width(0, safe_strlen(match_show), match_show) + chars_width(search_buffer.position, search_buffer.length, search_buffer.value);
 			if (len > 0) cursor_left(len);
 
 			old_len = chars_width(0, buffer.length, buffer.value);
@@ -175,7 +179,7 @@
 			search_buffer.value = (char *)calloc(search_buffer.size, sizeof(char));
 
 			char *prompt = remove_colors(term_prompt);
-			int len = chars_width(0, strlen(prompt), prompt); free(prompt);
+			int len = chars_width(0, safe_strlen(prompt), prompt); free(prompt);
 			len += chars_width(0, buffer.position, buffer.value);
 			if (len > 0) cursor_left(len);
 
@@ -206,7 +210,7 @@
 			if (len > 0) cursor_left(len);
 
 			if (term_prompt) {
-				write(STDOUT_FILENO, term_prompt, strlen(term_prompt));
+				write(STDOUT_FILENO, term_prompt, safe_strlen(term_prompt));
 				cursor_update(nocolor_length(term_prompt));
 			}
 			write_value(STDOUT_FILENO, buffer.value, buffer.length);
@@ -250,8 +254,8 @@
 
 				std::string line = hist->line;
 				std::string before = line.substr(0, pos);
-				std::string match  = line.substr(pos, std::strlen(search_buffer.value));
-				std::string after  = line.substr(pos + std::strlen(search_buffer.value));
+				std::string match  = line.substr(pos, safe_strlen(search_buffer.value));
+				std::string after  = line.substr(pos + safe_strlen(search_buffer.value));
 
 				std::string new_match_show = before + "\033[30;47m" + match + "\033[0m" + after;
 				match_show = strdup(new_match_show.c_str());
@@ -277,10 +281,10 @@
 					
 					// write match
 					write_value(STDOUT_FILENO, "': ", 3);
-					write_value(STDOUT_FILENO, match_show, strlen(match_show));
+					write_value(STDOUT_FILENO, match_show, safe_strlen(match_show));
 
 					// Move cursor to input position
-					len = 3 + chars_width(0, strlen(match_show), match_show);
+					len = 3 + chars_width(0, safe_strlen(match_show), match_show);
 					if (len > 0) cursor_left(len);
 
 					old_len = chars_width(0, buffer.length, buffer.value);
