@@ -72,8 +72,8 @@
 		void Signal::sigquit_handler(int sig) {
 			Log.info("Signal: received SIGQUIT indicating exit request");
 			signum = sig;
-			// tskm.programs[0].stop(tskm.programs[2].processes[0]);
-			tskm.programs[1].start(tskm.programs[1].processes[0]);
+			tskm.programs[2].stop(tskm.programs[2].processes[0]);
+			// tskm.programs[1].start(tskm.programs[1].processes[0]);
 		}
 
 	#pragma endregion
@@ -145,6 +145,7 @@
 			pid_t	pid;
 			int		status;
 
+			std::cerr << "Recibido\n";
 			while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
 				auto it = tskm.processes.find(pid);
 				if (it == tskm.processes.end()) continue;

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 13:57:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 19:32:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,7 @@
 			// Variables
 			std::string							name;
 			std::string							directory;
+			std::string							directory_unexpanded;
 			std::string							command;
 			std::vector<std::string>			arguments;
 			uint16_t							priority;

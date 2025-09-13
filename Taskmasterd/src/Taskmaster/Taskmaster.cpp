@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 18:06:47 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 19:43:39 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,8 +63,7 @@
 
 				std::string default_dir = Utils::expand_path(".", "", true, false);
 				if (!entry->value.empty() && entry->value != "do not change") {
-					entry->value = Utils::expand_path(entry->value, "", true, false);
-					if (!Utils::valid_path(entry->value, "", true)) {
+					if (!Utils::valid_path(Utils::expand_path(entry->value, "", true, false), "", true)) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
 						if (!Utils::valid_path(default_dir, "", true)) {
 							Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), CRITICAL, entry->line, entry->order + 3);
@@ -406,30 +405,31 @@
 
 			Utils::environment_initialize(environment);
 
-			std::string HERE			= Utils::environment_get(environment, "HERE");
-			std::string HOST_NAME		= Utils::environment_get(environment, "HOST_NAME");
+			std::string HERE		= Utils::environment_get(environment, "HERE");
+			std::string HOST_NAME	= Utils::environment_get(environment, "HOST_NAME");
 
 			char hostname[255];
 			Utils::environment_add(environment, "HOST_NAME", (!gethostname(hostname, sizeof(hostname))) ? std::string(hostname) : "unknown");
 			if (!configFile.empty()) Utils::environment_add(environment, "HERE", std::filesystem::path(configFile).parent_path());
 
-			directory			= expand_vars(environment, "directory");
-			nodaemon			= Utils::parse_boolean(expand_vars(environment, "nodaemon"));
-			silent				= Utils::parse_boolean(expand_vars(environment, "silent"));
-			user				= expand_vars(environment, "user");
-			umask				= static_cast<uint16_t>(std::stoi(expand_vars(environment, "umask"), nullptr, 8));
-			logfile				= expand_vars(environment, "logfile");
-			logfile_maxbytes	= Utils::parse_size(expand_vars(environment, "logfile_maxbytes"));
-			logfile_backups		= Utils::parse_number(expand_vars(environment, "logfile_backups"), 0, 1000, 10);
-			logfile_syslog		= Utils::parse_boolean(expand_vars(environment, "logfile_syslog"));
-			loglevel			= Utils::parse_loglevel(expand_vars(environment, "loglevel"));
-			pidfile				= expand_vars(environment, "pidfile");
-			childlogdir			= expand_vars(environment, "childlogdir");
-			strip_ansi			= Utils::parse_boolean(expand_vars(environment, "strip_ansi"));
-			nocleanup			= Utils::parse_boolean(expand_vars(environment, "nocleanup"));
-			minfds				= Utils::parse_number(expand_vars(environment, "minfds"), 1, 65535, 1024);
-			minprocs			= Utils::parse_number(expand_vars(environment, "minprocs"), 1, 10000, 200);
-			identifier			= expand_vars(environment, "identifier");
+			directory_unexpanded	= expand_vars(environment, "directory");
+			directory				= Utils::expand_path(directory_unexpanded, "", true, false);
+			nodaemon				= Utils::parse_boolean(expand_vars(environment, "nodaemon"));
+			silent					= Utils::parse_boolean(expand_vars(environment, "silent"));
+			user					= expand_vars(environment, "user");
+			umask					= static_cast<uint16_t>(std::stoi(expand_vars(environment, "umask"), nullptr, 8));
+			logfile					= expand_vars(environment, "logfile");
+			logfile_maxbytes		= Utils::parse_size(expand_vars(environment, "logfile_maxbytes"));
+			logfile_backups			= Utils::parse_number(expand_vars(environment, "logfile_backups"), 0, 1000, 10);
+			logfile_syslog			= Utils::parse_boolean(expand_vars(environment, "logfile_syslog"));
+			loglevel				= Utils::parse_loglevel(expand_vars(environment, "loglevel"));
+			pidfile					= expand_vars(environment, "pidfile");
+			childlogdir				= expand_vars(environment, "childlogdir");
+			strip_ansi				= Utils::parse_boolean(expand_vars(environment, "strip_ansi"));
+			nocleanup				= Utils::parse_boolean(expand_vars(environment, "nocleanup"));
+			minfds					= Utils::parse_number(expand_vars(environment, "minfds"), 1, 65535, 1024);
+			minprocs				= Utils::parse_number(expand_vars(environment, "minprocs"), 1, 10000, 200);
+			identifier				= expand_vars(environment, "identifier");
 
 			if (HERE.empty())		Utils::environment_del(environment, "HERE");
 			else					Utils::environment_add(environment, "HERE", HERE);

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 19:11:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 19:56:59 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,22 +47,22 @@
 
 				std::string default_dir = tskm.directory;
 				if (entry->value != "do not change") {
-					if (!Utils::valid_path(entry->value, "", true)) {
+					if (!Utils::valid_path(Utils::expand_path(entry->value, "", true, false), "", true)) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": invalid path - " + std::string(strerror(errno)), ERROR, entry->line, entry->order + 2);
 						if (!Utils::valid_path(default_dir, "", true)) {
 							Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR,  entry->line, entry->order + 3);
 							entry->value = ""; disabled = true;
 						}else {
-							entry->value = Utils::expand_path(default_dir, "", true, false);
+							entry->value = default_dir;
 							Utils::error_add(entry->filename, "[" + section + "] " + key + ": reset to default value: " + ((default_dir.empty()) ? "current directory" : default_dir), WARNING,  entry->line, entry->order + 3);
 						}
-					} else entry->value = Utils::expand_path(entry->value, "", true, false);
+					}
 				} else {
 					if (!Utils::valid_path(default_dir, "", true)) {
 						Utils::error_add(entry->filename, "[" + section + "] " + key + ": failed to use default value - " + std::string(strerror(errno)), ERROR,  entry->line, entry->order + 2);
 						entry->value = ""; disabled = true;
 					}
-					else entry->value = Utils::expand_path(default_dir, "", true, false);
+					else entry->value = default_dir;
 				}
 
 				return (entry->value);
@@ -276,7 +276,7 @@
 
 			static std::string dir = "";
 
-			if (key == "directory")					dir = validate_directory(key, entry);
+			if (key == "directory")					dir = Utils::expand_path(validate_directory(key, entry), "", true, false);
 
 			if (key == "tty_mode")					validate_boolean(key, entry);
 			if (key == "autostart")					validate_boolean(key, entry);
@@ -466,8 +466,9 @@
 					Utils::environment_add(proc.environment, "PROCESS_NUM", std::to_string(current_process_num++));
 
 					// Directory
-					proc.directory	= expand_vars(proc.environment, "directory");
-					proc.name		= expand_vars(proc.environment, "process_name");
+					proc.directory_unexpanded	= expand_vars(proc.environment, "directory");
+					proc.directory				= Utils::expand_path(proc.directory_unexpanded, "", true, false);
+					proc.name					= expand_vars(proc.environment, "process_name");
 
 					// Command
 					entry = Config.get_value_entry(section, "command");
@@ -684,12 +685,14 @@
 					if (initgroups(pw->pw_name, pw->pw_gid))	std::exit(-1);
 					if (setgid(pw->pw_gid))						std::exit(-1);
 					if (setuid(pw->pw_uid))						std::exit(-1);
-					if (chdir(proc.directory.c_str()))			std::exit(-1);
 
+					unsetenv("HOME");
 					Utils::environment_add(proc.environment, "HOME", pw->pw_dir);
 					Utils::environment_add(proc.environment, "USER", pw->pw_name);
 					Utils::environment_add(proc.environment, "LOGNAME", pw->pw_name);
 					Utils::environment_add(proc.environment, "TERM", "xterm-256color");
+
+					if (chdir(Utils::expand_path(proc.directory_unexpanded, "", true, false).c_str())) std::exit(-1);
 				}
 
 				// 3. Establecer como controlling terminal
@@ -708,12 +711,13 @@
 					if (initgroups(pw->pw_name, pw->pw_gid))	std::exit(-1);
 					if (setgid(pw->pw_gid))						std::exit(-1);
 					if (setuid(pw->pw_uid))						std::exit(-1);
-					if (chdir(proc.directory.c_str()))			std::exit(-1);
-
+					
+					unsetenv("HOME");
 					Utils::environment_add(proc.environment, "HOME", pw->pw_dir);
 					Utils::environment_add(proc.environment, "USER", pw->pw_name);
 					Utils::environment_add(proc.environment, "LOGNAME", pw->pw_name);
-					Utils::environment_add(proc.environment, "TERM", "xterm-256color");
+
+					if (chdir(Utils::expand_path(proc.directory_unexpanded, "", true, false).c_str())) std::exit(-1);
 				}
 
 				if (dup2(pipe_std_in[0], STDIN_FILENO) == -1) fail_code = -2;
@@ -768,6 +772,8 @@
 			std::exit(fail_code);
 		}
 
+		tskm.processes[proc.pid] = &proc;
+
 		if (proc.tty_mode) {
 			tskm.event.add(proc.std_master, EventType::STD_MASTER, &proc);
 			tskm.epoll.add(proc.std_master, true, false);
@@ -775,8 +781,6 @@
 			close(pipe_std_in[0]);
 			close(pipe_std_out[1]);
 			if (!proc.redirect_stderr) close(pipe_std_err[1]);
-
-			tskm.processes[proc.pid] = &proc;
 
 			proc.std_in = pipe_std_in[1];
 			proc.std_out = pipe_std_out[0];
@@ -807,7 +811,8 @@
 				proc.stopped_manual = true;
 				proc.change_time = current_time;
 				if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
-				else					kill(proc.pid, proc.stopsignal);
+				else					kill(proc.pid, SIGINT);
+				std::cerr << "Enviado\n";
 				// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
 				proc.history_add();
 			} else if (proc.status != ProcessState::STOPPED && proc.status != ProcessState::STOPPING) {

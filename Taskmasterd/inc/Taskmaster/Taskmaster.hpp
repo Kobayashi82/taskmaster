@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:24:36 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 19:42:22 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 19:41:42 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@
 			std::string							user;
 			uint16_t							umask;
 			std::string							directory;
+			std::string							directory_unexpanded;
 			std::string							logfile;
 			uint32_t							logfile_maxbytes;
 			uint16_t							logfile_backups;
