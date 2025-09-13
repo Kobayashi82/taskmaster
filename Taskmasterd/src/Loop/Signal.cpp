@@ -145,7 +145,6 @@
 			pid_t	pid;
 			int		status;
 
-			std::cerr << "Recibido\n";
 			while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
 				auto it = tskm.processes.find(pid);
 				if (it == tskm.processes.end()) continue;

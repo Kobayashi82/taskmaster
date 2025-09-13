@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 19:56:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 20:11:55 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -811,8 +811,7 @@
 				proc.stopped_manual = true;
 				proc.change_time = current_time;
 				if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
-				else					kill(proc.pid, SIGINT);
-				std::cerr << "Enviado\n";
+				else					kill(proc.pid, proc.stopsignal);
 				// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
 				proc.history_add();
 			} else if (proc.status != ProcessState::STOPPED && proc.status != ProcessState::STOPPING) {
