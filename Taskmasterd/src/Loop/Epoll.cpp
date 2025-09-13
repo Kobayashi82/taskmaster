@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/18 11:54:24 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 12:01:08 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 18:41:56 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,20 @@ int Epoll::wait() {
 					case EventType::UNIX_SOCKET:	{ tskm.unix_server.accept();			break; }
 					case EventType::INET_SOCKET:	{ tskm.inet_server.accept();			break; }
 					case EventType::CLIENT:			{ 										break; }
-					case EventType::STD_MASTER:		{ 										break; }
+					case EventType::STD_MASTER:		{
+						char buffer[4096];
+						ssize_t n = read(event->fd, buffer, sizeof(buffer) - 1);
+						if (n > 0) {
+							buffer[n] = '\0';            // terminamos el string
+							std::cout << buffer;         // imprimir en stdout
+							std::cout.flush();           // forzar flush por si es interactivo
+						} else if (n == 0) {
+							// EOF -> el hijo cerró stdout
+							// aquí podrías cerrar event->fd o marcarlo como terminado
+						} else {
+							perror("read from STD_OUT failed");
+						}
+						break; }
 					case EventType::STD_IN:			{ 										break; }
 					case EventType::STD_OUT:		{ 
 						char buffer[4096];

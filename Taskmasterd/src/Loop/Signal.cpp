@@ -72,7 +72,8 @@
 		void Signal::sigquit_handler(int sig) {
 			Log.info("Signal: received SIGQUIT indicating exit request");
 			signum = sig;
-			tskm.programs[0].stop(tskm.programs[2].processes[0]);
+			// tskm.programs[0].stop(tskm.programs[2].processes[0]);
+			tskm.programs[1].start(tskm.programs[1].processes[0]);
 		}
 
 	#pragma endregion

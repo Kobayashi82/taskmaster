@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/27 11:38:04 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/12 19:06:04 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 18:27:11 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,11 +172,11 @@
 				{"priority", "999"},
 				{"autostart", "false"},
 				{"autorestart", "unexpected"},
-				{"startsecs", "1"},
+				{"startsecs", "0"},
 				{"startretries", "3"},
-				{"exitcodes", "0,2"},
+				{"exitcodes", "0"},
 				{"stopsignal", "TERM"},
-				{"stopwaitsecs", "10"},
+				{"stopwaitsecs", "5"},
 				{"stopasgroup", "false"},
 				{"killasgroup", "false"},
 				{"user", "do not switch"},

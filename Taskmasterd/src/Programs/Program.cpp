@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/02 17:23:05 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 18:08:19 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/13 19:11:08 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 	#include <unistd.h>															// execvpe()
 	#include <fcntl.h>															// pipe2()
 	#include <sys/ioctl.h>														// ioctl()
+	#include <grp.h>															// initgroups()
 
 #pragma endregion
 
@@ -669,59 +670,52 @@
 		if (proc.pid == 0) {
 			int fail_code = -1;
 
-			// Create new process group only if stopasgroup is enabled
-			if (proc.stopasgroup) {
-				if (setpgid(0, 0) == -1) {
-					std::exit(1);
-				}
-			}
+			// 1. Crear nueva sesión (esto también crea nuevo group)
+			if (setsid() == -1) std::exit(-1);
 
 			if (proc.tty_mode) {
+				// 1. Abrir slave terminal
 				proc.std_slave = open(pty_name, O_RDWR);
-				if (proc.std_slave == -1) {
-					// Log->debug("Client: [" + proc.std_ip + ":" + std::to_string(proc.std_port) + "] open slave failed");
-					// std::exit(1);
+				if (proc.std_slave == -1)						std::exit(-1);
+
+				// 2. Cambiar usuario
+				struct passwd *pw = getpwnam("kobay");
+				if (pw) {
+					if (initgroups(pw->pw_name, pw->pw_gid))	std::exit(-1);
+					if (setgid(pw->pw_gid))						std::exit(-1);
+					if (setuid(pw->pw_uid))						std::exit(-1);
+					if (chdir(proc.directory.c_str()))			std::exit(-1);
+
+					Utils::environment_add(proc.environment, "HOME", pw->pw_dir);
+					Utils::environment_add(proc.environment, "USER", pw->pw_name);
+					Utils::environment_add(proc.environment, "LOGNAME", pw->pw_name);
+					Utils::environment_add(proc.environment, "TERM", "xterm-256color");
 				}
 
-				// if (setsid() == -1) std::exit(1);
-				
-				ioctl(proc.std_slave, TIOCSCTTY, 0);
+				// 3. Establecer como controlling terminal
+				if (ioctl(proc.std_slave, TIOCSCTTY, 0) == -1)	std::exit(-1);
 
+				// 4. Configurar descriptores
 				dup2(proc.std_slave, STDIN_FILENO);
 				dup2(proc.std_slave, STDOUT_FILENO);
 				dup2(proc.std_slave, STDERR_FILENO);
-				
 				close(proc.std_master);
-				if (proc.std_slave > 2) {
-					// Error ?
-					close(proc.std_slave);
+				if (proc.std_slave > 2) close(proc.std_slave);
+			} else {
+				// 1. Cambiar usuario
+				struct passwd *pw = getpwnam("kobay");
+				if (pw) {
+					if (initgroups(pw->pw_name, pw->pw_gid))	std::exit(-1);
+					if (setgid(pw->pw_gid))						std::exit(-1);
+					if (setuid(pw->pw_uid))						std::exit(-1);
+					if (chdir(proc.directory.c_str()))			std::exit(-1);
+
+					Utils::environment_add(proc.environment, "HOME", pw->pw_dir);
+					Utils::environment_add(proc.environment, "USER", pw->pw_name);
+					Utils::environment_add(proc.environment, "LOGNAME", pw->pw_name);
+					Utils::environment_add(proc.environment, "TERM", "xterm-256color");
 				}
 
-				// if (initgroups(pw->pw_name, pw->pw_gid)) {
-				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] initgroups() failed");
-				// 	std::exit(1);
-				// }
-
-				// if (setgid(pw->pw_gid) != 0) {
-				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] setgid() failed");
-				// 	std::exit(1);
-				// }
-				// if (setuid(pw->pw_uid) != 0) {
-				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] setuid() failed");
-				// 	std::exit(1);
-				// }
-
-				// setenv("HOME", pw->pw_dir, 1);
-				// setenv("USER", pw->pw_name, 1);
-				// setenv("LOGNAME", pw->pw_name, 1);
-				// setenv("TERM", "xterm-256color", 1);
-
-				// if (chdir(pw->pw_dir) != 0) {
-				// 	// Log->debug("Client: [" + client->ip + ":" + std::to_string(client->port) + "] chdir() failed");
-				// 	std::exit(1);
-				// }
-
-			} else {
 				if (dup2(pipe_std_in[0], STDIN_FILENO) == -1) fail_code = -2;
 				close(pipe_std_in[0]);
 				close(pipe_std_in[1]);
@@ -745,6 +739,8 @@
 			}
 
 			Log.close();
+			Log.set_logfile_stdout(false);
+			Log.set_logfile_syslog(false);
 			tskm.epoll.close();
 			tskm.event.remove(tskm.unix_server.sockfd);
 			tskm.event.remove(tskm.inet_server.sockfd);
@@ -770,14 +766,6 @@
 			close(STDERR_FILENO);
 
 			std::exit(fail_code);
-		}
-
-		// In parent process: set process group if stopasgroup is enabled
-		if (proc.stopasgroup) {
-			if (setpgid(proc.pid, proc.pid) == -1) {
-				// Log error but continue
-				Log.error("Process: failed to set process group for pid " + std::to_string(proc.pid) + " - " + std::string(strerror(errno)));
-			}
 		}
 
 		if (proc.tty_mode) {
@@ -814,15 +802,20 @@
 		void Program::stop(Process& proc) {
 			std::time_t current_time = time(nullptr);
 
-			if (proc.status != ProcessState::RUNNING && proc.status != ProcessState::STARTING) return;
-
-			proc.status = ProcessState::STOPPING;
-			proc.stopped_manual = true;
-			proc.change_time = current_time;
-			if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
-			else					kill(proc.pid, proc.stopsignal);
-			// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
-			proc.history_add();
+			if (proc.status == ProcessState::RUNNING || proc.status == ProcessState::STARTING) {
+				proc.status = ProcessState::STOPPING;
+				proc.stopped_manual = true;
+				proc.change_time = current_time;
+				if (proc.stopasgroup)	killpg(proc.pid, proc.stopsignal);
+				else					kill(proc.pid, proc.stopsignal);
+				// next_wait = proc.stopwaitsecs;		// Tengo que pasarselo a epoll de alguna manera
+				proc.history_add();
+			} else if (proc.status != ProcessState::STOPPED && proc.status != ProcessState::STOPPING) {
+				proc.status = ProcessState::STOPPED;
+				proc.stopped_manual = true;
+				proc.change_time = current_time;
+				proc.restart_count = 0;
+			}
 		}
 
 	#pragma endregion
@@ -851,15 +844,18 @@
 		void Program::start(Process& proc) {
 			std::time_t current_time = time(nullptr);
 
-			if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
-			else					proc.status = ProcessState::STARTING;
-			proc.started_once = true;
-			proc.terminated = false;
-			proc.killed = false;
-			proc.change_time = proc.start_time = current_time;
-			// if (proc.startsecs) next_wait = proc.startsecs;		// Tengo que pasarselo a epoll de alguna manera
-			proc.history_add();
-			process_start(proc);
+			if (proc.status != ProcessState::RUNNING && proc.status != ProcessState::STARTING) {
+				if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
+				else					proc.status = ProcessState::STARTING;
+				proc.started_once = true;
+				proc.stopped_manual = false;
+				proc.terminated = false;
+				proc.killed = false;
+				proc.change_time = proc.start_time = current_time;
+				// if (proc.startsecs) next_wait = proc.startsecs;		// Tengo que pasarselo a epoll de alguna manera
+				proc.history_add();
+				process_start(proc);
+			}
 		}
 
 	#pragma endregion
@@ -881,6 +877,9 @@
 						if (!proc.startsecs)	proc.status = ProcessState::RUNNING;
 						else					proc.status = ProcessState::STARTING;
 						proc.started_once = true;
+						proc.stopped_manual = false;
+						proc.terminated = false;
+						proc.killed = false;
 						proc.change_time = proc.start_time = current_time;
 						if (proc.startsecs) next_wait = proc.startsecs;
 						proc.history_add();
@@ -905,8 +904,9 @@
 					} else {
 						if (current_time - proc.start_time >= proc.startsecs) {												// Started successfully
 							proc.status = ProcessState::RUNNING;
-							proc.killed = false;
 							proc.stopped_manual = false;
+							proc.terminated = false;
+							proc.killed = false;
 							proc.change_time = current_time;
 							proc.exit_code = 0;
 							proc.exit_reason = "";
