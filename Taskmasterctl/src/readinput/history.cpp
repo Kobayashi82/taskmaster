@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 09:43:32 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 23:59:24 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 00:33:32 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 	#include <climits>
 	#include <fcntl.h>
 	#include <unistd.h>
+	#include <iostream>
+	#include <iomanip>
 
 #pragma endregion
 
@@ -453,28 +455,19 @@
 #pragma region "Print"
 
 	//	Print all entries
-	// int history_print(size_t offset, bool hide_events) {
-	// 	if (!history || !length) return (1);
-	// 	if (offset > length) offset = length;
+	int history_print(size_t offset, bool hide_events) {
+		if (!history || !length) return (1);
+		if (offset > length) offset = length;
 
-	// 	print(STDOUT_FILENO, NULL, RESET);
+		for (size_t i = length - offset; i < length && history[i]; ++i) {
+			if (!hide_events) {
+				std::cout << std::setw(5) << history[i]->event << "  ";
+			}
+			std::cout << history[i]->line << "\n";
+		}
 
-	// 	for (size_t i = length - offset; i < length && history[i]; ++i) {
-	// 		if (!hide_events) {
-	// 			char *txt_event = std::to_string(history[i]->event);
-	// 			int spaces = 5 - strlen(txt_event);
-	// 			while (spaces--) print(STDOUT_FILENO, " ", JOIN);
-	// 			print(STDOUT_FILENO, txt_event, FREE_JOIN);
-	// 			print(STDOUT_FILENO, "  ", JOIN);
-	// 		}
-	// 		print(STDOUT_FILENO, history[i]->line, JOIN);
-	// 		print(STDOUT_FILENO, "\n", JOIN);
-	// 	}
-
-	// 	print(STDOUT_FILENO, NULL, PRINT);
-
-	// 	return (0);
-	// }
+		return (0);
+	}
 
 #pragma endregion
 

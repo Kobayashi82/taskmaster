@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 00:00:13 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 00:40:38 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,11 @@
 				if (new_input == "exit" || new_input == "quit") {
 					break;
 				} else if (new_input == "history") {
-					std::cout << "Command History:" << std::endl;
-					// Terminal::History::print();
+					// "    Display the history list with line numbers\n"
+					// "    An argument of [n] lists only the last [n] entries.\n\n"
+					history_print(20, false);
+				} else if (new_input == "history -c") {
+					history_clear();
 				} else if (new_input == "clear") {
 					std::cout << "\033[2J\033[H" << std::flush;; // Clear screen
 				} else {
