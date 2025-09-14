@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 00:40:38 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 	#include <cstring>
 
 
-	#include "readinput/readinput.hpp"
-	#include "readinput/history.hpp"
+	#include "Readline/readinput.hpp"
+	#include "Readline/history.hpp"
 	#include "signals.hpp"
 
 #pragma endregion

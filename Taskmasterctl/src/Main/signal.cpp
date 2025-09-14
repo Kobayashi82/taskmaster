@@ -6,15 +6,15 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/29 15:57:35 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 23:09:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "readinput/terminal.hpp"
-	#include "readinput/termcaps.hpp"
-	#include "readinput/readinput.hpp"
+	#include "Readline/terminal.hpp"
+	#include "Readline/termcaps.hpp"
+	#include "Readline/readinput.hpp"
 	#include "signals.hpp"
 
 	#include <stdlib.h>

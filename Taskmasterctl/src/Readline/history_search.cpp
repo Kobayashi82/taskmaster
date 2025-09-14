@@ -6,15 +6,15 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 15:20:34 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 00:24:43 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "readinput/termcaps.hpp"
-	#include "readinput/readinput.hpp"
-	#include "readinput/history.hpp"
+	#include "Readline/termcaps.hpp"
+	#include "Readline/readinput.hpp"
+	#include "Readline/history.hpp"
 
 	#include <string>
 	#include <cstring>

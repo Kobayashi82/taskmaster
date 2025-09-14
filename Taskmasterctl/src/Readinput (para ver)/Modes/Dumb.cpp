@@ -6,12 +6,12 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/13 00:00:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 22:07:59 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Readinput/ReadInput.hpp"
-#include "Readinput/History.hpp"
+#include "Readline/ReadInput.hpp"
+#include "Readline/History.hpp"
 #include <unistd.h>
 
 namespace Terminal {

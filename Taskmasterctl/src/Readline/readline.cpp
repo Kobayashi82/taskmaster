@@ -6,16 +6,16 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 10:32:07 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 23:37:51 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "readinput/terminal.hpp"
-	#include "readinput/termcaps.hpp"
-	#include "readinput/readinput.hpp"
-	#include "readinput/history.hpp"
+	#include "Readline/terminal.hpp"
+	#include "Readline/termcaps.hpp"
+	#include "Readline/readinput.hpp"
+	#include "Readline/history.hpp"
 	#include "signals.hpp"
 
 	#include <string>

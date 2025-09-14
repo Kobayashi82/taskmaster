@@ -6,12 +6,12 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/13 00:00:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 22:07:58 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Readinput/Termcaps.hpp"
-#include "Readinput/ReadInput.hpp"
+#include "Readline/Termcaps.hpp"
+#include "Readline/ReadInput.hpp"
 #include <unistd.h>
 #include <cstring>
 #include <cstdlib>

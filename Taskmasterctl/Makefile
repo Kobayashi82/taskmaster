@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/13 23:45:27 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/14 12:54:52 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -62,13 +62,13 @@ SRC_DIR		= src/
 
 SRCS		= Main/Main.cpp \
 			  Main/signal.cpp \
-			  readinput/termcaps.cpp \
-			  readinput/readinput.cpp \
-			  readinput/readline.cpp \
-			  readinput/undo.cpp \
-			  readinput/auto_complete.cpp \
-			  readinput/history.cpp \
-			  readinput/history_search.cpp
+			  Readline/termcaps.cpp \
+			  Readline/readinput.cpp \
+			  Readline/readline.cpp \
+			  Readline/undo.cpp \
+			  Readline/auto_complete.cpp \
+			  Readline/history.cpp \
+			  Readline/history_search.cpp
 
 # ───────────────────────────────────────────────────────────── #
 # ─────────────────────────── RULES ─────────────────────────── #

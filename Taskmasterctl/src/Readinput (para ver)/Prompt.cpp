@@ -6,12 +6,12 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/13 00:00:00 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 22:07:57 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Readinput/Prompt.hpp"
-#include "Readinput/Termcaps.hpp"
+#include "Readline/Prompt.hpp"
+#include "Readline/Termcaps.hpp"
 #include <algorithm>
 #include <regex>
 

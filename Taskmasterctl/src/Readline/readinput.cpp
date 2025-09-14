@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 09:44:40 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 23:55:26 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,10 @@
 
 #pragma region "Includes"
 
-	#include "readinput/terminal.hpp"
-	#include "readinput/termcaps.hpp"
-	#include "readinput/readinput.hpp"
-	#include "readinput/history.hpp"
+	#include "Readline/terminal.hpp"
+	#include "Readline/termcaps.hpp"
+	#include "Readline/readinput.hpp"
+	#include "Readline/history.hpp"
 
 	#include <unistd.h>
 	#include <fcntl.h>

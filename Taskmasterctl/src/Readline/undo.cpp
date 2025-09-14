@@ -6,14 +6,14 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 10:10:10 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/13 23:44:30 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma region "Includes"
 
-	#include "readinput/termcaps.hpp"
-	#include "readinput/readinput.hpp"
+	#include "Readline/termcaps.hpp"
+	#include "Readline/readinput.hpp"
 
 	#include <cstring>
 	#include <stdlib.h>
