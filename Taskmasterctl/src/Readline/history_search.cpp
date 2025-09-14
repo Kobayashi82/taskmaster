@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/06 15:20:34 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 14:46:15 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 	#include "Readline/termcaps.hpp"
 	#include "Readline/readinput.hpp"
-	#include "Readline/history.hpp"
+	#include "Readline/History.hpp"
 
 	#include <string>
 	#include <cstring>
@@ -249,28 +249,25 @@ static size_t safe_strlen(const char *s) {
 
 		#pragma region "Match"
 			
-			static int process_match(HIST_ENTRY *hist, size_t pos, bool update) {
+			static int process_match(const std::string line, size_t pos, bool update) {
 				no_match = false;
 
-				std::string line = hist->line;
 				std::string before = line.substr(0, pos);
 				std::string match  = line.substr(pos, safe_strlen(search_buffer.value));
 				std::string after  = line.substr(pos + safe_strlen(search_buffer.value));
 
 				std::string new_match_show = before + "\033[30;47m" + match + "\033[0m" + after;
 				match_show = strdup(new_match_show.c_str());
-				// match_show = ft_strjoin_sep(strndup(hist->line, pos), "\033[30;47m", search_buffer.value, 1);
-				// match_show = ft_strjoin_sep(match_show, "\033[0m", hist->line + pos + strlen(search_buffer.value), 1);
 
 				// Expand buffer if necessary
-				while (hist->length >= buffer.size - 1) {
+				while (line.length() >= buffer.size - 1) {
 					buffer.value = (char *)realloc(buffer.value, buffer.size * 2);
 					buffer.size *= 2;
 				}
 
 				memset(buffer.value, 0, buffer.size);
-				strcpy(buffer.value, hist->line);
-				buffer.length = hist->length;
+				strcpy(buffer.value, line.c_str());
+				buffer.length = line.length();
 				buffer.position = 0;
 
 				if (update) {
@@ -301,7 +298,7 @@ static size_t safe_strlen(const char *s) {
 			static int search_find(int mode) {
 				if (!search_buffer.value) return (0);
 				if (*search_buffer.value) {				
-					size_t len = history_length();
+					size_t len = history.length();
 					if (mode == FORWARD && !history_pos)				{ beep();	return (0); }
 					if (mode == BACKWARD && history_pos >= len)			{ beep();	return (0); }
 					if (mode == START)									history_pos = len;
@@ -309,24 +306,24 @@ static size_t safe_strlen(const char *s) {
 					if (mode == BACKWARD) {
 						size_t i = history_pos + 1;
 						for (; i < len; ++i) {
-							HIST_ENTRY *hist = history_get(i);
-							if (hist && hist->line) {
-								char *match = strstr(hist->line, search_buffer.value);
+							char *line = strdup(history.get(i).c_str());
+							if (line) {
+								char *match = strstr(line, search_buffer.value);
 								if (match) {
 									history_pos = i;
-									return (process_match(hist, match - hist->line, true));
+									return (process_match(line, match - line, true));
 								}
 							}
 						}
 					} else {
 						size_t i = history_pos - (mode == FORWARD);
 						for (; i >= 0; --i) {
-							HIST_ENTRY *hist = history_get(i);
-							if (hist && hist->line) {
-								char *match = strstr(hist->line, search_buffer.value);
+							char *line = strdup(history.get(i).c_str());
+							if (line) {
+								char *match = strstr(line, search_buffer.value);
 								if (match) {
 									history_pos = i;
-									return (process_match(hist, match - hist->line, (mode == FORWARD)));
+									return (process_match(line, match - line, (mode == FORWARD)));
 								}
 							}
 							if (i == 0) break;

@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 10:32:07 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 14:49:30 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 	#include "Readline/terminal.hpp"
 	#include "Readline/termcaps.hpp"
 	#include "Readline/readinput.hpp"
-	#include "Readline/history.hpp"
+	#include "Readline/History.hpp"
 	#include "signals.hpp"
 
 	#include <string>
@@ -256,10 +256,10 @@
 			#pragma region "Arrow Up"					("Up")
 
 				static void arrow_up() {
-					if (!history_length()) { beep(); return; }
-					char *new_line = history_prev();
+					if (!history.length()) { beep(); return; }
+					char *new_line = strdup(history.prev().c_str());
 
-					if (!new_line) { beep(); return; }
+					if (!*new_line) { beep(); return; }
 					if (!tmp_line) tmp_line = strdup(std::string(buffer.value).substr(0, buffer.length).c_str());
 
 					home(); delete_end(false);
@@ -278,13 +278,13 @@
 			#pragma region "Arrow Down"					("Down")
 
 				static void arrow_down() {
-					if (!history_length()) { beep(); return; }
+					if (!history.length()) { beep(); return; }
 
-					char *new_line = history_next();
+					char *new_line = strdup(history.next().c_str());
 					bool free_line = false;
 
-					if (!tmp_line && history_get_pos() == history_length() - 1) { beep(); return; }
-					if (!new_line && history_get_pos() == history_length() - 1) {
+					if (!tmp_line && history.get_pos() == history.length() - 1) { beep(); return; }
+					if (!*new_line && history.get_pos() == history.length() - 1) {
 						new_line = tmp_line;
 						tmp_line = NULL;
 						free_line = true;

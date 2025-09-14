@@ -6,7 +6,7 @@
 #    By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/08/11 19:13:18 by vzurera-          #+#    #+#              #
-#    Updated: 2025/09/14 12:54:52 by vzurera-         ###   ########.fr        #
+#    Updated: 2025/09/14 14:34:25 by vzurera-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,7 +67,7 @@ SRCS		= Main/Main.cpp \
 			  Readline/readline.cpp \
 			  Readline/undo.cpp \
 			  Readline/auto_complete.cpp \
-			  Readline/history.cpp \
+			  Readline/History.cpp \
 			  Readline/history_search.cpp
 
 # ───────────────────────────────────────────────────────────── #

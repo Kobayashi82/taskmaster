@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 09:44:40 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 14:38:19 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 	#include "Readline/terminal.hpp"
 	#include "Readline/termcaps.hpp"
 	#include "Readline/readinput.hpp"
-	#include "Readline/history.hpp"
+	#include "Readline/History.hpp"
 
 	#include <unistd.h>
 	#include <fcntl.h>
@@ -145,7 +145,7 @@
 			result = readline(readed);
 		}
 
-		history_set_pos_end();
+		history.set_pos_end();
 		undo_clear();
 
 		disable_raw_mode();

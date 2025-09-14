@@ -6,7 +6,7 @@
 /*   By: vzurera- <vzurera-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/11 19:29:12 by vzurera-          #+#    #+#             */
-/*   Updated: 2025/09/14 12:54:37 by vzurera-         ###   ########.fr       */
+/*   Updated: 2025/09/14 14:38:05 by vzurera-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,12 @@
 
 
 	#include "Readline/readinput.hpp"
-	#include "Readline/history.hpp"
+	#include "Readline/History.hpp"
 	#include "signals.hpp"
 
 #pragma endregion
+
+	History history;
 
 #pragma region "Main"
 
@@ -40,8 +42,6 @@
 		char *input;
 		std::string new_input;
 
-		history_initialize();
-
 		while (true) {
 			try {
 				signals_set();
@@ -51,7 +51,7 @@
 				new_input = std::string(input);
 				if (new_input.empty()) continue;
 				
-				history_add(input, false);
+				history.add(input);
 
 				// Simple command processing
 				if (new_input == "exit" || new_input == "quit") {
@@ -59,9 +59,9 @@
 				} else if (new_input == "history") {
 					// "    Display the history list with line numbers\n"
 					// "    An argument of [n] lists only the last [n] entries.\n\n"
-					history_print(20, false);
+					history.print(20, false);
 				} else if (new_input == "history -c") {
-					history_clear();
+					history.clear();
 				} else if (new_input == "clear") {
 					std::cout << "\033[2J\033[H" << std::flush;; // Clear screen
 				} else {
